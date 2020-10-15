@@ -43,29 +43,35 @@ output: rticles::rjournal_article
 
 ## Introduction
 
-Introductory section which may include references in parentheses
-[@R], or cite a reference such as @R in the text.
+Introduce the CMPS method/algorithm
 
-## Section title in sentence case
+* make it clear that we implemented the algorithm, not created it
+* discuss a little that our data preparation method is different from that in the NIST paper. Shiny?
 
-This section may contain a figure such as Figure \ref{fig:Rlogo}.
+## Implementation
 
-```{r, Rlogo, echo=FALSE, fig.cap='The logo of R.', out.width='2in', fig.align='center', fig.pos='htbp'}
-knitr::include_graphics('Rlogo.pdf')
-```
+How did we implement the algorithm
 
-## Another section
+* how to present this? examples
+* how detailed?
 
-There will likely be several sections, perhaps including code snippets, such as:
+## Results
 
-```{r}
-x <- 1:10
-plot(x)
-```
+Present results:
 
-## Summary
+* apply it to Hamby252 -> able to reproduce results in NIST paper qualitatively
+* (?) apply it to Hamby44, using Hamby252 (default) parameters
+* apply it to Hamby44, using parameters such that `lengths` represents the same actual length (the same amount of pixels of the scan)
 
-This file is only a basic article template. For full details of _The R Journal_ style and information on how to prepare your article for submission, see the [Instructions for Authors](https://journal.r-project.org/share/author-guide.pdf).
+## Conclusion
+
+Conclusion and discussion
+
+* (?) potential flaws of the implementation
+* Suggestion of how to select parameters
+* open source implementation:
+  - allow everyone to use, introduce the algorithm to R community
+  - in general, open source implementation could reduce the level of ambiguity
 
 ### About this format and the R Journal requirements
 
