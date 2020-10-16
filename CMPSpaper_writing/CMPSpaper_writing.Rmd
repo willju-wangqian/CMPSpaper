@@ -43,32 +43,63 @@ output: rticles::rjournal_article
 
 ## Introduction
 
-Introduce the CMPS method/algorithm
+Address the problem: examiner - the two pattern evidence come from the same source or not
+
+criticism of subjective methodology (report, citation) - why we need algorithms
+
+Introduce our methodology - with 3D scans, digital microscope, data and algorithms
+
+hambyset as the dataset
+
+A short example to illustrate how one can use this CMPS package to obtain a comparison
+
+* 2 lands - the same source; 1 land from another; signatures; CMPS score; 
+
+briefly talk about the CMPS method/algorithm, provide details in the Implementation section
 
 * make it clear that we implemented the algorithm, not created it
-* discuss a little that our data preparation method is different from that in the NIST paper. Shiny?
+
+outline what is going to come
 
 ## Implementation
 
-How did we implement the algorithm
+discuss a little that our data preparation method is different from that in the NIST paper. Shiny?
 
-* how to present this? examples
-* how detailed?
+* [how do we get the signatures? ]
+
+description of the algorithm and how did we implement it?
+
+how would people use it?
+
 
 ## Results
 
 Present results:
 
 * apply it to Hamby252 -> able to reproduce results in NIST paper qualitatively
-* (?) apply it to Hamby44, using Hamby252 (default) parameters
-* apply it to Hamby44, using parameters such that `lengths` represents the same actual length (the same amount of pixels of the scan)
+  - exclude some (?) scans because they are bad -> go further in Conclustion
+  - [CHECK] Did researchers exclude those scans in NIST paper?
+* apply it to another dataset, which have a different resolution
+  - potential issues -> go further in Conclusion
+  - need to use a different set of parameters
+* apply it to Hamby44, what did we do?
+  - using parameters such that `lengths` represents the same actual length (the same amount of pixels of the scan)
 
 ## Conclusion
+
+(Our opinions)
 
 Conclusion and discussion
 
 * (?) potential flaws of the implementation
+* potential issues related to the algorithm
+  - 6 as a cutoff?
+    - not crossvalidated
+    - estimate KM KNM distribution, etc...
+  - choose parameters
 * Suggestion of how to select parameters
+* what should we do about higher resolution data? what did we do? [CHECK: what did NIST paper do]
+* excluding outliers ? [check NIST paper]
 * open source implementation:
   - allow everyone to use, introduce the algorithm to R community
   - in general, open source implementation could reduce the level of ambiguity
