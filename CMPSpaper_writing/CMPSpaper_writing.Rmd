@@ -63,14 +63,115 @@ outline what is going to come
 
 ## Implementation
 
-discuss a little that our data preparation method is different from that in the NIST paper. Shiny?
+[discuss a little that our data preparation method is different from that in the NIST paper. Shiny?]
 
 * [how do we get the signatures? ]
 
-description of the algorithm and how did we implement it?
+[description of the algorithm and how did we implement it?]
 
-how would people use it?
+**Algorithm.** 
 
+The CMPS algorithm consists of X steps.   
+
+step 1) cut the reference profile into consecutive, non-overlapping and equal-length basis segments;
+
+`get_segs(x, len=50)` implements the first step. It takes a profile in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+
+step 2) compute the cross-correlation function between each basis segment and the comparison profile;
+
+`get_ccf4` computes the cross-correlation function / correlation coefficient curve between two profiles. This is the function called whenever we need to compute the ccf.
+
+step 3) if the multi segment lengths strategy is being used, each basis segment would increase its length and compute a new cross-correlation function with the comparison profile in order to identify a potential “consistent correlation peak”; if the multi segment lengths strategy is not being used, each segment would then find 5 peaks in its cross-correlation function;
+
+`get_seg_scale` takes a basis segment and increases its segment length. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length.
+
+`get_ccr_peaks` takes a segment and the comparison profile, then computes the correlation coefficient curve between them and finds peaks on the correlation coefficient curve. The number of peaks detected is equal to `npeaks`. And we are using `rollapply` to find peaks on the curve effectively.
+
+`get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scale levels. 
+
+4) determine the congruent registration position with a small tolerance zone and the number of basis segment that agrees with the congruent registration position (the CMPS score). 
+
+`get_CMPS` considers all basis segments and their identified peaks to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions, and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
+
+> [~? 0.078 mm or 50 pixels; 2mm in total? length is 2000? should we use 78 as the segment length? the same for 252 and 44?]
+
+Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 4. In our implementation of the CMPS algorithm we took the original CMPS paper [cite?] as the reference to determine the default values of these parameters. 
+
+The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
+
+* `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
+* `npeaks.set` determines the number of peaks and whether the function uses the multi segment lengths strategy. If `npeaks.set` is a numeric vector of length 1, for example `npeaks.set = c(5)`, then the function will not use multi segment lengths and find 5 peaks in the correlation coefficient curve for each basis segment; on the other hand, if the vector length of `npeaks.set` is larger than 1, for example `npeaks.set = c(5, 3, 1)`, the function will take advantage of the multi segment lengths strategy, finding 5 peaks in the original scale, 3 peaks in the second scale and 1 peak in the third scale. Note that if the multi segment lengths strategy is being used, the last element of `npeaks.set` should always be 1. 
+* `Tx` gives the size of tolerance zone mentioned in step 4;
+* `full_result` determines whether the function outputs a full result. A full result contains XX, while if `full_result = FALSE`, the function will only output the CMPS score of this comparison.  
+
+[examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf]
+[https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf]
+
+
+> [~? should I present the code of the function? in order to explain it]
+
+[how would people use it?]
+
+**Install**
+
+The CMPS package is/not published on CRAN, and can be install and called by 
+
+```{r, eval=FALSE}
+install.packages(CMPS)
+```
+
+The development version can be installed by using 
+
+```{r, eval=FALSE}
+# install.packages("devtools") 
+devtools::install_github("willju-wangqian/CMPS")
+```
+
+**Examples**
+
+The `CMPS` package contains a simple example to illustrate the basic usage of the package. The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 [cite?] (Each bullet has six lands). The procedure for generating signatures from 3D bullet lands in x3p format is (algorithmic) [and has been discussed above]. And these two bullets are known to come from the same gun barrel, so for the 36 land-by-land comparisons, 6 of them are KM (known matching) comparisons and 30 are KNM (known non-matching) comparisons. To access the example data, one can use
+
+```{r}
+library(CMPS)
+data(bullets)
+```
+
+And anyone who is interested in the data source can find it in `bullets$source`. One can use these links to download the original x3p files from [NIST, cite?]. `bulletxtrctr::read_bullet(urllist = bullets$source)`
+
+**extract_feature_cmps**
+
+`extract_feature_cmps` integrates all steps of the CMPS algorithm. It takes two bullet profiles and computes the CMPS score. 
+
+```{r, eval=FALSE}
+extract_feature_cmps(
+  x,
+  y,
+  seg_length = 50,
+  seg_scale_max = 3,
+  Tx = 25,
+  npeaks.set = c(5, 3, 1),
+  full_result = FALSE
+)
+```
+
+The comparison between "bullet 1 - land 2" and "bullet 2 - land 3" is one of the KM comparisons. We can compute the CMPS score using two versions of the CMPS algorithm.
+
+```{r, eval=FALSE}
+land2_3 <- bullets$sigs[bullets$bulletland == "2-3"][[1]]
+land1_2 <- bullets$sigs[bullets$bulletland == "1-2"][[1]]
+
+# compute cmps
+
+# algorithm with multi-peak insepction at three different segment scales
+cmps_with_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
+                                              npeaks.set = c(5,3,1), full_result = TRUE)
+
+# algorithm with multi-peak inspection at the basis scale only
+cmps_without_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
+                                                 npeaks.set = 5, full_result = TRUE)
+```
+
+We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
 
 ## Results
 
@@ -78,7 +179,7 @@ Present results:
 
 * apply it to Hamby252 -> able to reproduce results in NIST paper qualitatively
   - exclude some (?) scans because they are bad -> go further in Conclustion
-  - [CHECK] Did researchers exclude those scans in NIST paper?
+  - [CHECK] Did researchers exclude those scans in NIST paper? First scan, NO
 * apply it to another dataset, which have a different resolution
   - potential issues -> go further in Conclusion
   - need to use a different set of parameters
