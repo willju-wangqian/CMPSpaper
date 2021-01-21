@@ -91,26 +91,27 @@ step 3) if the multi segment lengths strategy is being used, each basis segment 
 
 4) determine the congruent registration position with a small tolerance zone and the number of basis segment that agrees with the congruent registration position (the CMPS score). 
 
-`get_CMPS` considers all basis segments and their identified peaks to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions, and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
-
-> [~? 0.078 mm or 50 pixels; 2mm in total? length is 2000? should we use 78 as the segment length? the same for 252 and 44?]
+`get_CMPS` considers all basis segments and their identified peaks to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
 
 Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 4. In our implementation of the CMPS algorithm we took the original CMPS paper [cite?] as the reference to determine the default values of these parameters. 
-
 The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
 
 * `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
 * `npeaks.set` determines the number of peaks and whether the function uses the multi segment lengths strategy. If `npeaks.set` is a numeric vector of length 1, for example `npeaks.set = c(5)`, then the function will not use multi segment lengths and find 5 peaks in the correlation coefficient curve for each basis segment; on the other hand, if the vector length of `npeaks.set` is larger than 1, for example `npeaks.set = c(5, 3, 1)`, the function will take advantage of the multi segment lengths strategy, finding 5 peaks in the original scale, 3 peaks in the second scale and 1 peak in the third scale. Note that if the multi segment lengths strategy is being used, the last element of `npeaks.set` should always be 1. 
 * `Tx` gives the size of tolerance zone mentioned in step 4;
-* `full_result` determines whether the function outputs a full result. A full result contains XX, while if `full_result = FALSE`, the function will only output the CMPS score of this comparison.  
+* `include` determines what information should be included in the function output. By default, `include = NULL` and the function output will only contain the `CMPS.score`. However, besides the most important `CMPS.score`, there are other pieces of information related to the CMPS score that one might be interested in, such as 
+  - `nseg`: the number of basis segments we get from the reference profile; this is also the highest possible CMPS score of the comparison;
+  - `congruent.pos`: the congruent registration position;
+  - `congruent.seg.idx`: the indices of all basis segments that agree with the congruent registration position;
+  - `segments`: the list of basis segments used for the computation of CMPS score;
+  - `parameters`: all inputs of `extract_feature_cmps`
+For all possible options of `include`, please check the documentation of `extract_feature_cmps` or using `?extract_feature_cmps`. If we want everything to be included in the output, we can use `include = full_result`. These additional pieces of information are helpful in terms of understanding how we obtained such CMPS score. 
+  
+
 
 [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf]
 [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf]
 
-
-> [~? should I present the code of the function? in order to explain it]
-
-[how would people use it?]
 
 **Install**
 
@@ -147,31 +148,110 @@ extract_feature_cmps(
   x,
   y,
   seg_length = 50,
-  seg_scale_max = 3,
   Tx = 25,
   npeaks.set = c(5, 3, 1),
-  full_result = FALSE
+  include = NULL
 )
 ```
 
 The comparison between "bullet 1 - land 2" and "bullet 2 - land 3" is one of the KM comparisons. We can compute the CMPS score using two versions of the CMPS algorithm.
 
 ```{r, eval=FALSE}
-land2_3 <- bullets$sigs[bullets$bulletland == "2-3"][[1]]
-land1_2 <- bullets$sigs[bullets$bulletland == "1-2"][[1]]
+land2_3 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
+land1_2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 
 # compute cmps
 
 # algorithm with multi-peak insepction at three different segment scales
 cmps_with_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
-                                              npeaks.set = c(5,3,1), full_result = TRUE)
+                                              npeaks.set = c(5,3,1), include = "full_result")
 
 # algorithm with multi-peak inspection at the basis scale only
 cmps_without_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
-                                                 npeaks.set = 5, full_result = TRUE)
+                                                 npeaks.set = 5, include = "full_result")
 ```
 
-We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
+We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. (TOBE UPDATED !!!)
+
+```{r}
+#      [,1] [,2] [,3] [,4] [,5] [,6]
+# [1,]    2    5    3    4    3    2
+# [2,]    2    2   13    1    1    1
+# [3,]    1    1    2   11    2    2
+# [4,]    2    1    1    1   10    1
+# [5,]    1    2    1    2    2   15
+# [6,]   14    2    2    2    1    1
+```
+
+
+**Analysis**
+
+We also implemented graphing tools for analyzing results of the CMPS algorithm. The goal is to help users visualize the results, inspect each basis segments and have a better understanding of how the algorithm works. We can continue with the example above. 
+
+```{r, eval=FALSE}
+source("../../Bullet_Rcode/cmps_plot.R")
+
+sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
+
+```
+
+`cmps_signature_plot` takes the "full result" of `extract_feature_cmps` (setting `include = "full_result"`) and returns a list of 5 elements. 
+
+The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (the congruent matching profile segments) are plotted along with the comparison profile. When plotting, each of those basis segment will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
+
+```{r, eval=FALSE}
+sig.plot$segment_shift_plot
+```
+
+```{r}
+knitr::include_graphics("img/sigplot1.png", dpi = 100)
+```
+
+
+The second element is called `signature_shift_plot`. On this visual both the reference profile and the comparison profile are plotted. The reference profile is aligned with the comparison profile based on the congruent registration position. And the congruent matching profile segments are highlighted. 
+
+```{r, eval=FALSE}
+sig.plot$signature_shift_plot
+```
+
+```{r}
+knitr::include_graphics("img/sigplot2.png", dpi = 100)
+```
+
+Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segment and for the reference profile. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
+
+As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg.pos` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_signature_plot` also returns a list. Each element of this list is also a list and corresponds to one segment scale of this basis segment.
+
+```{r, eval=FALSE}
+seg.plot <- cmps_segment_plot(cmps_with_multi_scale, seg.idx = 6)
+```
+
+Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`.
+
+Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks. 
+
+```{r, eval=FALSE}
+seg.plot[[1]]$segment_plot
+```
+
+And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 highest peaks are identified and marked on the plot. 
+
+```{r, eval=FALSE}
+seg.plot[[1]]$scale_ccf_plot
+```
+
+Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
+
+```{r, eval=FALSE}
+library(ggpubr)
+
+ggarrange(plotlist = unlist(seg.plot, recursive = FALSE),
+          ncol = 2, nrow = 3)
+```
+
+The red vertical dashed line indicates the congruent registration position. We can see segment 6 does obtain peaks at scale two and scale three; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the ccp (consistent correlation peak) and fails to become one of the congruent matching profile segments (according to the multi segment lengths strategy). 
+
+
 
 ## Results
 
