@@ -61,13 +61,20 @@ briefly talk about the CMPS method/algorithm, provide details in the Implementat
 
 outline what is going to come
 
+## Background
+
+The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [cite?]. For each dataset in the study, 35 bullets are fired by ten Ruger P-85 pistol barrels. 20 of the 35 bullets are known test bullets and 15 of them are unknown bullets. Each bullet has six land engraved areas (LEA) whose 3D topographical images were obtained using a NanoFocus lens at 20x magnification and stored in x3p format (XML 3-D Surface Profile).
+
++ hamby
++ x3p
++ bulletxtrctr (crosscut, grooves, ccdata, signature)
++ an shiny app that helps us get better crosscuts and groove locations
++ 1.5625, 1.29
+[how do we get the signatures? ]
+[Note that in the NIST CMPS paper they have another way of getting bullet signatures]
+
+
 ## Implementation
-
-[discuss a little that our data preparation method is different from that in the NIST paper. Shiny?]
-
-* [how do we get the signatures? ]
-
-[description of the algorithm and how did we implement it?]
 
 **Algorithm.** 
 
@@ -77,23 +84,37 @@ step 1) cut the reference profile into consecutive, non-overlapping and equal-le
 
 `get_segs(x, len=50)` implements the first step. It takes a profile in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 
-step 2) compute the cross-correlation function between each basis segment and the comparison profile;
+step 2) each basis segment finds its best registration position on the comparison profile. A cross-correlation curve between a basis segment and the comparison profile would be computed, and a registration position is considered as "good" if the basis segment achieves a high cross-correlation value at this position. 
+
+Then how should a basis segment find its best registration position? [In the original paper] researchers proposed two versions of the CMPS alrorithm that can answer this question. The first version is called "multi-peak inspection", and the second version is called "multi-peak inspection at different segment lengths/scales". We also refer the second version as the CMPS algorithm using "the multi segment lengths strategy".
+
+Step 2.1) multi-peak inspection: each basis segment identifies positions of 5 (or multiple) highest peaks in the cross-correlation curve. Since false positive peaks would stand out when the segment length is short, positions of all 5 peak will be considered as the potential "best" registration position.
+
+Step 2.2) multi segment lengths strategy: for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is the standard way as we have stated in step 2.1. But after the first round, we will increase the segment length, compute a new cross-correlation curve, and again identify multiple peaks in the cross-correlation curve. The number of peaks identified in this round is typically less than that in the previous round (say 3 highest peaks) since increasing the segment length can reduce the number of false positive peaks. We can repeat this procedure multiple times; however in the last round, only one highest peak should be identified. If a position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp).
+
+
+<!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
+
+
+<!-- If the reference profile and the comparison profile matches perfectly, every basis segment should vote for exactly the same registration position.  -->
+
+<!-- compute the cross-correlation function between each basis segment and the comparison profile; -->
 
 `get_ccf4` computes the cross-correlation function / correlation coefficient curve between two profiles. This is the function called whenever we need to compute the ccf.
 
-step 3) if the multi segment lengths strategy is being used, each basis segment would increase its length and compute a new cross-correlation function with the comparison profile in order to identify a potential “consistent correlation peak”; if the multi segment lengths strategy is not being used, each segment would then find 5 peaks in its cross-correlation function;
+<!-- step 3) if the multi segment lengths strategy is being used, each basis segment would increase its length and compute a new cross-correlation function with the comparison profile in order to identify a potential “consistent correlation peak”; if the multi segment lengths strategy is not being used, each segment would then find 5 peaks in its cross-correlation function; -->
 
 `get_seg_scale` takes a basis segment and increases its segment length. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length.
 
 `get_ccr_peaks` takes a segment and the comparison profile, then computes the correlation coefficient curve between them and finds peaks on the correlation coefficient curve. The number of peaks detected is equal to `npeaks`. And we are using `rollapply` to find peaks on the curve effectively.
 
-`get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scale levels. 
+`get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scales. 
 
-4) determine the congruent registration position with a small tolerance zone and the number of basis segment that agrees with the congruent registration position (the CMPS score). 
+step 3) determine the congruent registration position with a small tolerance zone and the number of basis segments that take the congruent registration position as their "best" registration position. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of this profile comparison.
 
-`get_CMPS` considers all basis segments and their identified peaks to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
+`get_CMPS` considers all basis segments and their identified peak positions to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
 
-Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 4. In our implementation of the CMPS algorithm we took the original CMPS paper [cite?] as the reference to determine the default values of these parameters. 
+Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 3. In our implementation of the CMPS algorithm we took the original CMPS paper [cite?] as the reference to determine the default values of these parameters. 
 The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
 
 * `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
@@ -184,26 +205,23 @@ We can also compute the CMPS scores (using the multi segment lengths strategy) f
 ```
 
 
-**Analysis**
+**Visualize and Understand CMPS results**
 
-We also implemented graphing tools for analyzing results of the CMPS algorithm. The goal is to help users visualize the results, inspect each basis segments and have a better understanding of how the algorithm works. We can continue with the example above. 
+We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. Let's continue with the example above and take its results. 
 
 ```{r, eval=FALSE}
-source("../../Bullet_Rcode/cmps_plot.R")
-
 sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
-
 ```
 
 `cmps_signature_plot` takes the "full result" of `extract_feature_cmps` (setting `include = "full_result"`) and returns a list of 5 elements. 
 
-The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (the congruent matching profile segments) are plotted along with the comparison profile. When plotting, each of those basis segment will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
+The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison profile. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
 
 ```{r, eval=FALSE}
 sig.plot$segment_shift_plot
 ```
 
-```{r}
+```{r, echo=FALSE, out.width="300px"}
 knitr::include_graphics("img/sigplot1.png", dpi = 100)
 ```
 
@@ -214,7 +232,7 @@ The second element is called `signature_shift_plot`. On this visual both the ref
 sig.plot$signature_shift_plot
 ```
 
-```{r}
+```{r, echo=FALSE, out.width="300px"}
 knitr::include_graphics("img/sigplot2.png", dpi = 100)
 ```
 
@@ -226,6 +244,8 @@ As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmp
 seg.plot <- cmps_segment_plot(cmps_with_multi_scale, seg.idx = 6)
 ```
 
+
+
 Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`.
 
 Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks. 
@@ -234,10 +254,18 @@ Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3,
 seg.plot[[1]]$segment_plot
 ```
 
+```{r, echo=FALSE, out.width="300px"}
+knitr::include_graphics("img/segplot1.png", dpi = 100)
+```
+
 And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 highest peaks are identified and marked on the plot. 
 
 ```{r, eval=FALSE}
 seg.plot[[1]]$scale_ccf_plot
+```
+
+```{r, echo=FALSE, out.width="300px"}
+knitr::include_graphics("img/segplot2.png", dpi = 100)
 ```
 
 Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
@@ -249,22 +277,108 @@ ggarrange(plotlist = unlist(seg.plot, recursive = FALSE),
           ncol = 2, nrow = 3)
 ```
 
-The red vertical dashed line indicates the congruent registration position. We can see segment 6 does obtain peaks at scale two and scale three; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the ccp (consistent correlation peak) and fails to become one of the congruent matching profile segments (according to the multi segment lengths strategy). 
+```{r, echo=FALSE, out.width="400px"}
+knitr::include_graphics("img/segplot3.png", dpi = 100)
+```
+
+The red vertical dashed line indicates the congruent registration position. We can see that the segment 6 does obtain a peak near to the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. 
 
 
 
 ## Results
 
-Present results:
+**Metrics Based on CMPS scores**
+
+```{r, eval=FALSE, echo=FALSE}
+hamby252_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252_results.rds")
+hamby44_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44_results.rds")
+```
+
+
+In (NIST's original paper) that presents the CMPS algorithm researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in (original paper) and is able to be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. However, since NIST's work is not open-source, we were only able to reproduce the results for Hamby set 252 qualitatively. 
+
+The CMPS score can be considered as a similarity score of two profiles. Then how can we get a similarity score of two bullets based on CMPS scores? In (the original paper) researchers introduced two similarity metrics at the bullet level: $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. For bullets in Hamby study each bullet has 6 land engraved areas (LEA) profiles. In order to compare two bullets there are in total 6 $\times$ 6 LEA profile comparisons and each profile comparison would produce a CMPS score. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all profile comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of profile comparisons that are in the same phase.
+
+Here are the CMPS scores of all 36 profile comparisons of the bullets in the example above.
+
+[an example that explains cmps.max and cmps.maxbar]
+
+In this example, the $\mathrm{CMPS_{max}}=?$ and $\mathrm{\overline{CMPS}_{max}}=()/6=$. 
+
+**Hamby 252**
+
+Figure x shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in the [original paper] since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). Table x shows some summary statistics. 
+
+The parameters we used in `extract_feature_cmps` are:
+
+```{r, eval=FALSE}
+extract_feature_cmps(
+  x, y,
+  seg_length = 50,
+  Tx = 25,
+  npeaks.set = c(5,3,1),
+  include = "nseg"
+)
+```
+
+Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in the [original paper].
+
+
+```{r, echo=FALSE, out.width="400px"}
+# [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
+knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
+```
+
+[table ???]
+
+Figure x shows the results for Hamby set 44. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged. Table x shows some summary statistics for Hamby set 44. 
+
+For Hamby set 44, the parameters we used in `extract_feature_cmps` are:
+
+```{r, eval=FALSE}
+extract_feature_cmps(
+  x, y,
+  seg_length = 61, 
+  Tx = 30,
+  npeaks.set = c(5,3,1),
+  include = "nseg"
+)
+```
+
+Note that we used different values here for `seg_length` and `Tx` because our Hamby set 44 scans have a different scanning resolution. One unit here represents 1.29 \textmu m. So here each basis segment has length 78.69 \textmu m, and the tolerance zone is $\pm 38.7$ \textmu m.
+
+```{r, echo=FALSE, out.width="400px"}
+# [1] "span1=0.25, span2=0.03, rm_outliers"
+knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
+```
+
+Figure x shows another Hamby set 44 results, but the parameter `npeaks.set` is now `c(10, 6, 1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm can affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
+
+```{r, echo=FALSE, out.width="400px"}
+# [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
+knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
+```
+
+For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the signatures/profiles; however, in this example we used `span1=0.75` and changed the characteristic of those profiles. As we can see in figure x, this change also affects the CMPS results.
+
+```{r, echo=FALSE, out.width="400px"}
+# [4] "span1=0.75, span2=0.03, rm_outliers"  
+knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
+```
+
+[The codes generating those results can be found in the appendix. ???]
+
+
+
+
+<!-- Present results: -->
 
 * apply it to Hamby252 -> able to reproduce results in NIST paper qualitatively
   - exclude some (?) scans because they are bad -> go further in Conclustion
-  - [CHECK] Did researchers exclude those scans in NIST paper? First scan, NO
-* apply it to another dataset, which have a different resolution
-  - potential issues -> go further in Conclusion
-  - need to use a different set of parameters
-* apply it to Hamby44, what did we do?
-  - using parameters such that `lengths` represents the same actual length (the same amount of pixels of the scan)
+  - [CHECK] Did researchers exclude those scans in NIST paper? Yes, they removed outliers
+<!-- * apply it to another dataset, which have a different resolution -->
+<!--   - potential issues -> go further in Conclusion -->
+<!--   - need to use a different set of parameters -->
 
 ## Conclusion
 
