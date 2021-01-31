@@ -43,34 +43,33 @@ output: rticles::rjournal_article
 
 ## Introduction
 
-Address the problem: examiner - the two pattern evidence come from the same source or not
+The main task of firearm examination is to determine whether two bullets were fired from the same gun barrel or not. It has been playing an important role in terms of convictions in the United States criminal justice system. However, in recent years people became more cautious about firearms identification, and criticism of its subjective methodology arose. A report published by the National Academy of Sciences in 2009 states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." This is why we need to develop frameworks and algorithms that can bring an objective and quantitative assessment into the field. 
 
-criticism of subjective methodology (report, citation) - why we need algorithms
+The congruent matching profile segment (CMPS) method is one of those algorithms developed by NIST [cite?]. It is ... [briefly talk about the CMPS method / algorithm, provide details in the Implementation section]
+
+However, no open-source implementation. 
+
+In this paper, we present an open-source implementation of the CMPS algorithm. 
+
 
 Introduce our methodology - with 3D scans, digital microscope, data and algorithms
 
-hambyset as the dataset
 
 A short example to illustrate how one can use this CMPS package to obtain a comparison
 
 * 2 lands - the same source; 1 land from another; signatures; CMPS score; 
 
-briefly talk about the CMPS method/algorithm, provide details in the Implementation section
 
-* make it clear that we implemented the algorithm, not created it
 
 outline what is going to come
 
 ## Background
 
-The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [cite?]. For each dataset in the study, 35 bullets are fired by ten Ruger P-85 pistol barrels. 20 of the 35 bullets are known test bullets and 15 of them are unknown bullets. Each bullet has six land engraved areas (LEA) whose 3D topographical images were obtained using a NanoFocus lens at 20x magnification and stored in x3p format (XML 3-D Surface Profile).
+The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [cite?], and in particular, they are Hamby set 252 and Hamby set 44. For each Hamby set in the study, 35 bullets are fired by ten Ruger P-85 pistol barrels. 20 of the 35 bullets are known test bullets and 15 of them are unknown bullets. Each bullet has six land engraved areas (LEA) or land impressions, whose 3D topographical images were obtained and stored in the x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/] and was adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 were scanned ...[at CSAFE?]... Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project.
 
-+ hamby
-+ x3p
-+ bulletxtrctr (crosscut, grooves, ccdata, signature)
-+ an shiny app that helps us get better crosscuts and groove locations
-+ 1.5625, 1.29
-[how do we get the signatures? ]
+The congruent matching profile segment (CMPS) method is used for "objective comparison of striated tool marks" [original paper], and in our cases it is used for bullet signatures. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` package `x3ptools`[cite?] and `bulletxtrctr`[cite?] with an automated framework proposed in [AUTOMATIC MATCHING OF BULLET LAND IMPRESSIONS]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure x.a shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure x shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and can obtain the bullet signature. Figure x illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors.  
+
+
 [Note that in the NIST CMPS paper they have another way of getting bullet signatures]
 
 
