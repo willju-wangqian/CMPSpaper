@@ -49,7 +49,7 @@ The datasets we worked with come from the James Hamby Consecutively Rifled Ruger
 
 The automated framework we used in this paper was proposed by Hare and Hofmann in 2017 [AUTOMATIC MATCHING OF BULLET LAND IMPRESSIONS?]. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` packages `x3ptools`[cite?] and `bulletxtrctr`[cite?]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure x.a shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure x shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and can obtain the bullet signature. Figure x illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [cite?].
 
-Once we obtain the bullet signatures, we can compare them using an algorithm that computes a similarity score. The congruent matching profile segment (CMPS) algorithm, developed by NIST for "objective comparison of striated tool marks" [original paper] in 2019, is one such algorithm. The main idea of the CMPS algorithm is that, we cut the reference profile (one of the two bullet signatures) into consecutive and non-overlapping basis segments and ask each basis segment to find the "best" registration position on the comparison profile (the other bullet signature) in terms of correlation values. Then the congruent registration position is the position where the most basis segments find it the "best", and the number of basis segments taking the congruent registration position is the CMPS score. The CMPS algorithm can assist firearm examiners with drawing a conclusion, but NIST's implementation of the CMPS algorithm was not released for the public. Thus, in this paper we present an open-source implementation of the CMPS algorithm so that everyone can use and improve it. With our implementation, one can compute the CMPS score of a comparison using the following code:
+Once we obtain the bullet signatures, we can compare them using an algorithm that computes a similarity score. The congruent matching profile segments (CMPS) algorithm, developed by NIST for "objective comparison of striated tool marks" [original paper] in 2019, is one such algorithm. The main idea of the CMPS algorithm is that, we cut the reference profile (one of the two bullet signatures) into consecutive and non-overlapping basis segments and ask each basis segment to find the "best" registration position on the comparison profile (the other bullet signature) in terms of correlation values. Then the congruent registration position is the position where the most basis segments find it the "best", and the number of basis segments taking the congruent registration position is the CMPS score. The CMPS algorithm can assist firearm examiners with drawing a conclusion, but NIST's implementation of the CMPS algorithm was not released for the public. Thus, in this paper we present an open-source implementation of the CMPS algorithm so that everyone can use and improve it. With our implementation, one can compute the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
 cmps.result <- extract_feature_cmps(sig1, sig2)
@@ -222,7 +222,7 @@ sig.plot$signature_shift_plot
 knitr::include_graphics("img/sigplot2.png", dpi = 100)
 ```
 
-Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segment and for the reference profile. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
+Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segments and for the reference profile. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
 
 As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg.pos` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_signature_plot` also returns a list. Each element of this list is also a list and corresponds to one segment scale of this basis segment.
 
@@ -254,7 +254,7 @@ seg.plot[[1]]$scale_ccf_plot
 knitr::include_graphics("img/segplot2.png", dpi = 100)
 ```
 
-Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
+Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segments. 
 
 ```{r, eval=FALSE}
 library(ggpubr)
@@ -281,9 +281,9 @@ hamby44_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44_results.rds"
 ```
 
 
-In (NIST's original paper) that presents the CMPS algorithm researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in (original paper) and is able to be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. However, since NIST's work is not open-source, we were only able to reproduce the results for Hamby set 252 qualitatively. 
+In (NIST's original paper) that presents the CMPS algorithm researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in (original paper) and is able to be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann using the same set of parameters for both data sets, removed outliers, and obtained bullet signatures for each bullet land impression. Note that [in NIST's paper] they used a different framework to obtain bullet signatures. However, since NIST's work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
-The CMPS score can be considered as a similarity score of two profiles. Then how can we get a similarity score of two bullets based on CMPS scores? In (the original paper) researchers introduced two similarity metrics at the bullet level: $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. For bullets in Hamby study each bullet has 6 land engraved areas (LEA) profiles. In order to compare two bullets there are in total 6 $\times$ 6 LEA profile comparisons and each profile comparison would produce a CMPS score. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all profile comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of profile comparisons that are in the same phase.
+The CMPS score can be considered as a similarity score of two profiles. Then how can we get a similarity score of two bullets based on CMPS scores? In (the original paper) researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet comparisons based on CMPS scores of bullet signature comparisons. For example, there are in total 6 $\times$ 6 LEA profile comparisons in order to compare two bullets in Hamby study since each bullet has 6 LEA profiles. And a CMPS score will be found for every profile comparison. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all profile comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of profile comparisons that are in the same phase.
 
 Here are the CMPS scores of all 36 profile comparisons of the bullets in the example above.
 
@@ -370,20 +370,14 @@ knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
 
 (Our opinions)
 
-Conclusion and discussion
+We presented the CMPS package, an open-source implementation of the congruent matching profile segments (CMPS) algorithm. The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons. In this paper, functions included in the package were illustrated along with the basic logic of the CMPS algorithm. 
+And we used a small dataset included in the package as an example to explain the usage of the package. Some graphing tools were also implemented in the package so that users can visualize results and have a better understanding of both the algorithm and the results. We also applied the algorithm to two datasets in Hamby study (Hamby set 252 and Hamby set 44), and the results we obtained were promising. 
 
-* (?) potential flaws of the implementation
-* potential issues related to the algorithm
-  - 6 as a cutoff?
-    - not crossvalidated
-    - estimate KM KNM distribution, etc...
-  - choose parameters
-* Suggestion of how to select parameters
-* what should we do about higher resolution data? what did we do? [CHECK: what did NIST paper do]
-* excluding outliers ? [check NIST paper]
-* open source implementation:
-  - allow everyone to use, introduce the algorithm to R community
-  - in general, open source implementation could reduce the level of ambiguity
+From the results of both Hamby set 252 and 44, we can see that the CMPS scores of KM comparisons computed by `extract_feature_cmps` were able to be separated from those of KNM comparisons. And at the same time, we can see that CMPS algorithm is sensitive to the choice of parameters such as segment length, number of peaks detected at each segment scale, and congruency tolerance. Some parameter choices are better in the sense that they can enlarge the separation between the KM comparisons and the KNM comparisons. And the best set of parameters depend on the dataset being used, and the choice of parameters has not been, but should be, cross-validated. 
+
+Our open-source implementation introduces the CMPS algorithm to R community and allows everyone to use it for their own projects. It would also facilitate future studies on parameter cross-validation and the development of statistical methods to modeling KM and KNM CMPS score distributions.  
+
+
 
 ### About this format and the R Journal requirements
 
