@@ -38,7 +38,7 @@ preamble: |
   
 # per R journal requirement, the bib filename should be the same as the output 
 # tex file. Don't forget to rename the bib file and change this example value.
-bibliography: RJreferences.bib
+bibliography: CMPSpaper-writing.bib
 
 output: rticles::rjournal_article
 ---
@@ -52,9 +52,15 @@ output: rticles::rjournal_article
 
 ## Introduction
 
-\hh{Will, it might be better to put the focus of the paper on the open-source implementation of the CMPS algorithm, rather than the examination of bullets. You also need to make sure to state early and often that you are not claiming that this algorithm is your idea. You are implementing the algorithm described in the paper by NIST researchers. }
 
-In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its usage in examples of comparing bullet signature correlations. Although @cmps introduced the algorithm of the CMPS method in their paper, an open-source implementation of this powerful method was missing. Thus, our effort here is to introduce the CMPS method to `R` community and provide an open-source implementation of the algorithm for people to use and make further improvements. Our implementation was wrapped up into a `R` package called `CMPS`, which is available on GitHub[cite git?]. In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps and implemented the CMPS algorithm, and present results of applying our implementation to real data. 
+In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its usage in examples of comparing bullet signature correlations. Although @cmps introduced the algorithm of the CMPS method in their paper, \hh{they did not release an implementation of their method}. Thus, our effort here is to introduce the CMPS method to the `R` community and provide an open-source implementation of the algorithm for people to use and make further improvements. Our implementation is wrapped up into  `R` package  `CMPS`, which is available on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
+
+An important task of firearm examination is \hh{to answer the question of whether wo pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
+\hh{Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. }
+
+It is achievable because lands in a gun barrel create striation marks on the bullet during the firing process, and it is believed that the same gun barrel will create highly similar striation marks on the bullets it fired. Typically the striation marks are created by lands in a barrel, so the striation marks are also sometimes refered as land engravings, and the areas the marks occupy are called land engraved areas (LEA). Firearm examination has been playing an important role in terms of convictions in the United States criminal justice system. However, in recent years people became more cautious about firearms identification, and criticism of its subjective methodology arose. A report published by the National Academy of Sciences in 2009 states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those critics and concerns, people have been making an effort to build databases and develop frameworks and algorithms that can bring an objective and quantitative assessment into the field. The bullet signatures extracted from the bullet are important in this process since they can well describe the striation marks on the bullet and can well be understood by algorithms.
+
+In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, and present results of applying our implementation to real data. 
 
 
 
@@ -62,11 +68,13 @@ In this paper we present an open-source implementation of the algorithm of the C
 
 ## Background 
 
-An important task of firearm examination is \hh{to answer the question of whether wo pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
-\hh{Assessing the similarity between two bullets is based on a comparison of their striation marks acquired during the firing process as bullets are propelled through the barrel. }
-It is achievable because lands in a gun barrel create striation marks on the bullet during the firing process, and it is believed that the same gun barrel will create highly similar striation marks on the bullets it fired. Typically the striation marks are created by lands in a barrel, so the striation marks are also sometimes refered as land engravings, and the areas the marks occupy are called land engraved areas (LEA). Firearm examination has been playing an important role in terms of convictions in the United States criminal justice system. However, in recent years people became more cautious about firearms identification, and criticism of its subjective methodology arose. A report published by the National Academy of Sciences in 2009 states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those critics and concerns, people have been making an effort to build databases and develop frameworks and algorithms that can bring an objective and quantitative assessment into the field. The bullet signatures extracted from the bullet are important in this process since they can well describe the striation marks on the bullet and can well be understood by algorithms.
+
+### Hamby Data Set
 
 The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [@brundage; @hamby; @Hamby:2019], and in particular, they are Hamby set 252 and Hamby set 44. For each Hamby set in the study, 35 bullets are fired by ten Ruger P-85 pistol barrels. 20 of the 35 bullets are known test bullets and 15 of them are unknown bullets. Each bullet has six land engraved areas (LEA) or land impressions, whose 3D topographical images were obtained and stored in the x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/] and was adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 were scanned ...[at CSAFE?]... Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project.
+
+
+### Extracting signatures from LEAs
 
 The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` packages `x3ptools`[cite?] and `bulletxtrctr`[cite?]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure 1(a) shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure 1(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and obtain the bullet signature. Figure 1 illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [cite?].
 
@@ -74,10 +82,13 @@ The automated framework  used in this paper was proposed by @aoas. In order to o
 knitr::include_graphics("img/barrel_bullet.PNG", dpi = 100)
 ```
 
-```{r, echo=FALSE, out.width="400px", fig.cap="figure captions \\hh{it'd be also good to put in labels for each state. I've added a huge arrow to help with the directionality (Stacy said she had trouble) - I like the way you have the order, it might just need some emphasis. What do you think of adding a bigger arrow (or arrows) in the back?} (a) front view of a scanned land engraved area (LEA). The optimized crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves (d) the crosscut data after chopping the left and right grooves (e) the fitted curvature using LOESS (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
+
+```{r, echo=FALSE, out.width="400px", fig.cap="(a) front view of a scanned land engraved area (LEA). The optimized crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves (d) the crosscut data after chopping the left and right grooves (e) the fitted curvature using LOESS (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
 knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 ```
 
+
+### Conceptual idea of CMPS
 Once we obtain the bullet signatures, we can compare them using an algorithm that computes a similarity score. The congruent matching profile segments (CMPS) algorithm, developed by NIST for "objective comparison of striated tool marks" [@cmps], is one such algorithm. The main idea of the CMPS algorithm is that, we cut the reference profile (one of the two bullet signatures) into consecutive and non-overlapping basis segments and ask each basis segment to find the "best" registration position on the comparison profile (the other bullet signature) in terms of correlation values. Then the congruent registration position is the position where the most basis segments find it the "best", and the number of basis segments taking the congruent registration position is the CMPS score. The CMPS algorithm can assist firearm examiners with drawing a conclusion, but NIST's implementation of the CMPS algorithm was not released for the public. Thus, in this paper we present an open-source implementation of the CMPS algorithm so that everyone can use and improve it. With our implementation, one can compute the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
@@ -269,7 +280,7 @@ Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3,
 seg.plot[[1]]$segment_plot
 ```
 
-```{r, echo=FALSE, out.width="300px", fig.cap="segment_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
+```{r, echo=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
 knitr::include_graphics("img/segplot1.png", dpi = 100)
 ```
 
@@ -279,7 +290,7 @@ And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 hi
 seg.plot[[1]]$scale_ccf_plot
 ```
 
-```{r, echo=FALSE, out.width="300px", fig.cap="scale_ccf_plot shows the cross-correlation curve between the comparison profile and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"}
+```{r, echo=FALSE, out.width="300px", fig.cap="scale\\_ccf\\_plot shows the cross-correlation curve between the comparison profile and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"}
 knitr::include_graphics("img/segplot2.png", dpi = 100)
 ```
 
@@ -292,7 +303,7 @@ ggarrange(plotlist = unlist(seg.plot, recursive = FALSE),
           ncol = 2, nrow = 3)
 ```
 
-```{r, echo=FALSE, out.width="400px", fig.cap="put segment_plot and scale_ccf_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."}
+```{r, echo=FALSE, out.width="400px", fig.cap="put segment\\_plot and scale\\_ccf\\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."}
 knitr::include_graphics("img/segplot3.png", dpi = 100)
 ```
 
