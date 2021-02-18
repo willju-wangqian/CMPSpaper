@@ -55,6 +55,8 @@ output: rticles::rjournal_article
 \hh{Will, it might be better to put the focus of the paper on the open-source implementation of the CMPS algorithm, rather than the examination of bullets. You also need to make sure to state early and often that you are not claiming that this algorithm is your idea. You are implementing the algorithm described in the paper by NIST researchers. }
 
 
+
+
 ## Background 
 
 An important task of firearm examination is \hh{to answer the question of whether wo pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
