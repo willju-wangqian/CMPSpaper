@@ -46,13 +46,16 @@ output: rticles::rjournal_article
 
 ```{=tex}
 \newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
-\newcommand{\wj}[1]{{\textcolor{forestgreen}{#1}}}
+\newcommand{\wj}[1]{{\textcolor{blue}{#1}}}
 \setlength{\parindent}{0pt}
 ```
 
 ## Introduction
 
 \hh{Will, it might be better to put the focus of the paper on the open-source implementation of the CMPS algorithm, rather than the examination of bullets. You also need to make sure to state early and often that you are not claiming that this algorithm is your idea. You are implementing the algorithm described in the paper by NIST researchers. }
+
+In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its usage in examples of comparing bullet signature correlations. Although @cmps introduced the algorithm of the CMPS method in their paper, an open-source implementation of this powerful method was missing. Thus, our effort here is to introduce the CMPS method to `R` community and provide an open-source implementation of the algorithm for people to use and make further improvements. Our implementation was wrapped up into a `R` package called `CMPS`, which is available on GitHub[cite git?]. In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps and implemented the CMPS algorithm, and present results of applying our implementation to real data. 
+
 
 
 
@@ -67,12 +70,15 @@ The datasets we worked with come from the James Hamby Consecutively Rifled Ruger
 
 The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` packages `x3ptools`[cite?] and `bulletxtrctr`[cite?]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure 1(a) shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure 1(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and obtain the bullet signature. Figure 1 illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [cite?].
 
-
-```{r, echo=FALSE, out.width="400px", fig.cap="figure captions \\hh{it'd be also good to put in labels for each state. I've added a huge arrow to help with the directionality (Stacy said she had trouble) - I like the way you have the order, it might just need some emphasis. What do you think of adding a bigger arrow (or arrows) in the back?}"}
-knitr::include_graphics("img/figure1.png", dpi = 100)
+```{r, echo=FALSE, out.width="400px", fig.cap="image of a XXX gun barrel and a fired bullet"}
+knitr::include_graphics("img/barrel_bullet.PNG", dpi = 100)
 ```
 
-Once we obtain the bullet signatures, we can compare them using an algorithm that computes a similarity score. The congruent matching profile segments (CMPS) algorithm, developed by NIST for "objective comparison of striated tool marks" [@cmps] in 2019, is one such algorithm. The main idea of the CMPS algorithm is that, we cut the reference profile (one of the two bullet signatures) into consecutive and non-overlapping basis segments and ask each basis segment to find the "best" registration position on the comparison profile (the other bullet signature) in terms of correlation values. Then the congruent registration position is the position where the most basis segments find it the "best", and the number of basis segments taking the congruent registration position is the CMPS score. The CMPS algorithm can assist firearm examiners with drawing a conclusion, but NIST's implementation of the CMPS algorithm was not released for the public. Thus, in this paper we present an open-source implementation of the CMPS algorithm so that everyone can use and improve it. With our implementation, one can compute the CMPS score of a comparison using the following code:
+```{r, echo=FALSE, out.width="400px", fig.cap="figure captions \\hh{it'd be also good to put in labels for each state. I've added a huge arrow to help with the directionality (Stacy said she had trouble) - I like the way you have the order, it might just need some emphasis. What do you think of adding a bigger arrow (or arrows) in the back?} (a) front view of a scanned land engraved area (LEA). The optimized crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves (d) the crosscut data after chopping the left and right grooves (e) the fitted curvature using LOESS (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
+knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
+```
+
+Once we obtain the bullet signatures, we can compare them using an algorithm that computes a similarity score. The congruent matching profile segments (CMPS) algorithm, developed by NIST for "objective comparison of striated tool marks" [@cmps], is one such algorithm. The main idea of the CMPS algorithm is that, we cut the reference profile (one of the two bullet signatures) into consecutive and non-overlapping basis segments and ask each basis segment to find the "best" registration position on the comparison profile (the other bullet signature) in terms of correlation values. Then the congruent registration position is the position where the most basis segments find it the "best", and the number of basis segments taking the congruent registration position is the CMPS score. The CMPS algorithm can assist firearm examiners with drawing a conclusion, but NIST's implementation of the CMPS algorithm was not released for the public. Thus, in this paper we present an open-source implementation of the CMPS algorithm so that everyone can use and improve it. With our implementation, one can compute the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
 cmps.result <- extract_feature_cmps(sig1, sig2)
@@ -230,7 +236,7 @@ The first element is `segment_shift_plot`. On this plot only basis segments that
 sig.plot$segment_shift_plot
 ```
 
-```{r, echo=FALSE, out.width="300px"}
+```{r, echo=FALSE, out.width="300px", fig.cap="The dark grey line shows the comparison profile; each red line segment shows one comgruent matching profile segment. "}
 knitr::include_graphics("img/sigplot1.png", dpi = 100)
 ```
 
@@ -241,7 +247,7 @@ The second element is called `signature_shift_plot`. On this visual both the ref
 sig.plot$signature_shift_plot
 ```
 
-```{r, echo=FALSE, out.width="300px"}
+```{r, echo=FALSE, out.width="300px", fig.cap="The dark grey line shows the comparison profile; the red line shows the reference profile. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
 knitr::include_graphics("img/sigplot2.png", dpi = 100)
 ```
 
@@ -263,7 +269,7 @@ Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3,
 seg.plot[[1]]$segment_plot
 ```
 
-```{r, echo=FALSE, out.width="300px"}
+```{r, echo=FALSE, out.width="300px", fig.cap="segment_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
 knitr::include_graphics("img/segplot1.png", dpi = 100)
 ```
 
@@ -273,11 +279,11 @@ And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 hi
 seg.plot[[1]]$scale_ccf_plot
 ```
 
-```{r, echo=FALSE, out.width="300px"}
+```{r, echo=FALSE, out.width="300px", fig.cap="scale_ccf_plot shows the cross-correlation curve between the comparison profile and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"}
 knitr::include_graphics("img/segplot2.png", dpi = 100)
 ```
 
-Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segments. 
+Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
 
 ```{r, eval=FALSE}
 library(ggpubr)
@@ -286,7 +292,7 @@ ggarrange(plotlist = unlist(seg.plot, recursive = FALSE),
           ncol = 2, nrow = 3)
 ```
 
-```{r, echo=FALSE, out.width="400px"}
+```{r, echo=FALSE, out.width="400px", fig.cap="put segment_plot and scale_ccf_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."}
 knitr::include_graphics("img/segplot3.png", dpi = 100)
 ```
 
