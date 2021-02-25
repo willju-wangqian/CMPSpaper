@@ -5,18 +5,18 @@ header-includes:
 author:
   # see ?rjournal_article for more information
   - name: Author One
-    affiliation: Affiliation
+    affiliation: ISU, CSAFE
     address:
     - line 1
     - line 2
     url: https://journal.r-project.org
     orcid: 0000-0002-9079-593X
     email:  author1@work
-  - name: Author Two
+  - name: Heike Hofmann
     url: https://journal.r-project.org
-    email: author2@work
+    email: hofmann@iastate.edu
     orcid: 0000-0002-9079-593X
-    affiliation: Affiliation 1
+    affiliation: ISU, CSAFE
     address:
     - line 1 affiliation 1
     - line 2 affiliation 1
