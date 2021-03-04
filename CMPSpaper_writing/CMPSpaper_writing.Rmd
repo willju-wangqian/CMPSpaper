@@ -2,6 +2,7 @@
 title: Capitalized Title Here
 header-includes:
   - \usepackage{xcolor}
+  - \usepackage{longtable}
 author:
   # see ?rjournal_article for more information
   - name: Author One
@@ -43,6 +44,15 @@ output: rticles::rjournal_article
 \setlength{\parindent}{0pt}
 ```
 
+```{r, echo=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "\\textwidth",
+  fig.align = "center"
+)
+```
+
 
 ## Introduction
 
@@ -51,7 +61,7 @@ In this paper we present an open-source implementation of the algorithm of the C
 
  Firearm examination has been playing an important role in terms of convictions in the United States criminal justice system.
  
-An important task of firearm examination is \hh{to answer the question of whether wo pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
+An important task of firearm examination is \hh{to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
 \hh{Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. }
 \hh{Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope. This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].}
 <!--It is achievable because lands in a gun barrel create striation marks on the bullet during the firing process, and it is believed that the same gun barrel will create highly similar striation marks on the bullets it fired. Typically the striation marks are created by lands in a barrel, so the striation marks are also sometimes refered as land engravings, and the areas the marks occupy are called land engraved areas (LEA). However, in recent years people became more cautious about firearms identification, and criticism of its subjective methodology arose.--> A report published by @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those critics and concerns, reseaerchers have been making an effort to build databases [@nistdb] and develop frameworks and algorithms that can bring an objective and quantitative assessment into the field. The bullet signatures extracted from the bullet are important in this process since they can well describe the striation marks on the bullet and can well be understood by algorithms.
@@ -72,7 +82,7 @@ The datasets we worked with come from the James Hamby Consecutively Rifled Ruger
 
 ### Extracting signatures from LEAs
 
-The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` packages `x3ptools`[cite?] and `bulletxtrctr`[cite?]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure 1(a) shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure 1(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and obtain the bullet signature. Figure 1 illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [cite?].
+The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land impressions, we used `R` packages `x3ptools`[cite?] and `bulletxtrctr`[cite?]. `x3ptools` can be used to process x3p files. In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`). Figure 1(a) shows a bullet land impression scan of a processed x3p file. The raised portion of the surface are groove impressions, and the vertical striation marks between the groove impressions are what we are interested in, called a land impression. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land impression. `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). Figure 1(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land impression and the groove impression. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land impression in the middle is kept. With the groove impressions excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land impression curvature using LOESS (locally estimated scatter plot smoothing) [Cleveland 1979?] and obtain the bullet signature. Figure 1 illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [@cmps].
 
 ```{r, echo=FALSE, out.width="400px", fig.cap="image of a XXX gun barrel and a fired bullet"}
 knitr::include_graphics("img/barrel_bullet.PNG", dpi = 100)
@@ -136,7 +146,7 @@ step 3) determine the congruent registration position with a small tolerance zon
 
 `get_CMPS` considers all basis segments and their identified peak positions to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
 
-Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 3. In our implementation of the CMPS algorithm we took the original CMPS paper [cite?] as the reference to determine the default values of these parameters. 
+Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. 
 The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
 
 * `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
@@ -151,9 +161,8 @@ The main function that follows the CMPS algorithm is called `extract_feature_cmp
 For all possible options of `include`, please check the documentation of `extract_feature_cmps` or using `?extract_feature_cmps`. If we want everything to be included in the output, we can use `include = full_result`. These additional pieces of information are helpful in terms of understanding how we obtained such CMPS score. 
   
 
-
-[examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf]
-[https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf]
+<!-- [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf] -->
+<!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
 
 
 **Install**
@@ -354,22 +363,16 @@ extract_feature_cmps(
 Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in the [original paper].
 
 <!-- this is figure 2 -->
-```{r, echo=FALSE, out.width="400px"}
+```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) "}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
 knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 ```
 
 table 1:
 
-<!-- |Parameters             | $\mathrm{CMPS_{max}}$ - KNM's max| $\mathrm{CMPS_{max}}$ - KM's min| $\mathrm{\overline{CMPS}_{max}}$ - KNM's max| $\mathrm{\overline{CMPS}_{max}}$ - KM's min| -->
-<!-- |:----------------------|---------------------------------:|--------------------------------:|--------------------------------------------:|-------------------------------------------:| -->
-<!-- |span1=0.25, (5, 3, 1)  |                                 7|                               10|                                       3.6000|                                      6.6667| -->
-<!-- |span1=0.25, (10, 6, 1) |                                 9|                               13|                                       4.8333|                                      9.1667| -->
-<!-- |span1=0.75, (5, 3, 1)  |                                 6|                               11|                                       3.1667|                                      6.6000| -->
-
 ```{r, echo=FALSE}
-# library(knitr)
-# library(kableExtra)
+library(knitr)
+library(kableExtra)
 # rtt <- readRDS("summary_table.rds")
 # colnames(rtt) <- 
 rtt <- data.frame(parameters = c("span1=0.25, (5, 3, 1)", "span1=0.25, (10, 6, 1)", "span1=0.75, (5, 3, 1)"),
@@ -377,16 +380,18 @@ rtt <- data.frame(parameters = c("span1=0.25, (5, 3, 1)", "span1=0.25, (10, 6, 1
                   p2 = c(10, 13, 11),
                   p3 = c(3.6, 4.833, 3.167),
                   p4 = c(6.667, 9.167, 6.6))
+colnames(rtt) <- c("Parameters",
+                   "$\\mathrm{CMPS_{max}}$ KNM's max",
+                   "$\\mathrm{CMPS_{max}}$ KM's min",
+                   "$\\mathrm{\\overline{CMPS}_{max}}$ KNM's max",
+                   "$\\mathrm{\\overline{CMPS}_{max}}$ KM's min")
 
-
-knitr::kable(rtt, 
-             row.names = FALSE, digits = 4,
-             col.names = c("Parameters",
-                           "$\\mathrm{CMPS_{max}}$ - KNM's max",
-                           "$\\mathrm{CMPS_{max}}$ - KM's min",
-                           "$\\mathrm{\\overline{CMPS}_{max}}$ - KNM's max",
-                           "$\\mathrm{\\overline{CMPS}_{max}}$ - KM's min")) 
+knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
+             caption = "min and max of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ showing the separation between KNM and KM",
+             row.names = FALSE, digits = 4) %>% 
+  column_spec(2:5, width = "2cm")
 ```
+
 
 
 Figure 3 shows the results for Hamby set 44. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged. Table 1 shows some summary statistics for Hamby set 44. 
@@ -407,7 +412,7 @@ Note that we used different values here for `seg_length` and `Tx` because our Ha
 
 <!-- this is figure 3 -->
 
-```{r, echo=FALSE, out.width="400px"}
+```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25"}
 # [1] "span1=0.25, span2=0.03, rm_outliers"
 knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
 ```
@@ -416,7 +421,7 @@ Figure 4 shows another Hamby set 44 results, but the parameter `npeaks.set` is n
 
 <!-- this is figure 4 -->
 
-```{r, echo=FALSE, out.width="400px"}
+```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 "}
 # [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
 knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
 ```
@@ -425,7 +430,7 @@ For the results above we used `span1=0.25` in the function `cc_get_signature` wh
 
 <!-- this is figure 5 -->
 
-```{r, echo=FALSE, out.width="400px"}
+```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75"}
 # [4] "span1=0.75, span2=0.03, rm_outliers"  
 knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
 ```
