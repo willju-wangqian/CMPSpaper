@@ -119,7 +119,9 @@ With our implementation, one can compute the CMPS score of a comparison using th
 cmps.result <- extract_feature_cmps(sig1, sig2)
 ```
 
-In the example in section "Implementation" we would see that, two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y. We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
+\hh{XXX How about a barchart with results - or a teaser for an image in the back, that talks about the concept that a CMPS score should be high for two same-source signatures and low for different-source signatures}
+
+In the example in section "Implementation" we  see that two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y. We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
 
 The section "Implementation" will go through the algorithm and show how to use the "CMPS" package. An example that illustrates the main points are also included. The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44. And the last section covers some final discussion and conclusions.
 
@@ -128,19 +130,19 @@ The section "Implementation" will go through the algorithm and show how to use t
 
 **Algorithm.** 
 
-The CMPS algorithm consists of X steps.   
+The CMPS algorithm consists of \hh{three main} steps:
 
-step 1) cut the reference profile into consecutive, non-overlapping and equal-length basis segments;
+1. **cut the reference profile into consecutive, non-overlapping and equal-length basis segments:**
+the command `get_segs(x, len=50)` implements this first step. 
+It takes a profile {XXX profile or signature?} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 
-`get_segs(x, len=50)` implements the first step. It takes a profile in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+2. **register each basis segment on the comparison profile:** 
+Calculate the cross-correlation curve between a basis segment and the comparison profile.A registration position is considered as "good" if the basis segment achieves a high cross-correlation value at that position. 
+The best registration position is decided upon using  a multi-peak inspection with or without different segment lengths:
 
-step 2) each basis segment finds its best registration position on the comparison profile. A cross-correlation curve between a basis segment and the comparison profile would be computed, and a registration position is considered as "good" if the basis segment achieves a high cross-correlation value at this position. 
+    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of 5 (or multiple) highest peaks in the cross-correlation curve. Since false positive peaks would stand out when the segment length is short, positions of all 5 peak will be considered as the potential "best" registration position.
 
-Then how should a basis segment find its best registration position? [In the original paper] researchers proposed two versions of the CMPS alrorithm that can answer this question. The first version is called "multi-peak inspection", and the second version is called "multi-peak inspection at different segment lengths/scales". We also refer the second version as the CMPS algorithm using "the multi segment lengths strategy".
-
-Step 2.1) multi-peak inspection: each basis segment identifies positions of 5 (or multiple) highest peaks in the cross-correlation curve. Since false positive peaks would stand out when the segment length is short, positions of all 5 peak will be considered as the potential "best" registration position.
-
-Step 2.2) multi segment lengths strategy: for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is the standard way as we have stated in step 2.1. But after the first round, we will increase the segment length, compute a new cross-correlation curve, and again identify multiple peaks in the cross-correlation curve. The number of peaks identified in this round is typically less than that in the previous round (say 3 highest peaks) since increasing the segment length can reduce the number of false positive peaks. We can repeat this procedure multiple times; however in the last round, only one highest peak should be identified. If a position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp).
+    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is the standard way as we have stated in step 2.1. But after the first round, we will increase the segment length, compute a new cross-correlation curve, and again identify multiple peaks in the cross-correlation curve. The number of peaks identified in this round is typically less than that in the previous round (say 3 highest peaks) since increasing the segment length can reduce the number of false positive peaks. We can repeat this procedure multiple times; however in the last round, only one highest peak should be identified. If a position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp).
 
 
 <!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
