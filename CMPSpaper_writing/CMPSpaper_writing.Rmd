@@ -132,11 +132,14 @@ The section "Implementation" will go through the algorithm and show how to use t
 
 **Algorithm.** 
 
-The CMPS algorithm consists of \hh{three main} steps:
+Conceptually, the CMPS algorithm consists of \hh{three main} steps:
 
 1. **cut the reference profile into consecutive, non-overlapping and equal-length basis segments:**
+<<<<<<< HEAD
 the command `get_segs(x, len=50)` implements this first step. 
 It takes a profile \hh{XXX profile or signature?} \wj{further question?} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+=======
+>>>>>>> 9f10900a1f85c08fea5be31476117473b65fe1dc
 
 2. **register each basis segment on the comparison profile:** 
 Calculate the cross-correlation curve between a basis segment and the comparison profile.A registration position is considered as "good" if the basis segment achieves a high cross-correlation value at that position. 
@@ -145,6 +148,8 @@ The best registration position is decided upon using  a multi-peak inspection wi
     2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of 5 (or multiple) highest peaks in the cross-correlation curve. Since false positive peaks would stand out when the segment length is short, positions of all 5 peak will be considered as the potential "best" registration position.
 
     2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is the standard way as we have stated in step 2.1. But after the first round, we will increase the segment length, compute a new cross-correlation curve, and again identify multiple peaks in the cross-correlation curve. The number of peaks identified in this round is typically less than that in the previous round (say 3 highest peaks) since increasing the segment length can reduce the number of false positive peaks. We can repeat this procedure multiple times; however in the last round, only one highest peak should be identified. If a position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp).
+    
+3. **determine the congruent registration position** with a small tolerance zone and the number of basis segments that take the congruent registration position as their "best" registration position. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of this profile comparison.
 
 
 <!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
@@ -154,19 +159,22 @@ The best registration position is decided upon using  a multi-peak inspection wi
 
 <!-- compute the cross-correlation function between each basis segment and the comparison profile; -->
 
-`get_ccf4` computes the cross-correlation function / correlation coefficient curve between two profiles. This is the function called whenever we need to compute the ccf.
+\hh{In the CMPS package, these three steps are implemented using a set of key functions:}
+
+* The command `get_segs(x, len=50)` implements step 1:  It takes a profile {XXX profile or signature?} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+
+* `get_ccf4` computes the cross-correlation function / correlation coefficient curve between two profiles. This is the function called whenever we need to compute the ccf.
 
 <!-- step 3) if the multi segment lengths strategy is being used, each basis segment would increase its length and compute a new cross-correlation function with the comparison profile in order to identify a potential “consistent correlation peak”; if the multi segment lengths strategy is not being used, each segment would then find 5 peaks in its cross-correlation function; -->
 
-`get_seg_scale` takes a basis segment and increases its segment length. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length.
+* `get_seg_scale` takes a basis segment and increases its segment length. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length.
 
-`get_ccr_peaks` takes a segment and the comparison profile, then computes the correlation coefficient curve between them and finds peaks on the correlation coefficient curve. The number of peaks detected is equal to `npeaks`. And we are using `rollapply` to find peaks on the curve effectively.
+* `get_ccr_peaks` takes a segment and the comparison profile, then computes the correlation coefficient curve between them and finds peaks on the correlation coefficient curve. The number of peaks detected is equal to `npeaks`. And we are using `rollapply` to find peaks on the curve effectively.
 
-`get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scales. 
+* `get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scales. 
 
-step 3) determine the congruent registration position with a small tolerance zone and the number of basis segments that take the congruent registration position as their "best" registration position. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of this profile comparison.
 
-`get_CMPS` considers all basis segments and their identified peak positions to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
+* `get_CMPS` considers all basis segments and their identified peak positions to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?]In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
 
 Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. 
 The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
@@ -270,6 +278,7 @@ sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
 
 The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison profile. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
 
+\hh{XXX Could we move the code into the corresponding figure and show the relevant pieces side by side? I'm thinking of examples similar to p.38 in https://journal.r-project.org/archive/2017/RJ-2017-023/RJ-2017-023.pdf}
 ```{r, eval=FALSE}
 sig.plot$segment_shift_plot
 ```
