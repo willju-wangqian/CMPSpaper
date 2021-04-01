@@ -90,6 +90,7 @@ The automated framework  used in this paper was proposed by @aoas. In order to o
 <!--\hh{The next section is at an awkward level of detail - there's lots of details, but without the parameter settings it is still not a reproducible description. Could you instead describe things conceptually, and then link to the code that does this particular image?} -->
 The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view. <!--Then we can acquire the crosscut data (`ccdata`) of the scan at this height. --> \hh{XXX passive voice for things that are not part of this paper :)}
 Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in \autoref{fig:process}(c) and \autoref{fig:process}(d)). A non-parametric LOESS smooth  [@loess] is fitted to capture the bullet curvature (\autoref{fig:process}(e)) and, finally, the **bullet signature** (\autoref{fig:process}(f)) is obtained as residuals of the cross-section and the fitted smooth. 
+\wj{Note that in @cmps bullet signatures are sometimes referred as bullet profiles. However, to avoid confusion, we distinguish the notion of bullet signatures from bullet profiles. Bullet profiles are XXX, while bullet signatures are XXX.}
 \hh{Identifiying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures. To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny],}   `bulletinspectR` to identify and correct those errors. 
 \hh{An example of the extraction process with corresponding code and parameter settings can be found at XXX.}
 Note that \hh{the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.}
@@ -108,7 +109,7 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 ### Conceptual idea of CMPS
 \hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX and produce a similarity score (some citations: chumbley score, Ganesh's fix, vorburger's ccf paper, hare).} 
- The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference profile  and  for each segment find the "best" registration position on the comparison profile (the other bullet signature) with respect to their cross-correlation values. \hh{From a comparison of these registration positions, a } **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
+ The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference profile \wj{might reference profile refer to something more general?}  and  for each segment find the "best" registration position on the comparison profile (the other bullet signature) with respect to their cross-correlation values. \hh{From a comparison of these registration positions, a } **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
 \hh{High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.} 
 \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
 \wj{they didn't talk about a specific threshold or error rates}
@@ -137,7 +138,7 @@ Conceptually, the CMPS algorithm consists of \hh{three main} steps:
 1. **cut the reference profile into consecutive, non-overlapping and equal-length basis segments:**
 <<<<<<< HEAD
 the command `get_segs(x, len=50)` implements this first step. 
-It takes a profile \hh{XXX profile or signature?} \wj{further question?} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+It takes a bullet signature \hh{XXX profile or signature?} \wj{further question?} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 =======
 >>>>>>> 9f10900a1f85c08fea5be31476117473b65fe1dc
 
