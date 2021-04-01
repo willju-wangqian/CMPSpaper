@@ -5,26 +5,26 @@ header-includes:
   - \usepackage{longtable}
 author:
   # see ?rjournal_article for more information
-  - name: Author One
-    affiliation: ISU, CSAFE
+  - name: Will W. Ju
+    affiliation: Department of Statistics
     address:
-    - line 1
-    - line 2
-    url: https://journal.r-project.org
+    - Center for Statistics and Applications in Forensic Evidence
+    - Iowa State University
+    - 2438 Osborn Dr
+    - Ames, IA 50011
+    url: https://github.com/willju-wangqian
     orcid: 0000-0002-9079-593X
-    email:  author1@work
+    email:  wju@iastate.edu
   - name: Heike Hofmann
-    url: https://journal.r-project.org
+    url: https://github.com/heike
     email: hofmann@iastate.edu
     orcid: 0000-0002-9079-593X
-    affiliation: ISU, CSAFE
+    affiliation: Department of Statistics
     address:
-    - line 1 affiliation 1
-    - line 2 affiliation 1
-    affiliation2: Affiliation 2
-    address2:
-    - line 1 affiliation 2
-    - line 2 affiliation 2
+    - Center for Statistics and Applications in Forensic Evidence
+    - Iowa State University
+    - 2438 Osborn Dr
+    - Ames, IA 50011
 abstract: >
   An abstract of less than 150 words.
 preamble: |
@@ -82,7 +82,7 @@ For each Hamby set, a total of 35 bullets is fired from ten \hh{consecutively ma
 
 ### Extracting signatures from LEA scans
 
-The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr]. `x3ptools` \hh{is a package to read, write, and generally, process } x3p files. 
+The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr]. `x3ptools` \hh{is a package to read, write, and generally, process } x3p files. \hh{The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.}
 <!--In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`).--> 
 <!--\hh{it's land **engraved** areas, not impressions (that was wrong in Eric's first paper). Impressions are marks from impacts, such as the hit of a hammer or the hit from the breech face. Engravings are scratch marks.}-->
 \hh{\autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.}
@@ -97,7 +97,7 @@ Note that \hh{the process of extracting signatures might be different from the o
 
 <!-- `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal \hh{XXX ideal is a dangerous word} height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). \autoref{fig:process}(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land engraving and the groove engraving. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land engraving in the middle is kept. With the groove engravings excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land engraving curvature using LOESS (locally estimated scatter plot smoothing) [@loess] and obtain the bullet signature. \autoref{fig:process} illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [@cmps]. -->
 
-```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="image of a XXX gun barrel and a fired bullet - \\hh{xxx my version of the image still has a groove engraved area marked as a land}"}
+```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
 knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
 ```
 
