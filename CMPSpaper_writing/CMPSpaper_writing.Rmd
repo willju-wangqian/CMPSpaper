@@ -281,7 +281,7 @@ The first element is `segment_shift_plot`. On this plot only basis segments that
 sig.plot$segment_shift_plot
 ```
 
-```{r, echo=FALSE, out.width="300px", fig.cap="The dark grey line shows the comparison profile; each red line segment shows one comgruent matching profile segment. "}
+```{r, echo=FALSE, out.width="300px", fig.cap=" \\hh{I don't think we need fig 3 when we have fig 4 XXX} The dark grey line shows the comparison profile; each red line segment shows one comgruent matching profile segment. "}
 knitr::include_graphics("img/sigplot1.png", dpi = 100)
 ```
 
@@ -292,7 +292,7 @@ The second element is called `signature_shift_plot`. On this visual both the ref
 sig.plot$signature_shift_plot
 ```
 
-```{r, echo=FALSE, out.width="300px", fig.cap="The dark grey line shows the comparison profile; the red line shows the reference profile. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
+```{r, echo=FALSE, out.width="300px", fig.cap="  \\hh{ Could you make the cnsidered segments visible, maybe by zebra-striped rectangles in the background? XXX} The dark grey line shows the comparison profile; the red line shows the reference profile. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
 knitr::include_graphics("img/sigplot2.png", dpi = 100)
 ```
 
