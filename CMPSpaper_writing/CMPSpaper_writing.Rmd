@@ -108,7 +108,7 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 
 ### Conceptual idea of CMPS
-\hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX and produce a similarity score (some citations: chumbley score, Ganesh's fix, vorburger's ccf paper, hare).} 
+\hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX} and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
  The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. \hh{From a comparison of these registration positions, a } **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
 \hh{High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.} 
 \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
@@ -119,15 +119,29 @@ With our implementation, one can compute the CMPS score of a comparison using th
 
 \hh{XXX could you make this example functional?}
 ```{r, eval=FALSE}
-cmps.result <- extract_feature_cmps(sig1, sig2)
+# install.packages("devtools") 
+# devtools::install_github("willju-wangqian/CMPS")
+
+library(CMPS)
+data(bullets)
+
+sig1 <- bullets$sigs[[2]]$sig
+sig2 <- bullets$sigs[[9]]$sig
+sig3 <- bullets$sigs[[10]]$sig
+
+cmps.result.KM <- extract_feature_cmps(sig1, sig2)
+cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
 ```
 
+\wj{In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-matching comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known-non-matching comparison), gets a CMPS score of 2.}
+
 \hh{XXX How about a barchart with results - or a teaser for an image in the back, that talks about the concept that a CMPS score should be high for two same-source signatures and low for different-source signatures}
-\wj{further question?}
 
-In the example in section "Implementation" we  see that two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y. We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
+<!-- In the example in section "Implementation" we see that two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y.  -->
 
-The section "Implementation" will go through the algorithm and show how to use the "CMPS" package. An example that illustrates the main points are also included. The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44. And the last section covers some final discussion and conclusions.
+We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
+
+The section "Implementation" will go through the algorithm and show how to use the "CMPS" package. An further example that illustrates the main points are also included. The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44. And the last section covers some final discussion and conclusions.
 
 
 ## Implementation
@@ -141,15 +155,16 @@ The command `get_segs(x, len=50)` implements this step:  it takes a bullet signa
 
 2. **register each basis segment on the comparison signature:** 
 Calculate the cross-correlation curve between a basis segment and the comparison signature (using function `get_ccf4`).
-A position is considered  "good" if the cross-correlation between the basis segment and the comparison is above a pre-defined threshold. \hh{XXX what is the name of the parameter?} 
-The best registration position is decided upon using  a multi-peak inspection with or without different segment lengths:
+A position is considered "good" \wj{if this position results in a peak in the cross-correlation between the basis segment and the comparison}
+<!-- the cross-correlation between the basis segment and the comparison is above a pre-defined threshold.  -->
+The best registration position is decided upon using a multi-peak inspection with or without different segment lengths:
 
-    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of the top X \hh{parameter name?} highest peaks in the cross-correlation curve. Small segment lengths might indicate false positive peaks. Therefore all X peaks are considered as candidates for the "best" registration position.
+    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of the \wj{top 5 highest peaks (if `npeaks.set = 5`) in the cross-correlation curve}. Small segment lengths might indicate false positive peaks. Therefore all 5 peaks are considered as candidates for the "best" registration position.
 
-    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp).
+    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp). \wj{In order to use this version of the CMPS algorithm, we set `npeaks.set` as a numeric vector of multiple values. For example, if we set `npeaks.set = c(5, 3, 1)`, 5 peaks will be identified in the first round, 3 peaks in the second round, and 1 peak in the final round.} 
     
 3. **determine the congruent registration position**:
-candidate positions across different segments are compared using a small tolerance \hh{XXX parameter for this} and basis segments with a congruent registration position are determined. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of the comparison.
+candidate positions across different segments are compared using a small tolerance \wj{parameter `Tx`} and basis segments with a congruent registration position are determined. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of the comparison.
 
 
 <!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
@@ -237,17 +252,17 @@ extract_feature_cmps(
 The comparison between "bullet 1 - land 2" and "bullet 2 - land 3" is one of the KM comparisons. We can compute the CMPS score using two versions of the CMPS algorithm.
 
 ```{r, eval=FALSE}
-land2_3 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
-land1_2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
+sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
+sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 
 # compute cmps
 
 # algorithm with multi-peak insepction at three different segment scales
-cmps_with_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
+cmps_with_multi_scale <- extract_feature_cmps(sigs1$sig, sigs2$sig, 
                                               npeaks.set = c(5,3,1), include = "full_result")
 
 # algorithm with multi-peak inspection at the basis scale only
-cmps_without_multi_scale <- extract_feature_cmps(land2_3$sig, land1_2$sig, 
+cmps_without_multi_scale <- extract_feature_cmps(sigs1$sig, sigs2$sig, 
                                                  npeaks.set = 5, include = "full_result")
 ```
 
