@@ -257,15 +257,25 @@ sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 # compute cmps
 
 # algorithm with multi-peak insepction at three different segment scales
-cmps_with_multi_scale <- extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                                              npeaks.set = c(5,3,1), include = "full_result")
+cmps_with_multi_scale <- 
+  extract_feature_cmps(sigs1$sig, sigs2$sig, 
+                       npeaks.set = c(5,3,1), include = "full_result")
 
 # algorithm with multi-peak inspection at the basis scale only
-cmps_without_multi_scale <- extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                                                 npeaks.set = 5, include = "full_result")
+cmps_without_multi_scale <- 
+  extract_feature_cmps(sigs1$sig, sigs2$sig, 
+                       npeaks.set = 5, include = "full_result")
 ```
 
 We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
+
+```{r eval=FALSE}
+dframe %>% 
+  ggplot(aes(x = land1, y = land2, fill = CMPS.score)) +
+    geom_tile() +
+    scale_fill_gradient2(low="darkgrey", high = "darkorange", mid=6) +
+    geom_text(aes(label=CMPS.score))
+```
 
 ```{r}
 #      [,1] [,2] [,3] [,4] [,5] [,6]
