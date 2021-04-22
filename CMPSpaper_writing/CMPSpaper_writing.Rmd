@@ -135,7 +135,6 @@ cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
 
 \wj{In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-match comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known non-match comparison), gets a CMPS score of 2.}
 
-\hh{XXX How about a barchart with results - or a teaser for an image in the back, that talks about the concept that a CMPS score should be high for two same-source signatures and low for different-source signatures}
 
 <!-- In the example in section "Implementation" we see that two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y.  -->
 
