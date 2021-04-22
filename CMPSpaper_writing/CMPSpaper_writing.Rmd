@@ -226,7 +226,7 @@ devtools::install_github("willju-wangqian/CMPS")
 
 The `CMPS` package contains a simple example to illustrate the basic usage of the package. The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 (Each bullet has six lands). The procedure for generating signatures from 3D bullet lands in x3p format is (algorithmic) [and has been discussed above]. And these two bullets are known to come from the same gun barrel, so for the 36 land-by-land comparisons, 6 of them are KM (known matching) comparisons and 30 are KNM (known non-matching) comparisons. To access the example data, one can use
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(CMPS)
 data(bullets)
 ```
@@ -250,7 +250,7 @@ extract_feature_cmps(
 
 The comparison between "bullet 1 - land 2" and "bullet 2 - land 3" is one of the KM comparisons. We can compute the CMPS score using two versions of the CMPS algorithm.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
 sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 
@@ -275,6 +275,8 @@ dframe %>%
     geom_tile() +
     scale_fill_gradient2(low="darkgrey", high = "darkorange", mid=6) +
     geom_text(aes(label=CMPS.score))
+
+
 ```
 
 ```{r}
@@ -290,34 +292,38 @@ dframe %>%
 
 **Visualize and Understand CMPS results**
 
-We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. Let's continue with the example above and take its results. 
-
-```{r, eval=FALSE}
-sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
-```
+We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. \autoref{fig:sigplot} continues with the example above and take its results. 
 
 `cmps_signature_plot` takes the "full result" of `extract_feature_cmps` (setting `include = "full_result"`) and returns a list of 5 elements. 
 
 The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
 
 \hh{XXX Could we move the code into the corresponding figure and show the relevant pieces side by side? I'm thinking of examples similar to p.38 in https://journal.r-project.org/archive/2017/RJ-2017-023/RJ-2017-023.pdf}
+
+<!--
 ```{r, eval=FALSE}
 sig.plot$segment_shift_plot
 ```
-
-```{r, echo=FALSE, out.width="300px", fig.cap=" \\hh{I don't think we need fig 3 when we have fig 4 XXX} The dark grey line shows the comparison signature; each red line segment shows one comgruent matching profile segment. "}
-knitr::include_graphics("img/sigplot1.png", dpi = 100)
+-->
+```{r sigplot, echo=TRUE,  out.width="300px", fig.cap=" \\hh{I don't think we need fig 3 when we have fig 4 XXX} The dark grey line shows the comparison signature; each red line segment shows one comgruent matching profile segment. "}
+sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
+sig.plot$segment_shift_plot
+#knitr::include_graphics("img/sigplot1.png", dpi = 100)
 ```
+
 
 
 The second element is called `signature_shift_plot`. On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted. 
 
+<!--
 ```{r, eval=FALSE}
 sig.plot$signature_shift_plot
 ```
+-->
 
-```{r, echo=FALSE, out.width="300px", fig.cap="  \\hh{ Could you make the cnsidered segments visible, maybe by zebra-striped rectangles in the background? XXX} The dark grey line shows the comparison signature; the red line shows the reference signature. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
-knitr::include_graphics("img/sigplot2.png", dpi = 100)
+```{r, echo=TRUE, eval=TRUE,  out.width="300px", fig.cap="  \\hh{ Could you make the cnsidered segments visible, maybe by zebra-striped rectangles in the background? XXX} The dark grey line shows the comparison signature; the red line shows the reference signature. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
+sig.plot$signature_shift_plot
+#knitr::include_graphics("img/sigplot2.png", dpi = 100)
 ```
 
 Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segments and for the reference signature. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
@@ -338,7 +344,7 @@ Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3,
 seg.plot[[1]]$segment_plot
 ```
 
-```{r, echo=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
+```{r, echo=FALSE, eval=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
 knitr::include_graphics("img/segplot1.png", dpi = 100)
 ```
 
