@@ -57,9 +57,9 @@ knitr::opts_chunk$set(
 ## Introduction
 
 
-In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps described the CMPS algorithm  in their paper, conceptually, \hh{the authors did not release an implementation of their method}. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source implementation of the algorithm for people to use, review, and further improvements. Our implementation is wrapped up into  `R` package  `CMPS`, available on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
+In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps conceptually described the CMPS algorithm  in their paper, \hh{the authors did not release an implementation of their method}. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm  to use, review, and  improve. Our implementation is made available as part of the  `R` package  `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
 
- Firearm examination has been playing an important role in terms of convictions in the United States criminal justice system.
+ Firearm examination has  played an important role in  convictions in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX}
  
 An important task of firearm examination is \hh{to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
 \hh{Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. }
@@ -133,7 +133,7 @@ cmps.result.KM <- extract_feature_cmps(sig1, sig2)
 cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
 ```
 
-\wj{In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-matching comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known-non-matching comparison), gets a CMPS score of 2.}
+\wj{In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-match comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known non-match comparison), gets a CMPS score of 2.}
 
 \hh{XXX How about a barchart with results - or a teaser for an image in the back, that talks about the concept that a CMPS score should be high for two same-source signatures and low for different-source signatures}
 
