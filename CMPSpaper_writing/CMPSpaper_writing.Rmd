@@ -3,6 +3,10 @@ title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Simila
 header-includes:
   - \usepackage{xcolor}
   - \usepackage{longtable}
+  - \usepackage{adjustbox}            
+  - \usepackage[font=small,skip=5pt]{caption}
+  - \usepackage{subcaption}
+  - \usepackage{afterpage}
 author:
   # see ?rjournal_article for more information
   - name: Will W. Ju
@@ -45,6 +49,8 @@ output: rticles::rjournal_article
 ```
 
 ```{r, echo=FALSE}
+library(knitr)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -52,6 +58,83 @@ knitr::opts_chunk$set(
   fig.align = "center"
 )
 ```
+
+
+```{r setup_knitr, echo=FALSE}
+## From Josh O'Brien's stackoverflow answer:
+## http://stackoverflow.com/questions/11030898/knitr-how-to-align-code-and-plot-side-by-side
+## These two settings control text width in codefig vs. usual code blocks
+partWidth <- 35
+fullWidth <- 60
+options(width = fullWidth)
+
+##  (1) CHUNK HOOK FUNCTION
+##   First, to set R's textual output width on a per-chunk basis, we
+## need to define a hook function which temporarily resets global R's
+## option() settings, just for the current chunk
+knit_hooks$set(r.opts = local({
+    ropts <- NA
+    function(before, options, envir) {
+        if (before) {
+            ropts <<- options(options$r.opts)
+        } else {
+            options(ropts)
+        }
+    }
+}))
+
+## (2) OUTPUT HOOK FUNCTION
+
+##   Define a custom output hook function. This function processes _all_
+## evaluated chunks, but will return the same output as the usual one,
+## UNLESS a 'codefig' argument appeared in the chunk's header.  In that
+## case, wrap the usual textual output in LaTeX code placing it in a
+## narrower adjustbox environment and setting the graphics that it
+## produced in another box beside it.
+
+defaultChunkHook <- environment(knit_hooks[["get"]])$defaults$chunk
+
+codefigChunkHook <- function(x, options) {
+  main <-  defaultChunkHook(x, options)
+  before <-
+    "\\vspace{1em}
+\\begin{adjustbox}{valign=t}
+\\begin{minipage}{.49\\textwidth}\n"
+  after <-
+    paste("\\vspace{1em}
+\\end{minipage}
+\\begin{minipage}{.49\\textwidth}",
+    paste0("\\includegraphics[width=\\textwidth]{CMPSpaper_writing_files/figure-latex/",
+                 options[["label"]], "-1.pdf}
+\\end{minipage}
+\\end{adjustbox}"),
+          sep = "\n")
+  ## Was a codefig option supplied in chunk header?
+  ## If so, wrap code block and graphical output with needed LaTeX code.
+  if (!is.null(options$codefig)) {
+    return(sprintf("%s%s\n%s", before, main, after))
+  } else {
+    return(main)
+  }
+}
+
+knit_hooks[["set"]](chunk = codefigChunkHook)
+
+
+## (3) TEMPLATE
+##   codefig=TRUE is just one of several options needed for the
+## side-by-side code block and a figure to come out right. Rather
+## than typing out each of them in every single chunk header, we
+## define a _template_ which bundles them all together. Then we can
+## set all of those options simply by typing opts.label="codefig".
+
+opts_template[["set"]](
+codefig = list(codefig = TRUE, fig.show = "hide",
+               r.opts = list(width = partWidth),
+               tidy.opts = list(width.cutoff = partWidth)))
+```
+
+
 
 
 ## Introduction
@@ -300,20 +383,28 @@ The first element is `segment_shift_plot`. On this plot only basis segments that
 
 \hh{XXX Could we move the code into the corresponding figure and show the relevant pieces side by side? I'm thinking of examples similar to p.38 in https://journal.r-project.org/archive/2017/RJ-2017-023/RJ-2017-023.pdf}
 
-<!--
-```{r, eval=FALSE}
+\begin{figure}
+\begin{subfigure}[t]{\textwidth}
+\caption{\label{fig:sigplot}The dark grey line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
+```{r sigplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
+sig.plot <- cmps_signature_plot(
+  cmps_with_multi_scale
+)
 sig.plot$segment_shift_plot
 ```
--->
-```{r sigplot, echo=TRUE,  out.width="300px", fig.cap=" \\hh{I don't think we need fig 3 when we have fig 4 XXX} The dark grey line shows the comparison signature; each red line segment shows one comgruent matching profile segment. "}
-sig.plot <- cmps_signature_plot(cmps_with_multi_scale)
-sig.plot$segment_shift_plot
-#knitr::include_graphics("img/sigplot1.png", dpi = 100)
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\caption{\label{fig:sigplot2}The dark grey line shows the comparison signature; the red line shows the reference signature. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
+```{r sigplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
+sig.plot$signature_shift_plot
 ```
+\end{subfigure}
+\caption{\label{sigplots}\hh{The resulting two figures signature plots. We need a summarizing sentence here.}}
+\end{figure}
 
 
 
-The second element is called `signature_shift_plot`. On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted. 
+The second element is called `signature_shift_plot`. \hh{It is shown in \autoref{fig:sigplot2}.} On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted. 
 
 <!--
 ```{r, eval=FALSE}
@@ -321,10 +412,7 @@ sig.plot$signature_shift_plot
 ```
 -->
 
-```{r, echo=TRUE, eval=TRUE,  out.width="300px", fig.cap="  \\hh{ Could you make the cnsidered segments visible, maybe by zebra-striped rectangles in the background? XXX} The dark grey line shows the comparison signature; the red line shows the reference signature. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position. "}
-sig.plot$signature_shift_plot
-#knitr::include_graphics("img/sigplot2.png", dpi = 100)
-```
+
 
 Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segments and for the reference signature. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
 
