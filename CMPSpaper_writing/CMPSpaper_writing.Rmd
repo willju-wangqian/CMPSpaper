@@ -112,7 +112,9 @@ codefigChunkHook <- function(x, options) {
   ## Was a codefig option supplied in chunk header?
   ## If so, wrap code block and graphical output with needed LaTeX code.
   if (!is.null(options$codefig)) {
-    return(sprintf("%s%s\n%s", before, main, after))
+    main <- gsub("```","", main)
+    main <- gsub("=latex","", main)
+    return(sprintf("%s\n%s\n%s", before, main, after))
   } else {
     return(main)
   }
