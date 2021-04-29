@@ -57,7 +57,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   out.width = "\\textwidth",
-  fig.align = "center"
+  fig.align = "center",
+#  cache=TRUE,
+  dpi = 100
 )
 ```
 
@@ -101,11 +103,11 @@ codefigChunkHook <- function(x, options) {
   before <-
     "\\vspace{1em}
 \\begin{adjustbox}{valign=t}
-\\begin{minipage}{.49\\textwidth}\n"
+\\begin{minipage}{.39\\textwidth}\n"
   after <-
     paste("\\vspace{1em}
 \\end{minipage}
-\\begin{minipage}{.49\\textwidth}",
+\\begin{minipage}{.59\\textwidth}",
     paste0("\\includegraphics[width=\\textwidth]{CMPSpaper_writing_files/figure-latex/",
                  options[["label"]], "-1.pdf}
 \\end{minipage}
@@ -116,6 +118,7 @@ codefigChunkHook <- function(x, options) {
   if (!is.null(options$codefig)) {
     main <- gsub("```","", main)
     main <- gsub("=latex","", main)
+    main <- paste0("{\\small ", main, "}")
     return(sprintf("%s\n%s\n%s", before, main, after))
   } else {
     return(main)
@@ -240,7 +243,7 @@ Conceptually, the CMPS algorithm consists of three main steps:
 The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 
 2. **register each basis segment on the comparison signature:** 
-Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)`.
+Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)`. \hh{XXX position is really the lag - i.e. we can compare lags across  different segments.}
 A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
 <!-- the cross-correlation between the basis segment and the comparison is above a pre-defined threshold.  -->
 The best registration position is decided upon using a multi-peak inspection with or without different segment lengths:
@@ -417,15 +420,22 @@ comparisons <- comparisons %>%
 #   )
 
 dframe <- comparisons %>% select(-aligned, -cmps)
+
+dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
+
 ```
 
 ```{r, echo=FALSE}
-dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + geom_tile() + 
-  scale_fill_gradient2(low = "gray80", high = "darkorange", midpoint = 6) + 
+dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + 
+  geom_tile() + 
+  geom_tile(aes(colour="same barrel"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
+  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
+  scale_colour_manual("Source", values="darkorange") +
   facet_grid(bulletA ~ bulletB, labeller = "label_both") + xlab("Land B") + 
   ylab("Land A") + theme(aspect.ratio = 1) +
   geom_text(aes(label=cmps_score)) +
-  theme_bw()
+  theme_bw() +
+  theme(aspect.ratio = 1)
 ```
 
 
@@ -492,7 +502,8 @@ And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 hi
 \caption{\label{fig:segplot}segment\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments.}
 ```{r segplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 seg.plot <- cmps_segment_plot(
-  cmps_with_multi_scale, seg.idx = 6
+  cmps_with_multi_scale, 
+  seg.idx = 6
   )
 seg.plot[[1]]$segment_plot
 ```
@@ -518,8 +529,6 @@ seg.plot[[1]]$scale_ccf_plot
 Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
 
 \begin{figure}
-\begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:segplot3}put segment\_plot and scale\_ccf\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks.}
 ```{r segplot3, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 library(ggpubr)
 
@@ -530,8 +539,7 @@ ggarrange(
   ncol = 2, 
   nrow = 3)
 ```
-\end{subfigure}
-\caption{\label{fig:seg_all} some text.}
+\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks.}
 \end{figure}
 
 <!-- ```{r, echo=FALSE, out.width="400px", fig.cap="put segment\\_plot and scale\\_ccf\\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."} -->
