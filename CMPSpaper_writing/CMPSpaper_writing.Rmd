@@ -48,8 +48,10 @@ output: rticles::rjournal_article
 \setlength{\parindent}{0pt}
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(knitr)
+library(tidyverse)
+library(bulletxtrctr)
 
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -354,25 +356,88 @@ cmps_without_multi_scale <-
 
 We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
 
-```{r eval=FALSE}
-dframe %>% 
-  ggplot(aes(x = land1, y = land2, fill = CMPS.score)) +
-    geom_tile() +
-    scale_fill_gradient2(low="darkgrey", high = "darkorange", mid=6) +
-    geom_text(aes(label=CMPS.score))
+```{r eval=TRUE, echo=FALSE}
+
+lands <- unique(bullets$bulletland)
+
+comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
+                          stringsAsFactors = FALSE)
+
+comparisons <- comparisons %>% mutate(
+  aligned = purrr::map2(.x = land1, .y = land2, 
+                        .f = function(xx, yy) {
+                          land1 <- bullets$sigs[bullets$bulletland == xx][[1]]
+                          land2 <- bullets$sigs[bullets$bulletland == yy][[1]]
+                          land1$bullet <- "first-land"
+                          land2$bullet <- "second-land"
+                          
+                          sig_align(land1$sig, land2$sig)
+                        }))
+
+comparisons <- comparisons %>% 
+  mutate(cmps = aligned %>% purrr::map(.f = function(a) {
+    extract_feature_cmps(a$lands$sig1, a$lands$sig2, include = "full")
+  }))
 
 
+comparisons <- comparisons %>% 
+  mutate(
+    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
+    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
+  )
+
+# dframe <- comparisons %>% select(land1, land2, cmps_score)
+# 
+# dframe %>% 
+#   ggplot(aes(x = land1, y = land2, fill = cmps_score)) +
+#   geom_tile() +
+#   scale_fill_gradientn(
+#     colors=c("darkgrey","darkorange")
+#   ) +
+#   geom_text(aes(label=cmps_score)) +
+#   theme_bw() + 
+#   coord_flip() 
+
+
+comparisons <- comparisons %>%
+  mutate(
+    bulletA = gsub("(\\d)-\\d", "\\1", land1),
+    landA = gsub("\\d-(\\d)", "\\1", land1),
+    bulletB = gsub("(\\d)-\\d", "\\1", land2),
+    landB = gsub("\\d-(\\d)", "\\1", land2)
+  )
+
+# comparisons %>%   
+#   group_by(bulletA, bulletB) %>% tidyr::nest() %>%
+#   mutate(
+#     cmps_max_bar = data %>% purrr::map_dbl(
+#       .f = function(d) max(compute_average_scores(land1 = d$landA,
+#                                                   land2 = d$landB,
+#                                                   d$cmps_score)))
+#   )
+
+dframe <- comparisons %>% select(-aligned, -cmps)
 ```
 
-```{r}
-#      [,1] [,2] [,3] [,4] [,5] [,6]
-# [1,]    2    3    2    3    1    2
-# [2,]    2    1   17    1    2    3
-# [3,]    1    1    3   14    2    2
-# [4,]    2    1    1    1   10    1
-# [5,]    2    2    1    1    1   15
-# [6,]   16    3    1    2    1    1
+```{r, echo=FALSE}
+dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + geom_tile() + 
+  scale_fill_gradient2(low = "gray80", high = "darkorange", midpoint = 6) + 
+  facet_grid(bulletA ~ bulletB, labeller = "label_both") + xlab("Land B") + 
+  ylab("Land A") + theme(aspect.ratio = 1) +
+  geom_text(aes(label=cmps_score)) +
+  theme_bw()
 ```
+
+
+<!-- ```{r} -->
+<!-- #      [,1] [,2] [,3] [,4] [,5] [,6] -->
+<!-- # [1,]    2    3    2    3    1    2 -->
+<!-- # [2,]    2    1   17    1    2    3 -->
+<!-- # [3,]    1    1    3   14    2    2 -->
+<!-- # [4,]    2    1    1    1   10    1 -->
+<!-- # [5,]    2    2    1    1    1   15 -->
+<!-- # [6,]   16    3    1    2    1    1 -->
+<!-- ``` -->
 
 
 **Visualize and Understand CMPS results**
@@ -408,62 +473,70 @@ sig.plot$signature_shift_plot
 
 The second element is called `signature_shift_plot`. \hh{It is shown in \autoref{fig:sigplot2}.} On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted. 
 
-<!--
-```{r, eval=FALSE}
-sig.plot$signature_shift_plot
-```
--->
-
-
 
 Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segments and for the reference signature. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
 
-As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg.pos` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_signature_plot` also returns a list. Each element of this list is also a list and corresponds to one segment scale of this basis segment.
-
-```{r, eval=FALSE}
-seg.plot <- cmps_segment_plot(cmps_with_multi_scale, seg.idx = 6)
-```
-
-
+As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg_shift` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_segment_plot` also returns a list, of which each element corresponds to one segment scale of this basis segment. Then for each segment scale, we will have two plots, `segment_plot` and `scale_ccf_plot`.
 
 Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`.
 
 Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks. 
 
-```{r, eval=FALSE}
-seg.plot[[1]]$segment_plot
-```
-
-```{r, echo=FALSE, eval=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
-knitr::include_graphics("img/segplot1.png", dpi = 100)
-```
-
 And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 highest peaks are identified and marked on the plot. 
 
-```{r, eval=FALSE}
+
+\begin{figure}
+\begin{subfigure}[t]{\textwidth}
+\caption{\label{fig:segplot}segment\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments.}
+```{r segplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
+seg.plot <- cmps_segment_plot(
+  cmps_with_multi_scale, seg.idx = 6
+  )
+seg.plot[[1]]$segment_plot
+```
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment}
+```{r segplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 seg.plot[[1]]$scale_ccf_plot
 ```
+\end{subfigure}
+\caption{\label{fig:segplots}some text.}
+\end{figure}
 
-```{r, echo=FALSE, out.width="300px", fig.cap="scale\\_ccf\\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"}
-knitr::include_graphics("img/segplot2.png", dpi = 100)
-```
+<!-- ```{r, echo=FALSE, eval=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "} -->
+<!-- knitr::include_graphics("img/segplot1.png", dpi = 100) -->
+<!-- ``` -->
+
+
+<!-- ```{r, echo=FALSE, out.width="300px", fig.cap="scale\\_ccf\\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"} -->
+<!-- knitr::include_graphics("img/segplot2.png", dpi = 100) -->
+<!-- ``` -->
 
 Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
 
-```{r, eval=FALSE}
+\begin{figure}
+\begin{subfigure}[t]{\textwidth}
+\caption{\label{fig:segplot3}put segment\_plot and scale\_ccf\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks.}
+```{r segplot3, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 library(ggpubr)
 
-ggarrange(plotlist = unlist(seg.plot, recursive = FALSE),
-          ncol = 2, nrow = 3)
+ggarrange(
+  plotlist = 
+    unlist(seg.plot, 
+           recursive = FALSE),
+  ncol = 2, 
+  nrow = 3)
 ```
+\end{subfigure}
+\caption{\label{fig:seg_all} some text.}
+\end{figure}
 
-```{r, echo=FALSE, out.width="400px", fig.cap="put segment\\_plot and scale\\_ccf\\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."}
-knitr::include_graphics("img/segplot3.png", dpi = 100)
-```
+<!-- ```{r, echo=FALSE, out.width="400px", fig.cap="put segment\\_plot and scale\\_ccf\\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."} -->
+<!-- knitr::include_graphics("img/segplot3.png", dpi = 100) -->
+<!-- ``` -->
 
 The red vertical dashed line indicates the congruent registration position. We can see that the segment 6 does obtain a peak near to the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. 
-
-
 
 ## Results
 
