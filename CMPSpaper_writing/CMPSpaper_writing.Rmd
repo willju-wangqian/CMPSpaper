@@ -232,23 +232,23 @@ The section "Implementation" will go through the algorithm and show how to use t
 
 **Algorithm.** 
 
-Conceptually, the CMPS algorithm consists of \hh{three main} steps:
+Conceptually, the CMPS algorithm consists of three main steps:
 
 1. **cut the reference signature into consecutive, non-overlapping and equal-length basis segments:**
-The command `get_segs(x, len=50)` implements this step:  it takes a bullet signature  in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 
 2. **register each basis segment on the comparison signature:** 
-Calculate the cross-correlation curve between a basis segment and the comparison signature (using function `get_ccf4`).
-A position is considered "good" \wj{if this position results in a peak in the cross-correlation between the basis segment and the comparison}
+Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)`.
+A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
 <!-- the cross-correlation between the basis segment and the comparison is above a pre-defined threshold.  -->
 The best registration position is decided upon using a multi-peak inspection with or without different segment lengths:
 
-    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of the \wj{top 5 highest peaks (if `npeaks.set = 5`) in the cross-correlation curve}. Small segment lengths might indicate false positive peaks. Therefore all 5 peaks are considered as candidates for the "best" registration position.
+    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of the top 5 highest peaks (if `npeaks.set = 5`) in the cross-correlation curve. Small segment lengths might indicate false positive peaks. Therefore all 5 peaks are considered as candidates for the "best" registration position.
 
-    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp). \wj{In order to use this version of the CMPS algorithm, we set `npeaks.set` as a numeric vector of multiple values. For example, if we set `npeaks.set = c(5, 3, 1)`, 5 peaks will be identified in the first round, 3 peaks in the second round, and 1 peak in the final round.} 
+    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should \hh{XXX should? this is ambiguous. What happens if no peak or multiple peaks are found?} be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp). \wj{In order to use this version of the CMPS algorithm, we set `npeaks.set` as a numeric vector of multiple values. For example, if we set `npeaks.set = c(5, 3, 1)`, 5 peaks will be identified in the first round, 3 peaks in the second round, and 1 peak in the final round.} 
     
 3. **determine the congruent registration position**:
-candidate positions across different segments are compared using a small tolerance \wj{parameter `Tx`} and basis segments with a congruent registration position are determined. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of the comparison.
+candidate positions across different segments \hh{XXX how is this done in situation 2.1? } are compared using a small tolerance \wj{parameter `Tx`} and basis segments with a congruent registration position are determined. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of the comparison.
 
 
 <!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
@@ -420,9 +420,6 @@ Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These e
 
 As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg.pos` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_signature_plot` also returns a list. Each element of this list is also a list and corresponds to one segment scale of this basis segment.
 
-```{r, eval=FALSE}
-seg.plot <- cmps_segment_plot(cmps_with_multi_scale, seg.idx = 6)
-```
 
 
 
@@ -430,13 +427,16 @@ Take the first element of `seg.plot` as an example, it corresponds to the first 
 
 Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks. 
 
-```{r, eval=FALSE}
+
+\begin{figure}[htb]
+```{r, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE, fig.cap=" "}
+#knitr::include_graphics("img/segplot1.png", dpi = 100)
+seg.plot <- cmps_segment_plot(
+  cmps_with_multi_scale, seg.idx = 6)
 seg.plot[[1]]$segment_plot
 ```
-
-```{r, echo=FALSE, eval=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "}
-knitr::include_graphics("img/segplot1.png", dpi = 100)
-```
+\caption{\label{segplot} segment\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments.}
+\end{figure}
 
 And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 highest peaks are identified and marked on the plot. 
 
