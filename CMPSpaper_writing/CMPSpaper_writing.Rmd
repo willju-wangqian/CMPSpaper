@@ -425,14 +425,22 @@ dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=land
 
 ```
 
-```{r, echo=FALSE}
-dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + 
+```{r tiles, echo=FALSE, fig.cap="Overview of all 36 CMPS scores resulting from a bullet-to-bullet comparison of all six lands on each bullet.", out.width=".7\\textwidth", fig.align="center"}
+dframe <- dframe %>% mutate(
+  landA = paste0("L", landA),
+  landB = paste0("L", landB),
+  landB = factor(landB, levels = paste0("L", c(2:6,1))),
+  bulletA = paste0("Bullet ", bulletA),
+  bulletB = paste0("Bullet ", bulletB)
+)
+
+dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) + 
   geom_tile() + 
   geom_tile(aes(colour="same barrel"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
   scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
   scale_colour_manual("Source", values="darkorange") +
-  facet_grid(bulletA ~ bulletB, labeller = "label_both") + xlab("Land B") + 
-  ylab("Land A") + theme(aspect.ratio = 1) +
+  facet_grid(bulletB ~ bulletA) + xlab("Land A") + 
+  ylab("Land B") + theme(aspect.ratio = 1) +
   geom_text(aes(label=cmps_score)) +
   theme_bw() +
   theme(aspect.ratio = 1)
