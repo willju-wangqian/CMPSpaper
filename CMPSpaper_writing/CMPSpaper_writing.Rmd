@@ -48,7 +48,7 @@ output: rticles::rjournal_article
 \setlength{\parindent}{0pt}
 ```
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
 library(tidyverse)
 library(bulletxtrctr)
@@ -158,8 +158,6 @@ An important task of firearm examination is \hh{to answer the question of whethe
 \wj{The notion of bullet signatures is one of the results of these efforts. Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section. Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field. }
 In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, and present results of applying our implementation to real data. 
 
-
-
 ## Background 
 
 
@@ -167,15 +165,15 @@ In the following sections we will: review the background of bullet signature com
 
 The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [@brundage; @hamby; @Hamby:2019],  in particular, Hamby set 252 and Hamby set 44. 
 For each Hamby set, a total of 35 bullets is fired from ten \hh{consecutively manufactured} Ruger P-85 pistol barrels. \hh{Two bullets are fired from each barrel, making up a set of 20 reference bullets. An additional 15 bullets are fired from these ten barrels in a fashion unknown to the study participant. The aim of the Hamby Study was to have firearms examiners identify which barrel each of the 15 questioned bullets was fired from. The Ruger P-85 barrels are traditionally rifled barrels with six grooves and lands \hh{as shown in \autoref{fig:bullet}}. During the firing process, grooves and lands are engraved on a bullet. Firearms examiners use striation marks on land engraved areas (LEAs) for their visual comparison. For algorithmic purposes, }
- 3D topographical images \hh{land engraved areas} were obtained and stored in  x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/]  adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 was scanned \hh{at the Roy J Carver High-Resolution microscopy lab at Iowa State. These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu per pixel}.  Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
+3D topographical images \hh{land engraved areas} were obtained and stored in  x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/]  adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 was scanned \hh{at the Roy J Carver High-Resolution microscopy lab at Iowa State. These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu per pixel}.  Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
 
 
 ### Extracting signatures from LEA scans
 
 The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr]. `x3ptools` \hh{is a package to read, write, and generally, process } x3p files. \hh{The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.}
 <!--In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`).--> 
-<!--\hh{it's land **engraved** areas, not impressions (that was wrong in Eric's first paper). Impressions are marks from impacts, such as the hit of a hammer or the hit from the breech face. Engravings are scratch marks.}-->
-\hh{\autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.}
+  <!--\hh{it's land **engraved** areas, not impressions (that was wrong in Eric's first paper). Impressions are marks from impacts, such as the hit of a hammer or the hit from the breech face. Engravings are scratch marks.}-->
+  \hh{\autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.}
 \autoref{fig:process}(a) shows a \hh{rendering of a 3d scan of a } bullet land  engraved area. The raised portion of the surface \hh{on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs)}, \hh{the middle area shows a land-engraved area (LEA) with well expressed} striation marks. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land engraving.
 <!--\hh{The next section is at an awkward level of detail - there's lots of details, but without the parameter settings it is still not a reproducible description. Could you instead describe things conceptually, and then link to the code that does this particular image?} -->
 The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view. <!--Then we can acquire the crosscut data (`ccdata`) of the scan at this height. --> \hh{XXX passive voice for things that are not part of this paper :)}
@@ -197,12 +195,14 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 ```
 
 
+
+
 ### Conceptual idea of CMPS
 \hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX} and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
  The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. \hh{From a comparison of these registration positions, a } **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
-\hh{High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.} 
-\hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
-\wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'}
+  \hh{High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.} 
+  \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
+  \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'}
  The CMPS algorithm can assist firearm examiners with drawing a conclusion \hh{about the source of a comparison pair}. \hh{Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the } CMPS algorithm. 
 Thus, in this paper we present an open-source implementation of the CMPS algorithm \hh{in the R package CMPS available from XXX github / CRAN}. 
 With our implementation, one can compute the CMPS score of a comparison using the following code:
@@ -425,7 +425,7 @@ dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=land
 
 ```
 
-```{r tiles, echo=FALSE, fig.cap="Overview of all 36 CMPS scores resulting from a bullet-to-bullet comparison of all six lands on each bullet.", out.width=".7\\textwidth", fig.align="center"}
+```{r tiles, echo=FALSE, fig.cap="Overview of all 36 CMPS scores resulting from a bullet-to-bullet comparison of all pairwise comparisons of the six lands on each bullet.", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
@@ -447,6 +447,7 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
 ```
 
 
+
 <!-- ```{r} -->
 <!-- #      [,1] [,2] [,3] [,4] [,5] [,6] -->
 <!-- # [1,]    2    3    2    3    1    2 -->
@@ -466,9 +467,8 @@ We also implemented graphing tools for visualizing results of the CMPS algorithm
 
 The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
 
-\hh{XXX Could we move the code into the corresponding figure and show the relevant pieces side by side? I'm thinking of examples similar to p.38 in https://journal.r-project.org/archive/2017/RJ-2017-023/RJ-2017-023.pdf}
-
-\begin{figure}
+  
+\begin{figure}[hbt]
 \begin{subfigure}[t]{\textwidth}
 \caption{\label{fig:sigplot}The dark grey line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
 ```{r sigplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
@@ -512,7 +512,7 @@ And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 hi
 seg.plot <- cmps_segment_plot(
   cmps_with_multi_scale, 
   seg.idx = 6
-  )
+)
 seg.plot[[1]]$segment_plot
 ```
 \end{subfigure}
