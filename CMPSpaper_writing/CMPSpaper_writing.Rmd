@@ -358,10 +358,50 @@ cmps_without_multi_scale <-
                        npeaks.set = 5, include = "full_result")
 ```
 
+\hh{How about you go into a description of the results from the function `extract\_feature\_cmps`?}
+
+
 We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
 
-```{r eval=TRUE, echo=FALSE}
+```{r alternative, echo = FALSE}
+lands <- unique(bullets$bulletland)
 
+comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
+                          stringsAsFactors = FALSE)
+
+comparisons <- comparisons %>% 
+  left_join(bullets %>% select(bulletland, sig1=sigs),
+            by = c("land1" = "bulletland")) %>%
+  left_join(bullets %>% select(bulletland, sig2=sigs),
+            by = c("land2" = "bulletland"))
+
+comparisons <- comparisons %>% mutate(
+  cmps = purrr::map2(sig1, sig2, .f = function(x, y) {
+    extract_feature_cmps(x$sig, y$sig, include = "full")
+    })
+)
+
+comparisons <- comparisons %>% 
+  mutate(
+    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
+    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
+  )
+
+comparisons <- comparisons %>%
+  mutate(
+    bulletA = gsub("(\\d)-\\d", "\\1", land1),
+    landA = gsub("\\d-(\\d)", "\\1", land1),
+    bulletB = gsub("(\\d)-\\d", "\\1", land2),
+    landB = gsub("\\d-(\\d)", "\\1", land2)
+  )
+
+dframe <- comparisons %>% select(-sig1, -sig2)
+
+dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
+```
+
+
+```{r eval=FALSE, echo=FALSE}
 lands <- unique(bullets$bulletland)
 
 comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
@@ -383,25 +423,11 @@ comparisons <- comparisons %>%
     extract_feature_cmps(a$lands$sig1, a$lands$sig2, include = "full")
   }))
 
-
 comparisons <- comparisons %>% 
   mutate(
     cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
     cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
   )
-
-# dframe <- comparisons %>% select(land1, land2, cmps_score)
-# 
-# dframe %>% 
-#   ggplot(aes(x = land1, y = land2, fill = cmps_score)) +
-#   geom_tile() +
-#   scale_fill_gradientn(
-#     colors=c("darkgrey","darkorange")
-#   ) +
-#   geom_text(aes(label=cmps_score)) +
-#   theme_bw() + 
-#   coord_flip() 
-
 
 comparisons <- comparisons %>%
   mutate(
@@ -411,16 +437,8 @@ comparisons <- comparisons %>%
     landB = gsub("\\d-(\\d)", "\\1", land2)
   )
 
-# comparisons %>%   
-#   group_by(bulletA, bulletB) %>% tidyr::nest() %>%
-#   mutate(
-#     cmps_max_bar = data %>% purrr::map_dbl(
-#       .f = function(d) max(compute_average_scores(land1 = d$landA,
-#                                                   land2 = d$landB,
-#                                                   d$cmps_score)))
-#   )
-
-dframe <- comparisons %>% select(-aligned, -cmps)
+comparisons0 <- comparisons
+dframe0 <- comparisons %>% select(-aligned, -cmps)
 
 dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
 
