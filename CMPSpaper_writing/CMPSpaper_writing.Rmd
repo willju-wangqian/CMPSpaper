@@ -242,26 +242,25 @@ Conceptually, the CMPS algorithm consists of three main steps:
 1. **cut the reference signature into consecutive, non-overlapping and equal-length basis segments:**
 The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
 
-2. **register each basis segment on the comparison signature:** 
-Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)`. \hh{XXX position is really the lag - i.e. we can compare lags across  different segments.}
-A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
-<!-- the cross-correlation between the basis segment and the comparison is above a pre-defined threshold.  -->
+2. **identify candidate positions** For each basis segment a set of candidate positions on the reference signature is identified based on the segment's similarity to the reference. In a first step, the cross-correlation function of the segment to the reference is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are  considered further.
+
+    2.1 **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. \hh{The position indicates the lag by which a base segment is moved with respect to its original placement.} A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
+
+ 
+    2.2 **Correlation peaks** The parameter `npeaks.set` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top 5 peaks in the correlation coefficient curve are identified as candidates  for registration.
+
+    2.3  **Multiple-length segments** If  `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding 5 peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Note that in \hh{cite original  paper}  the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. 
+
+<!--
 The best registration position is decided upon using a multi-peak inspection with or without different segment lengths:
 
-    2.1. **multi-peak inspection (without different segment lengths):** each basis segment identifies positions of the top 5 highest peaks (if `npeaks.set = 5`) in the cross-correlation curve. Small segment lengths might indicate false positive peaks. Therefore all 5 peaks are considered as candidates for the "best" registration position.
-
     2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should \hh{XXX should? this is ambiguous. What happens if no peak or multiple peaks are found?} be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp). \wj{In order to use this version of the CMPS algorithm, we set `npeaks.set` as a numeric vector of multiple values. For example, if we set `npeaks.set = c(5, 3, 1)`, 5 peaks will be identified in the first round, 3 peaks in the second round, and 1 peak in the final round.} 
-    
+-->
+
 3. **determine the congruent registration position**:
-candidate positions across different segments \hh{XXX how is this done in situation 2.1? } are compared using a small tolerance \wj{parameter `Tx`} and basis segments with a congruent registration position are determined. These segments are called the "congruent matching profile segments" (CMPS), and the number of CMPS is the CMPS score of the comparison.
+each candidate position corresponding to each of the basis segments gets one `vote`. Votes for candidate positions within a tolerance of `Tx` are tallied and the position with the highest number of votes gets chosen as the *congruent registration position*. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison.
 
 
-<!-- we conduct the "multi-peak inspection at different segment lengths". After having the multi-peak inspection for a basis segment of its original length, we then double the segment length by including profiles of half the current length -->
-
-
-<!-- If the reference profile and the comparison profile matches perfectly, every basis segment should vote for exactly the same registration position.  -->
-
-<!-- compute the cross-correlation function between each basis segment and the comparison profile; -->
 
 \hh{In the CMPS package, these three steps are implemented using a set of key functions:}
 
@@ -282,8 +281,8 @@ Note that there are parameters in this algorithm that can be specified by the us
 The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
 
 * `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
-* `npeaks.set` determines the number of peaks and whether the function uses the multi segment lengths strategy. If `npeaks.set` is a numeric vector of length 1, for example `npeaks.set = c(5)`, then the function will not use multi segment lengths and find 5 peaks in the correlation coefficient curve for each basis segment; on the other hand, if the vector length of `npeaks.set` is larger than 1, for example `npeaks.set = c(5, 3, 1)`, the function will take advantage of the multi segment lengths strategy, finding 5 peaks in the original scale, 3 peaks in the second scale and 1 peak in the third scale. Note that if the multi segment lengths strategy is being used, the last element of `npeaks.set` should always be 1. 
 * `Tx` gives the size of tolerance zone mentioned in step 4;
+* `npeaks.set` is a (vector of) integer value(s). The parameter determines the number of candidate positions and which strategy to  use to combine candidates.
 * `include` determines what information should be included in the function output. By default, `include = NULL` and the function output will only contain the `CMPS.score`. However, besides the most important `CMPS.score`, there are other pieces of information related to the CMPS score that one might be interested in, such as 
   - `nseg`: the number of basis segments we get from the reference signature; this is also the highest possible CMPS score of the comparison;
   - `congruent.pos`: the congruent registration position;
@@ -297,35 +296,37 @@ For all possible options of `include`, please check the documentation of `extrac
 <!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
 
 
-**Install**
+**Installation**
 
-The CMPS package is/not published on CRAN, and can be install and called by 
-
-```{r, eval=FALSE}
-install.packages(CMPS)
-```
-
-The development version can be installed by using 
+The CMPS package is (not) publicly available from CRAN, and can be installed by 
 
 ```{r, eval=FALSE}
-# install.packages("devtools") 
-devtools::install_github("willju-wangqian/CMPS")
+install.packages("CMPS")
 ```
 
-**Examples**
+The development version is available from Github can be installed by using 
 
-The `CMPS` package contains a simple example to illustrate the basic usage of the package. The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 (Each bullet has six lands). The procedure for generating signatures from 3D bullet lands in x3p format is (algorithmic) [and has been discussed above]. And these two bullets are known to come from the same gun barrel, so for the 36 land-by-land comparisons, 6 of them are KM (known matching) comparisons and 30 are KNM (known non-matching) comparisons. To access the example data, one can use
+```{r, eval=FALSE}
+# install.packages("remotes") 
+remotes::install_github("willju-wangqian/CMPS")
+```
+
+**An Example**
+
+The `CMPS` package contains a simple example to illustrate the basic usage of the package. The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 [@hamby].  The procedure for generating signatures from high-resolution 3D topographic scans of bullet lands used here follows the methodology described in @aoas (as discussed above). 
+The two bullets under consideration here are known to have been fired from the same gun barrel, so for the 36 land-by-land comparisons, 6 comparison are from same-source pairs (known matches) while 30 are from different-source pairs (known non-matches). To access the example data, we use
 
 ```{r, eval=TRUE}
 library(CMPS)
 data(bullets)
 ```
 
-And anyone who is interested in the data source can find it in `bullets$source`. One can use these links to download the original x3p files from NIST Ballistics Toolmark Research Database [@nistdb]. `bulletxtrctr::read_bullet(urllist = bullets$source)`
+The `bullets` object is a data frame with 12 rows. Each row contains one signature.  `bullets$source` contains the URLs to the corresponding x3p file containing the topographic scan  from the NIST Ballistics Toolmark Research Database [@nistdb]. 
+
 
 **extract_feature_cmps**
 
-`extract_feature_cmps` integrates all steps of the CMPS algorithm. It takes two bullet signatures and computes the CMPS score. 
+`extract_feature_cmps` integrates all steps of the CMPS algorithm. It takes two bullet signatures and computes the CMPS score. Here, we are using the default values for all of the parameters:
 
 ```{r, eval=FALSE}
 extract_feature_cmps(
@@ -338,7 +339,7 @@ extract_feature_cmps(
 )
 ```
 
-The comparison between "bullet 1 - land 2" and "bullet 2 - land 3" is one of the KM comparisons. We can compute the CMPS score using two versions of the CMPS algorithm.
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sig 1, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
 
 ```{r, eval=TRUE}
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
