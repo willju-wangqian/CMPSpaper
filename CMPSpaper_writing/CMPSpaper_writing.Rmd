@@ -240,7 +240,7 @@ The section "Implementation" will go through the algorithm and show how to use t
 Conceptually, the CMPS algorithm consists of three main steps:
 
 1. **cut the reference signature into consecutive, non-overlapping and equal-length basis segments:**
-The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`.
+The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`, which are referred as "basis segments".
 
 2. **identify candidate positions** For each basis segment a set of candidate positions on the reference signature is identified based on the segment's similarity to the reference. In a first step, the cross-correlation function of the segment to the reference is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are  considered further.
 
