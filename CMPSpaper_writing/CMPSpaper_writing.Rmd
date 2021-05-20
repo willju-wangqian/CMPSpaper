@@ -147,15 +147,14 @@ codefig = list(codefig = TRUE, fig.show = "hide",
 ## Introduction
 
 
-In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps conceptually described the CMPS algorithm  in their paper, \hh{the authors did not release an implementation of their method}. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm  to use, review, and  improve. Our implementation is made available as part of the  `R` package  `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
+In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps conceptually described the CMPS algorithm  in their paper, the authors did not release an implementation of their method. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm  to use, review, and  improve. Our implementation is made available as part of the  `R` package  `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
 
  Firearm examination has  played an important role in  convictions in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX}
  
-An important task of firearm examination is \hh{to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested } to determine whether two bullets were fired from the same gun barrel. 
-\hh{Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. }
-\hh{Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope. This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].}
-<!--It is achievable because lands in a gun barrel create striation marks on the bullet during the firing process, and it is believed that the same gun barrel will create highly similar striation marks on the bullets it fired. Typically the striation marks are created by lands in a barrel, so the striation marks are also sometimes refered as land engravings, and the areas the marks occupy are called land engraved areas (LEA). However, in recent years people became more cautious about firearms identification, and criticism of its subjective methodology arose.--> A report published by @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases [@nistdb] and develop frameworks and algorithms that bring an objective and quantitative assessment into the field \hh{XXX cite some of these efforts - make sure to say that it is not an exhaustive list}. \hh{XXX The bullet signatures weren't mentioned before - make sure to include that there is a whole section that discusses how bullet signatures are extracted from scans.}
-\wj{The notion of bullet signatures is one of the results of these efforts. Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section. Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field. }
+An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel. 
+Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope. This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].
+
+A report published by @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification—is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field [@nistdb, @brundage, @hamby, @Hamby:2019, @song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940;@cmps]. \wj{Note that this is not an exhaustive list of these efforts.} The notion of bullet signatures is one of the results of these efforts. Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section. Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field. 
 In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, and present results of applying our implementation to real data. 
 
 ## Background 
@@ -164,26 +163,24 @@ In the following sections we will: review the background of bullet signature com
 ### Hamby Data Set
 
 The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [@brundage; @hamby; @Hamby:2019],  in particular, Hamby set 252 and Hamby set 44. 
-For each Hamby set, a total of 35 bullets is fired from ten \hh{consecutively manufactured} Ruger P-85 pistol barrels. \hh{Two bullets are fired from each barrel, making up a set of 20 reference bullets. An additional 15 bullets are fired from these ten barrels in a fashion unknown to the study participant. The aim of the Hamby Study was to have firearms examiners identify which barrel each of the 15 questioned bullets was fired from. The Ruger P-85 barrels are traditionally rifled barrels with six grooves and lands \hh{as shown in \autoref{fig:bullet}}. During the firing process, grooves and lands are engraved on a bullet. Firearms examiners use striation marks on land engraved areas (LEAs) for their visual comparison. For algorithmic purposes, }
-3D topographical images \hh{land engraved areas} were obtained and stored in  x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/]  adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 was scanned \hh{at the Roy J Carver High-Resolution microscopy lab at Iowa State. These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu per pixel}.  Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
+For each Hamby set, a total of 35 bullets is fired from ten consecutively manufactured Ruger P-85 pistol barrels. Two bullets are fired from each barrel, making up a set of 20 reference bullets. An additional 15 bullets are fired from these ten barrels in a fashion unknown to the study participant. The aim of the Hamby Study was to have firearms examiners identify which barrel each of the 15 questioned bullets was fired from. The Ruger P-85 barrels are traditionally rifled barrels with six grooves and lands as shown in \autoref{fig:bullet}. During the firing process, grooves and lands are engraved on a bullet. Firearms examiners use striation marks on land engraved areas (LEAs) for their visual comparison. For algorithmic purposes, 
+3D topographical images land engraved areas were obtained and stored in  x3p format (XML 3-D Surface Profile). The x3p format provides a standard way of exchanging 2D and 3D profile data. It conforms to the ISO5436-2 standard [http://sourceforge.net/p/open-gps/mwiki/X3p/]  adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science. Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel. Hamby set 44 was scanned at the Roy J Carver High-Resolution microscopy lab at Iowa State. These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu per pixel.  Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
 
 
 ### Extracting signatures from LEA scans
 
-The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr]. `x3ptools` \hh{is a package to read, write, and generally, process } x3p files. \hh{The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.}
-<!--In the case of Hamby set 252, we need to convert the measurements of x3p files from meters to microns (`x3ptools::x3p_m_to_mum`) and rotate x3p files to make the long axis horizontal (`x3ptools::x3p_rotate`).--> 
-  <!--\hh{it's land **engraved** areas, not impressions (that was wrong in Eric's first paper). Impressions are marks from impacts, such as the hit of a hammer or the hit from the breech face. Engravings are scratch marks.}-->
-  \hh{\autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.}
-\autoref{fig:process}(a) shows a \hh{rendering of a 3d scan of a } bullet land  engraved area. The raised portion of the surface \hh{on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs)}, \hh{the middle area shows a land-engraved area (LEA) with well expressed} striation marks. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land engraving.
-<!--\hh{The next section is at an awkward level of detail - there's lots of details, but without the parameter settings it is still not a reproducible description. Could you instead describe things conceptually, and then link to the code that does this particular image?} -->
-The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view. <!--Then we can acquire the crosscut data (`ccdata`) of the scan at this height. --> \hh{XXX passive voice for things that are not part of this paper :)}
-Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in \autoref{fig:process}(c) and \autoref{fig:process}(d)). A non-parametric LOESS smooth  [@loess] is fitted to capture the bullet curvature (\autoref{fig:process}(e)) and, finally, the **bullet signature** (\autoref{fig:process}(f)) is obtained as residuals of the cross-section and the fitted smooth. 
-Note, that in @cmps bullet signatures are  referred to as bullet profiles. However, to avoid confusion, we distinguish the notion of bullet signatures from bullet profiles. \wj{Bullet profiles are \hh{shown in panels (b), (c), and (d) of \autoref{fig:process}}, while \autoref{fig:process}(f) shows the corresponding bullet signature.} 
-\hh{Identifiying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures. To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny],}   `bulletinspectR` to identify and correct those errors. 
-\hh{An example of the extraction process with corresponding code and parameter settings can be found at XXX.}
-Note that \hh{the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.}
+The automated framework  used in this paper was proposed by @aoas. In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr]. `x3ptools` is a package to read, write, and generally, process x3p files. The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.
 
-<!-- `bulletxtrctr::x3p_crosscut_optimize` can be used to determine an ideal \hh{XXX ideal is a dangerous word} height, and `bulletxtrctr::x3p_crosscut` can be used to acquire the crosscut data (`ccdata`). \autoref{fig:process}(c) shows the typical pattern of the crosscut data, where "wedges" can be found on the left and right side and indicate the boundary between the land engraving and the groove engraving. `bulletxtrctr::cc_locate_grooves` is used to locate and chop these wedge areas so that only the curve of the land engraving in the middle is kept. With the groove engravings excluded, we then use `bulletxtrctr::cc_get_signature` to smooth out the land engraving curvature using LOESS (locally estimated scatter plot smoothing) [@loess] and obtain the bullet signature. \autoref{fig:process} illustrates this framework. Sometimes the algorithm in our framework cannot determine the ideal location of the crosscut or the grooves due to the deformation of a bullet, so we also developed a `R` Shiny App called `bulletinspectR` to identify and correct those errors. Note that NIST researchers used a different way of getting the bullet signatures in their paper [@cmps]. -->
+\autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.
+\autoref{fig:process}(a) shows a rendering of a 3d scan of a bullet land  engraved area. The raised portion of the surface on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs), the middle area shows a land-engraved area (LEA) with well expressed striation marks. The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land engraving.
+
+The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view. 
+Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in \autoref{fig:process}(c) and \autoref{fig:process}(d)). A non-parametric LOESS smooth  [@loess] is fitted to capture the bullet curvature (\autoref{fig:process}(e)) and, finally, the **bullet signature** (\autoref{fig:process}(f)) is obtained as residuals of the cross-section and the fitted smooth. 
+Note, that in @cmps bullet signatures are  referred to as bullet profiles. However, to avoid confusion, we distinguish the notion of bullet signatures from bullet profiles. Bullet profiles are shown in panels (b), (c), and (d) of \autoref{fig:process}, while \autoref{fig:process}(f) shows the corresponding bullet signature.
+Identifiying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures. To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny],  `bulletinspectR` to identify and correct those errors. 
+\hh{An example of the extraction process with corresponding code and parameter settings can be found at XXX.}
+Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
+
 
 ```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
 knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
@@ -199,15 +196,14 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 ### Conceptual idea of CMPS
 \hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX} and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
- The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. \hh{From a comparison of these registration positions, a } **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
-  \hh{High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.} 
+ The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
+  High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.
   \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
   \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'}
- The CMPS algorithm can assist firearm examiners with drawing a conclusion \hh{about the source of a comparison pair}. \hh{Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the } CMPS algorithm. 
+ The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair. Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm. 
 Thus, in this paper we present an open-source implementation of the CMPS algorithm \hh{in the R package CMPS available from XXX github / CRAN}. 
 With our implementation, one can compute the CMPS score of a comparison using the following code:
 
-\hh{XXX could you make this example functional?}
 ```{r, eval=FALSE}
 # install.packages("devtools") 
 # devtools::install_github("willju-wangqian/CMPS")
@@ -223,10 +219,8 @@ cmps.result.KM <- extract_feature_cmps(sig1, sig2)
 cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
 ```
 
-\wj{In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-match comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known non-match comparison), gets a CMPS score of 2.}
+In this example, the comparison between `sig1` and `sig2`, two signatures coming from the same source (a known-match comparison), gets a CMPS score of 17; the comparison between `sig1` and `sig3`, two signatures coming from different sources (a known non-match comparison), gets a CMPS score of 1.
 
-
-<!-- In the example in section "Implementation" we see that two bullet signatures coming from the same source get a CMPS score of X, while two signatures coming from different sources get a CMPS score of Y.  -->
 
 We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
 
@@ -242,55 +236,72 @@ Conceptually, the CMPS algorithm consists of three main steps:
 1. **cut the reference signature into consecutive, non-overlapping and equal-length basis segments:**
 The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`, which are referred as "basis segments".
 
-2. **identify candidate positions** For each basis segment a set of candidate positions on the reference signature is identified based on the segment's similarity to the reference. In a first step, the cross-correlation function of the segment to the reference is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are  considered further.
+\wj{the followings are revised}
 
-    2.1 **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. \hh{The position indicates the lag by which a base segment is moved with respect to its original placement.} A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
+2. **identify candidate positions:** For each basis segment a set of candidate \wj{registration XXX} positions on the comparison signature is identified based on the segment's similarity to the comparison. In a first step, the cross-correlation function of the segment to the comparison is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are considered further. Figure \autoref{fig:segplots} and \autoref{fig:seg_all} illustrate these ideas.
+
+    + **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
 
  
-    2.2 **Correlation peaks** The parameter `npeaks.set` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top 5 peaks in the correlation coefficient curve are identified as candidates  for registration.
+    + **Correlation peaks:** The parameter `npeaks.set` in `extract_feature_cmps(...)` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top 5 peaks in the cross-correlation curve are identified as candidates for registration. This strategy is referred as "multi-peak inspection" in @cmps.
 
-    2.3  **Multiple-length segments** If  `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding 5 peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Note that in \hh{cite original  paper}  the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. 
+    +  **Multiple-length segments:** If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding top 5 peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Figure \autoref{fig:seg_all} shows an example of 3 scales of basis segment 6 and their corresponding cross-correlation curves and identified peaks. If a single position (with a tolerance zone determined by `Tx`) results in a top peak in the cross-correlation curve in all three scales, it is called a consistent correlation peak and identified as a candidate for registration. Note that in @cmps the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. Additionally, this strategy is also referred as "multi-peak inspection at different segment lengths" in @cmps.
 
-<!--
-The best registration position is decided upon using a multi-peak inspection with or without different segment lengths:
-
-    2.2. **multi-peak inspection with different segment lengths:** for this version of the CMPS algorithm, each basis segment finds only one "best" registration position. This "best" registration position can be found by conducting multi-peak inspection multiple rounds. The first round is executed as stated in step 2.1. After that first round, the segment length is increased, a new cross-correlation curve is computed, and another set of  peaks in the cross-correlation curve is identified together with the candidate positions. Typically, fewer number of peaks are identified in this round (because the increased segment length reduces the chance of false positive peaks). This process can be repeated multiple times. In the last round, only one highest peak should \hh{XXX should? this is ambiguous. What happens if no peak or multiple peaks are found?} be identified. If the same or 'similar enough' (see step 3) position can be identified for all different segment length, this position will be selected as the "best" registration position and is called the "consistent correlation peak" (ccp). \wj{In order to use this version of the CMPS algorithm, we set `npeaks.set` as a numeric vector of multiple values. For example, if we set `npeaks.set = c(5, 3, 1)`, 5 peaks will be identified in the first round, 3 peaks in the second round, and 1 peak in the final round.} 
--->
-
-3. **determine the congruent registration position**:
-each candidate position corresponding to each of the basis segments gets one `vote`. Votes for candidate positions within a tolerance of `Tx` are tallied and the position with the highest number of votes gets chosen as the *congruent registration position*. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison.
+\wj{revised end}
 
 
-
-\hh{In the CMPS package, these three steps are implemented using a set of key functions:}
-
+3. **determine the congruent registration position:** Each candidate position corresponding to each of the basis segments gets one `vote`. Votes for candidate positions within a tolerance of `Tx` are tallied and the position with the highest number of votes gets chosen as the *congruent registration position*. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison.
 
 
-<!-- step 3) if the multi segment lengths strategy is being used, each basis segment would increase its length and compute a new cross-correlation function with the comparison profile in order to identify a potential “consistent correlation peak”; if the multi segment lengths strategy is not being used, each segment would then find 5 peaks in its cross-correlation function; -->
+In the CMPS package, these three steps are implemented using a set of key functions:
 
-* `get_seg_scale` takes a basis segment and increases its segment length. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length.
-
-* `get_ccr_peaks` takes a segment and the comparison signature, then computes the correlation coefficient curve between them and finds peaks on the correlation coefficient curve. The number of peaks detected is equal to `npeaks`. And we are using `rollapply` to find peaks on the curve effectively.
-
-* `get_ccp` checks if the "consistent correlation peak" exists under the framework of multi segment lengths strategy. Since we are requiring the highest segment scale identifies only one peak, we just need to check if this peak shows any "consistency". In other words, we check if this peak is also identified as a peak in other segment scales. 
+\wj{the followings are revised}
 
 
-* `get_CMPS` considers all basis segments and their identified peak positions to determine the congruent registration position. The goal is to find a peak position that is agreed by the most basis segments. Since small errors are allowed, a tolerance zone would serve as a selection window. `get_CMPS` will move this selection window from left to right and go through all possible positions and check the number of basis segment that identifies a peak in the selection window for each position. Since we are moving this tolerance zone from left to right one unit a time, some consecutive positions are expected to have the same number of basis segments. [?.?] In that case the median of all tied and consecutive positions will be chosen as the congruent registration position. As long as the congruent registration position is determined, the number of basis segments that identify a peak in this position is the CMPS score.
+* `get_seg_scale(segments, nseg, scale = 2)` takes a basis segment and increases its segment length. `segments` is a list containing all basis segments, generated by the function `get_segs(...)`; `nseg` is an integer indicating which basis segment the function should work with. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length. 
 
-Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified in step 3, and the length of the tolerance zone in step 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. 
-The main function that follows the CMPS algorithm is called `extract_feature_cmps`. It consists of all steps of the algorithm and receives parameters from the users. 
+* `get_ccr_peaks(comp, segments, seg_scale, nseg = 1, npeaks = 5)` computes the cross-correlation curve between a basis or scaled segment and the comparison signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to `npeaks`, which is an integer. `segments`, `seg_scale`, and `nseg` determines the segment in the cross-correlation computation, and `comp` gives the comparison signature. If the multi segment lengths strategy is used, then `get_ccr_peaks(...)` is called in a `lapply()` for each scale of the basis segment. The resulting list is called `ccr.list`.
 
-* `seg_length` specifies the length of basis segments [(in mm?)] mentioned in step 1; 
-* `Tx` gives the size of tolerance zone mentioned in step 4;
-* `npeaks.set` is a (vector of) integer value(s). The parameter determines the number of candidate positions and which strategy to  use to combine candidates.
-* `include` determines what information should be included in the function output. By default, `include = NULL` and the function output will only contain the `CMPS.score`. However, besides the most important `CMPS.score`, there are other pieces of information related to the CMPS score that one might be interested in, such as 
+* `get_ccp(ccr.list, Tx = 25)` tries to identify the "consistent correlation peak" (defined in algorithm step 2) under the framework of multi segment lengths strategy. `ccr.list` is described in the previous bullet point, and `Tx` determines the size of a tolerance zone used in identifying the consistent correlation peak. 
+
+
+* `get_CMPS(input.ccp, Tx = 25)` tallies votes from all basis segments and determines the congruent registration position. A position "receives" a vote from a basis segment if this basis segment identifies this position or a closed-enough position (within a tolerance zone defined by `Tx`) as a candidate registration position in algorithm step 2. The goal is to find a shift in registration position that is agreed by the most number of basis segments, so the position receiving the most number of votes is the congruent registration position. In case of ties the middle position is taken as the congruent registration position. Basis segments with the congruent registration position identified are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score.
+
+\wj{revised end}
+
+Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified on each scale level in step 2, and the length of the tolerance zone in both step 2 and 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. Additionally, as shown in @cmps, using multi segment lengths strategy reduces the number of "false positive" peaks in the cross-correlation curves, thus providing a more conservative way of identifying candidate positions.
+
+The main function that combines all steps in the CMPS algorithm described above is called `extract_feature_cmps(...)`. Default values and some explanations of its parameters are as following:
+
+```{r, eval=FALSE}
+extract_feature_cmps(
+  x,
+  y,
+  seg_length = 50,
+  Tx = 25,
+  npeaks.set = c(5, 3, 1),
+  include = NULL
+)
+```
+
+
+\wj{the followings are revised}
+* `x` and `y` are the two bullet signatures. Usually we take `x` as the reference signature (that will be divided into basis segments) and `y` as the comparison signature;
+* `seg_length` specifies the length of basis segments [(in mm?)] mentioned in algorithm step 1; 
+* `Tx` determines the size of the tolerance zone mentioned in both step 2 and 3;
+* `npeaks.set` is a (vector of) integer value(s). This parameter determines which strategy to use to generate candidate positions and the number of peaks to be identified;
+* `include` determines the output of the function. Besides the `CMPS.score`, many details of the comparison might be used to understand how the `CMPS.score` is computed. By default, `include = NULL` and the function output will only contain the `CMPS.score`; `include` can also be (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. if `"full_result"` (or its abbreviation) is specified, the ouput will include everything listed below.
   - `nseg`: the number of basis segments we get from the reference signature; this is also the highest possible CMPS score of the comparison;
   - `congruent.pos`: the congruent registration position;
-  - `congruent.seg.idx`: the indices of all basis segments that agree with the congruent registration position;
-  - `segments`: the list of basis segments used for the computation of CMPS score;
-  - `parameters`: all inputs of `extract_feature_cmps`
-For all possible options of `include`, please check the documentation of `extract_feature_cmps` or using `?extract_feature_cmps`. If we want everything to be included in the output, we can use `include = full_result`. These additional pieces of information are helpful in terms of understanding how we obtained such CMPS score. 
+  - `congruent.seg.idx`: the indices of all congruent matching profile segments;
+  - `ccp.list`: a list showing identified candidate positions of all basis segments; 
+  - `pos.df`: a data frame containing all candidate positions and the number of votes they received;
+  - `segments`: a list containing all basis segments;
+  - `parameters`: a list containing all input arguments of `extract_feature_cmps`;
   
+For more details, please check the documentation of `extract_feature_cmps` or use `?extract_feature_cmps`.
+
+\wj{revised end}
 
 <!-- [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf] -->
 <!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
@@ -321,25 +332,10 @@ library(CMPS)
 data(bullets)
 ```
 
-The `bullets` object is a data frame with 12 rows. Each row contains one signature.  `bullets$source` contains the URLs to the corresponding x3p file containing the topographic scan  from the NIST Ballistics Toolmark Research Database [@nistdb]. 
+`bullets$sigs` is a list of 12 numeric vectors corresponding to 12 bullet signatures. `bullets$source` contains the URLs to the corresponding x3p file containing the topographic scan  from the NIST Ballistics Toolmark Research Database [@nistdb]. 
 
 
-**extract_feature_cmps**
-
-`extract_feature_cmps` integrates all steps of the CMPS algorithm. It takes two bullet signatures and computes the CMPS score. Here, we are using the default values for all of the parameters:
-
-```{r, eval=FALSE}
-extract_feature_cmps(
-  x,
-  y,
-  seg_length = 50,
-  Tx = 25,
-  npeaks.set = c(5, 3, 1),
-  include = NULL
-)
-```
-
-The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sig 1, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sigs1, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
 
 ```{r, eval=TRUE}
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
@@ -360,8 +356,11 @@ cmps_without_multi_scale <-
 
 \hh{How about you go into a description of the results from the function `extract\_feature\_cmps`?}
 
+\wj{revised the following}
+Since `npeaks.set = c(5,3,1)`, `cmps_with_multi_scale` uses the multi segment lengths strategy. On the other hand, `cmps_without_multi_scale` doesn't use the multi segment lengths strategy, and each basis segment finds 5 candidate positions due to `npeaks.set = 5`. Since `include = "full_result"` the outputs of `extract_feature_cmps(...)` contain everything listed in the previous section. Moreover, as mentioned before, multi segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12.
+\wj{revised end}
 
-We can also compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons. 
+We can compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons as well. 
 
 ```{r alternative, echo = FALSE}
 lands <- unique(bullets$bulletland)
@@ -401,49 +400,6 @@ dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=land
 ```
 
 
-```{r eval=FALSE, echo=FALSE}
-lands <- unique(bullets$bulletland)
-
-comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
-                          stringsAsFactors = FALSE)
-
-comparisons <- comparisons %>% mutate(
-  aligned = purrr::map2(.x = land1, .y = land2, 
-                        .f = function(xx, yy) {
-                          land1 <- bullets$sigs[bullets$bulletland == xx][[1]]
-                          land2 <- bullets$sigs[bullets$bulletland == yy][[1]]
-                          land1$bullet <- "first-land"
-                          land2$bullet <- "second-land"
-                          
-                          sig_align(land1$sig, land2$sig)
-                        }))
-
-comparisons <- comparisons %>% 
-  mutate(cmps = aligned %>% purrr::map(.f = function(a) {
-    extract_feature_cmps(a$lands$sig1, a$lands$sig2, include = "full")
-  }))
-
-comparisons <- comparisons %>% 
-  mutate(
-    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
-    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
-  )
-
-comparisons <- comparisons %>%
-  mutate(
-    bulletA = gsub("(\\d)-\\d", "\\1", land1),
-    landA = gsub("\\d-(\\d)", "\\1", land1),
-    bulletB = gsub("(\\d)-\\d", "\\1", land2),
-    landB = gsub("\\d-(\\d)", "\\1", land2)
-  )
-
-comparisons0 <- comparisons
-dframe0 <- comparisons %>% select(-aligned, -cmps)
-
-dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
-
-```
-
 ```{r tiles, echo=FALSE, fig.cap="Overview of all 36 CMPS scores resulting from a bullet-to-bullet comparison of all pairwise comparisons of the six lands on each bullet.", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
@@ -464,18 +420,6 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
   theme_bw() +
   theme(aspect.ratio = 1)
 ```
-
-
-
-<!-- ```{r} -->
-<!-- #      [,1] [,2] [,3] [,4] [,5] [,6] -->
-<!-- # [1,]    2    3    2    3    1    2 -->
-<!-- # [2,]    2    1   17    1    2    3 -->
-<!-- # [3,]    1    1    3   14    2    2 -->
-<!-- # [4,]    2    1    1    1   10    1 -->
-<!-- # [5,]    2    2    1    1    1   15 -->
-<!-- # [6,]   16    3    1    2    1    1 -->
-<!-- ``` -->
 
 
 **Visualize and Understand CMPS results**
@@ -544,14 +488,6 @@ seg.plot[[1]]$scale_ccf_plot
 \caption{\label{fig:segplots}some text.}
 \end{figure}
 
-<!-- ```{r, echo=FALSE, eval=FALSE, out.width="300px", fig.cap="segment\\_plot for segment 6 at scale 1. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments. "} -->
-<!-- knitr::include_graphics("img/segplot1.png", dpi = 100) -->
-<!-- ``` -->
-
-
-<!-- ```{r, echo=FALSE, out.width="300px", fig.cap="scale\\_ccf\\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment"} -->
-<!-- knitr::include_graphics("img/segplot2.png", dpi = 100) -->
-<!-- ``` -->
 
 Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
 
