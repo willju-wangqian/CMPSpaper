@@ -243,9 +243,9 @@ The command `get_segs(x, len=50)` implements this step:  it takes  bullet signat
     + **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
 
  
-    + **Correlation peaks:** The parameter `npeaks.set` in `extract_feature_cmps(...)` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top 5 peaks in the cross-correlation curve are identified as candidates for registration. This strategy is referred as "multi-peak inspection" in @cmps.
+    + **Correlation peaks:** The parameter `npeaks.set` in `extract_feature_cmps(...)` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top five peaks in the cross-correlation curve are identified as candidates for registration. This strategy is referred as "multi-peak inspection" in @cmps.
 
-    +  **Multiple-length segments:** If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding top 5 peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Figure \autoref{fig:seg_all} shows an example of 3 scales of basis segment 6 and their corresponding cross-correlation curves and identified peaks. If a single position (with a tolerance zone determined by `Tx`) results in a top peak in the cross-correlation curve in all three scales, it is called a consistent correlation peak and identified as a candidate for registration. Note that in @cmps the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. Additionally, this strategy is also referred as "multi-peak inspection at different segment lengths" in @cmps.
+    +  **Multiple-length segments:** If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding top five peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Figure \autoref{fig:seg_all} shows an example of 3 scales of basis segment 6 and their corresponding cross-correlation curves and identified peaks. If a single position (with a tolerance zone determined by `Tx`) results in a top peak in the cross-correlation curve in all three scales, it is called a consistent correlation peak and identified as a candidate for registration. Note that in @cmps the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. Additionally, this strategy is also referred as "multi-peak inspection at different segment lengths" in @cmps.
 
 \wj{revised end}
 
@@ -269,9 +269,7 @@ In the CMPS package, these three steps are implemented using a set of key functi
 
 \wj{revised end}
 
-Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified on each scale level in step 2, and the length of the tolerance zone in both step 2 and 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. Additionally, as shown in @cmps, using multi segment lengths strategy reduces the number of "false positive" peaks in the cross-correlation curves, thus providing a more conservative way of identifying candidate positions.
-
-The main function that combines all steps in the CMPS algorithm described above is called `extract_feature_cmps(...)`. Default values and some explanations of its parameters are as following:
+Note that there are parameters in this algorithm that can be specified by the users to conform the structure of their data, such as the length of basis segments in step 1, the number of peaks identified on each scale level in step 2, and the length of the tolerance zone in both step 2 and 3. In our implementation of the CMPS algorithm we took the original CMPS paper [@cmps] as the reference to determine the default values of these parameters. Additionally, as shown in @cmps, using multi segment lengths strategy reduces the number of "false positive" peaks in the cross-correlation curves, thus providing a more conservative way of identifying candidate positions. The main function that combines all steps in the CMPS algorithm described above is called `extract_feature_cmps(...)`. Default values and some explanations of its parameters are as following:
 
 ```{r, eval=FALSE}
 extract_feature_cmps(
@@ -424,16 +422,17 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
 
 **Visualize and Understand CMPS results**
 
-We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. \autoref{fig:sigplot} continues with the example above and take its results. 
+We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. Figure \autoref{fig:sigplots} shows the plots generated by the first graphing function, `cmps_signature_plot()`, and continues with the example above. `cmps_signature_plot()` takes the output of `extract_feature_cmps(..., include = "full_result")` and returns a list of 5 elements. It creates an overall impression of how the reference signature aligns with the comparison signature at the congruent registration position.
 
-`cmps_signature_plot` takes the "full result" of `extract_feature_cmps` (setting `include = "full_result"`) and returns a list of 5 elements. 
+*   The first element is a plot called `segment_shift_plot`, which is shown in Figure \autoref{fig:sigplot}. On this plot only the congruent matching profile segments are plotted along with the comparison signature at the congruent registration position. 
 
-The first element is `segment_shift_plot`. On this plot only basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. 
+<!-- basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. -->
 
-  
+*   The second element is a plot called `signature_shift_plot`, which is shown in \autoref{fig:sigplot2}. On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted with solid lines. 
+
 \begin{figure}[hbt]
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:sigplot}The dark grey line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
+\caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
 ```{r sigplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 sig.plot <- cmps_signature_plot(
   cmps_with_multi_scale
@@ -442,31 +441,31 @@ sig.plot$segment_shift_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:sigplot2}The dark grey line shows the comparison signature; the red line shows the reference signature. Solid part is the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
+\caption{\label{fig:sigplot2}The black line shows the comparison signature; the red line shows the reference signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
 ```{r sigplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 sig.plot$signature_shift_plot
 ```
 \end{subfigure}
-\caption{\label{sigplots}\hh{The resulting two figures signature plots. We need a summarizing sentence here.}}
+\caption{\label{fig:sigplots} Two visual outputs of cmps\_signature\_plot()}
 \end{figure}
 
+*   Other elements of this list are `seg_shift` and `sig_shift`. `sig_shift` gives the congruent registration position, while `seg_shift` is a data frame showing the congruent matching profile segments and their identified candidate position closest to the congruent registration position.
 
+```{r, echo=TRUE, eval=TRUE}
+sig.plot$seg_shift
+```
 
-The second element is called `signature_shift_plot`. \hh{It is shown in \autoref{fig:sigplot2}.} On this visual both the reference signature and the comparison signature are plotted. The reference signature is aligned with the comparison signature based on the congruent registration position. And the congruent matching profile segments are highlighted. 
+<!-- These elements are essentially used for generating visuals above but also provide insights about the congruent registration position and the candidate positions found by each of the congruent matching profile segments.  -->
+<!-- which basis segments are the congruent matching profile segments. -->
 
+As `cmps_signature_plot()` focuses on the signature level, on the other hand, `cmps_segment_plot()` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps()`, but also takes an argument `seg.idx`, indicating which segment to be inspected. As shown in Figure \autoref{fig:segplots}, for example, after checking `sig.plot$seg_shift` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to take a closer look at segment 6 and understand the reason why it disagrees with the congruent registration position. `cmps_segment_plot()` also returns a list, of which each element corresponds to one segment scale of this basis segment. Then at each segment scale, we will have two plots, `segment_plot` and `scale_ccf_plot`. 
 
-Other elements of this list are `seg_shift`, `sig_shift`, and `seg.pos`. These elements are essentially used for generating visuals above but also provide insights about the best fitted position for each congruent matching profile segments and for the reference signature. `sig.plot$seg.pos` can also tell us which basis segments are the congruent matching profile segments. 
+*   Figure \autoref{fig:segplot} is the `segment_plot` of basis segment 6 at scale one (its original scale). Since when computing the CMPS score we used `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()`, 5 peaks are identified in the cross-correlation curve at scale one, and segment 6 at scale one is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. 
 
-As `cmps_signature_plot` focuses on the signature level, on the other hand, `cmps_segment_plot` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps`, but also takes an argument `seg.idx`, which indicates which segment to be inspected. For example, after checking `sig.plot$seg_shift` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to have a closer look at segment 6 and why it disagrees with the congruent registration position. `cmps_segment_plot` also returns a list, of which each element corresponds to one segment scale of this basis segment. Then for each segment scale, we will have two plots, `segment_plot` and `scale_ccf_plot`.
+<!-- Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`. -->
+<!-- Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks.  -->
 
-Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`.
-
-Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks. 
-
-
-
-And the `scale_ccf_plot` plots the cross-correlation curve. We can see that 5 highest peaks are identified and marked on the plot. 
-
+*   Figure \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at scale one. It shows the cross-correlation curve computed by the comparison signature and the scale-one basis segment 6. The five highest peaks are marked by dots on the curve.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -480,16 +479,15 @@ seg.plot[[1]]$segment_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a candidate position for the consistent correlation peak; the blue dashed lines show the region of the tolerance zone. We can see here none of the five highest peaks agrees with the candidate position, so a consistent correlation peak cannot be identified and we don't take segment 6 as a congruent matching profile segment}
+\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at scale 1. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in its highest segment scale; the blue dashed lines show the tolerance zone around the green dashed line. We can see here none of the five highest peaks at scale one is within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
 ```{r segplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 seg.plot[[1]]$scale_ccf_plot
 ```
 \end{subfigure}
-\caption{\label{fig:segplots}some text.}
+\caption{\label{fig:segplots} Two plots used to investigate basis segment 6 at scale one}
 \end{figure}
 
-
-Additionally, if we put `segment_plot` and `scale_ccf_plot` for all three segment scales together, we can have more insights about why segment 6 is not a congruent matching profile segment. 
+Additionally, users can have more insights about why segment 6 is not a congruent matching profile segment if we put the `segment_plot` and `scale_ccf_plot` of all three segment scales together, as shown in Figure \autoref{fig:seg_all} with the help of `ggpubr::ggarrange()`.
 
 \begin{figure}
 ```{r segplot3, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
@@ -502,14 +500,14 @@ ggarrange(
   ncol = 2, 
   nrow = 3)
 ```
-\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks.}
+\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three scales together. We are identifying five highest peaks at scale one, three peaks at scale two, and one peak at scale three since npeaks.set = c(5, 3, 1). The highest peak position at scale three is marked by the green dashed line across all segment scales, but it doesn't achieve the top five highest peaks at scale one, indicating that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi segment lengths strategy.}
 \end{figure}
 
 <!-- ```{r, echo=FALSE, out.width="400px", fig.cap="put segment\\_plot and scale\\_ccf\\_plot of all scales together. We are identifying five highest peaks at scale 1, three peaks at scale 2, and one peak at scale 3 since npeaks.set = c(5, 3, 1). Putting these plots together can help better understand why segment 6 is not a congruent matching profile segment. Here we can also see clearly that increasing segment length can reduce the number of false positive peaks."} -->
 <!-- knitr::include_graphics("img/segplot3.png", dpi = 100) -->
 <!-- ``` -->
 
-The red vertical dashed line indicates the congruent registration position. We can see that the segment 6 does obtain a peak near to the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. 
+In Figure \autoref{fig:seg_all}, the red vertical dashed line indicates the congruent registration position. We can see that the basis segment 6 does obtain a peak near the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. The identified top five peaks at scale one are also examples of "false positive" peaks. The "true positive" peak (the peak within the tolerance zone of the congruent registration position) is identified at scale two and three by increasing the segment length, which justifies the usage of multi segment lengths strategy.
 
 ## Results
 
