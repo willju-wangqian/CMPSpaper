@@ -75,6 +75,8 @@ dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + geom_tile() +
 
 
 
+#######################
+# check 1-4 vs 2-5, segment 8
 
 
 
