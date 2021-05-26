@@ -10,9 +10,10 @@ library(parallel)
 # hamby252_results <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252_results.rds")
 
-b252.full <-
-  readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252/bullets_hamby252_Sep9.rds")
-
+# b252.full <-
+#   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252/bullets_hamby252_Sep9.rds")
+b252.full <- 
+  readRDS("~/Research/CMPSpaper/preconsideration/bullets_hamby252_Sep9.rds")
 
 # generate bullet_id
 bulletid.tb <- b252.full %>% select(scan_id)
@@ -213,7 +214,8 @@ for (i in 1:3) {
   # include tank-rashed data
   # [TODO] MAKE THIS A CSV FILE
   t1.df <-
-    read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
+    # read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
+    read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
   tr.id <-
     c(
       t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
@@ -251,10 +253,15 @@ for (i in 1:3) {
   # add ground-truth for hamby 252
   studyinfo <-
     readxl::read_xlsx(
-      "C:/Research/Bullet/Bullet_Rcode/grooves/NRBTDSearchResults/Hamby (2009) Barrel/StudyInfo.xlsx",
+      "~/Research/CMPSpaper/preconsideration/StudyInfo.xlsx",
       sheet = 3,
       skip = 1
     )
+    # readxl::read_xlsx(
+    #   "C:/Research/Bullet/Bullet_Rcode/grooves/NRBTDSearchResults/Hamby (2009) Barrel/StudyInfo.xlsx",
+    #   sheet = 3,
+    #   skip = 1
+    # )
   
   keyss <- studyinfo$`Specimen ID`[-length(studyinfo$`Specimen ID`)]
   keyss <- tibble(specimen = keyss)

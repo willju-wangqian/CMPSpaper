@@ -10,12 +10,17 @@ library(parallel)
 # hamby44_results <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44_results.rds")
 
-b44.full <-
-  readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44/hamby44_manual5.rds")
+# b44.full <-
+#   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44/hamby44_manual5.rds")
+b44.full <- 
+  readRDS("~/Research/CMPSpaper/preconsideration/hamby44_manual5.rds")
 
 # rds file that stores indices of damaged scans
-idf.idx <-
-  readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44/idfidx.rds")
+# idf.idx <-
+#   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44/idfidx.rds")
+idf.idx <- 
+  readRDS("~/Research/CMPSpaper/preconsideration/idfidx.rds")
+
 idf.scan_id <- b44.full %>% slice(idf.idx) %>% .$scan_id
 
 

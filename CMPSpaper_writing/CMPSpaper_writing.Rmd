@@ -238,14 +238,14 @@ The command `get_segs(x, len=50)` implements this step:  it takes  bullet signat
 
 \wj{the followings are revised}
 
-2. **identify candidate positions:** For each basis segment a set of candidate \wj{registration XXX} positions on the comparison signature is identified based on the segment's similarity to the comparison. In a first step, the cross-correlation function of the segment to the comparison is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are considered further. Figure \autoref{fig:segplots} and \autoref{fig:seg_all} illustrate these ideas.
+2. **identify candidate positions:** For each basis segment a set of candidate \wj{registration XXX} positions on the comparison signature is identified based on the segment's similarity to the comparison. In a first step, the cross-correlation function of the segment to the comparison is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are considered further. \autoref{fig:segplots} and \autoref{fig:seg_all} illustrate these ideas.
 
     + **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
 
  
     + **Correlation peaks:** The parameter `npeaks.set` in `extract_feature_cmps(...)` determines the number of candidate positions and which strategy to  use to combine candidates: If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top five peaks in the cross-correlation curve are identified as candidates for registration. This strategy is referred as "multi-peak inspection" in @cmps.
 
-    +  **Multiple-length segments:** If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding top five peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. Figure \autoref{fig:seg_all} shows an example of 3 scales of basis segment 6 and their corresponding cross-correlation curves and identified peaks. If a single position (with a tolerance zone determined by `Tx`) results in a top peak in the cross-correlation curve in all three scales, it is called a consistent correlation peak and identified as a candidate for registration. Note that in @cmps the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. Additionally, this strategy is also referred as "multi-peak inspection at different segment lengths" in @cmps.
+    +  **Multiple-length segments:** If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, a multi segment lengths strategy will be used: finding top five peaks in the original scale, double the segment length and recalculate the cross-correlation function, then identify 3 peaks in the second scale and repeat the process for a basis segment that is doubled again to identify 1 peak in the third scale. \autoref{fig:seg_all} shows an example of 3 scales of basis segment 6 and their corresponding cross-correlation curves and identified peaks. If a single position (with a tolerance zone determined by `Tx`) results in a top peak in the cross-correlation curve in all three scales, it is called a consistent correlation peak and identified as a candidate for registration. Note that in @cmps the last element of `npeaks.set` in the multi segment lengths strategy is always set to be 1. Additionally, this strategy is also referred as "multi-peak inspection at different segment lengths" in @cmps.
 
 \wj{revised end}
 
@@ -358,8 +358,6 @@ cmps_without_multi_scale <-
 Since `npeaks.set = c(5,3,1)`, `cmps_with_multi_scale` uses the multi segment lengths strategy. On the other hand, `cmps_without_multi_scale` doesn't use the multi segment lengths strategy, and each basis segment finds 5 candidate positions due to `npeaks.set = 5`. Since `include = "full_result"` the outputs of `extract_feature_cmps(...)` contain everything listed in the previous section. Moreover, as mentioned before, multi segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12.
 \wj{revised end}
 
-We can compute the CMPS scores (using the multi segment lengths strategy) for all 36 land-by-land comparisons as well. 
-
 ```{r alternative, echo = FALSE}
 lands <- unique(bullets$bulletland)
 
@@ -397,34 +395,11 @@ dframe <- comparisons %>% select(-sig1, -sig2)
 dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
 ```
 
-
-```{r tiles, echo=FALSE, fig.cap="Overview of all 36 CMPS scores resulting from a bullet-to-bullet comparison of all pairwise comparisons of the six lands on each bullet.", out.width=".7\\textwidth", fig.align="center"}
-dframe <- dframe %>% mutate(
-  landA = paste0("L", landA),
-  landB = paste0("L", landB),
-  landB = factor(landB, levels = paste0("L", c(2:6,1))),
-  bulletA = paste0("Bullet ", bulletA),
-  bulletB = paste0("Bullet ", bulletB)
-)
-
-dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) + 
-  geom_tile() + 
-  geom_tile(aes(colour="same barrel"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
-  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
-  scale_colour_manual("Source", values="darkorange") +
-  facet_grid(bulletB ~ bulletA) + xlab("Land A") + 
-  ylab("Land B") + theme(aspect.ratio = 1) +
-  geom_text(aes(label=cmps_score)) +
-  theme_bw() +
-  theme(aspect.ratio = 1)
-```
-
-
 **Visualize and Understand CMPS results**
 
-We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. Figure \autoref{fig:sigplots} shows the plots generated by the first graphing function, `cmps_signature_plot()`, and continues with the example above. `cmps_signature_plot()` takes the output of `extract_feature_cmps(..., include = "full_result")` and returns a list of 5 elements. It creates an overall impression of how the reference signature aligns with the comparison signature at the congruent registration position.
+We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. \autoref{fig:sigplots} shows the plots generated by the first graphing function, `cmps_signature_plot()`, and continues with the example above. `cmps_signature_plot()` takes the output of `extract_feature_cmps(..., include = "full_result")` and returns a list of 5 elements. It creates an overall impression of how the reference signature aligns with the comparison signature at the congruent registration position.
 
-*   The first element is a plot called `segment_shift_plot`, which is shown in Figure \autoref{fig:sigplot}. On this plot only the congruent matching profile segments are plotted along with the comparison signature at the congruent registration position. 
+*   The first element is a plot called `segment_shift_plot`, which is shown in \autoref{fig:sigplot}. On this plot only the congruent matching profile segments are plotted along with the comparison signature at the congruent registration position. 
 
 <!-- basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. -->
 
@@ -458,14 +433,14 @@ sig.plot$seg_shift
 <!-- These elements are essentially used for generating visuals above but also provide insights about the congruent registration position and the candidate positions found by each of the congruent matching profile segments.  -->
 <!-- which basis segments are the congruent matching profile segments. -->
 
-As `cmps_signature_plot()` focuses on the signature level, on the other hand, `cmps_segment_plot()` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps()`, but also takes an argument `seg.idx`, indicating which segment to be inspected. As shown in Figure \autoref{fig:segplots}, for example, after checking `sig.plot$seg_shift` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to take a closer look at segment 6 and understand the reason why it disagrees with the congruent registration position. `cmps_segment_plot()` also returns a list, of which each element corresponds to one segment scale of this basis segment. Then at each segment scale, we will have two plots, `segment_plot` and `scale_ccf_plot`. 
+As `cmps_signature_plot()` focuses on the signature level, on the other hand, `cmps_segment_plot()` focuses on the segment level. It not only takes the "full result" of `extract_feature_cmps()`, but also takes an argument `seg.idx`, indicating which segment to be inspected. As shown in \autoref{fig:segplots}, for example, after checking `sig.plot$seg_shift` we noticed that segment 6 is not one of the congruent matching profile segments. So we can set `seg.idx = 6` in order to take a closer look at segment 6 and understand the reason why it disagrees with the congruent registration position. `cmps_segment_plot()` also returns a list, of which each element corresponds to one segment scale of this basis segment. Then at each segment scale, we will have two plots, `segment_plot` and `scale_ccf_plot`. 
 
-*   Figure \autoref{fig:segplot} is the `segment_plot` of basis segment 6 at scale one (its original scale). Since when computing the CMPS score we used `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()`, 5 peaks are identified in the cross-correlation curve at scale one, and segment 6 at scale one is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. 
+*   \autoref{fig:segplot} is the `segment_plot` of basis segment 6 at scale one (its original scale). Since when computing the CMPS score we used `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()`, 5 peaks are identified in the cross-correlation curve at scale one, and segment 6 at scale one is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. 
 
 <!-- Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`. -->
 <!-- Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks.  -->
 
-*   Figure \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at scale one. It shows the cross-correlation curve computed by the comparison signature and the scale-one basis segment 6. The five highest peaks are marked by dots on the curve.
+*   \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at scale one. It shows the cross-correlation curve computed by the comparison signature and the scale-one basis segment 6. The five highest peaks are marked by dots on the curve.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -487,7 +462,7 @@ seg.plot[[1]]$scale_ccf_plot
 \caption{\label{fig:segplots} Two plots used to investigate basis segment 6 at scale one}
 \end{figure}
 
-Additionally, users can have more insights about why segment 6 is not a congruent matching profile segment if we put the `segment_plot` and `scale_ccf_plot` of all three segment scales together, as shown in Figure \autoref{fig:seg_all} with the help of `ggpubr::ggarrange()`.
+Additionally, users can have more insights about why segment 6 is not a congruent matching profile segment if we put the `segment_plot` and `scale_ccf_plot` of all three segment scales together, as shown in \autoref{fig:seg_all} with the help of `ggpubr::ggarrange()`.
 
 \begin{figure}
 ```{r segplot3, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
@@ -507,7 +482,7 @@ ggarrange(
 <!-- knitr::include_graphics("img/segplot3.png", dpi = 100) -->
 <!-- ``` -->
 
-In Figure \autoref{fig:seg_all}, the red vertical dashed line indicates the congruent registration position. We can see that the basis segment 6 does obtain a peak near the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. The identified top five peaks at scale one are also examples of "false positive" peaks. The "true positive" peak (the peak within the tolerance zone of the congruent registration position) is identified at scale two and three by increasing the segment length, which justifies the usage of multi segment lengths strategy.
+In \autoref{fig:seg_all}, the red vertical dashed line indicates the congruent registration position. We can see that the basis segment 6 does obtain a peak near the congruent registration position at scale two and scale three, respectively; however, this position doesn't give one of the five highest peaks at scale one. As a result, segment 6 fails to identify the consistent correlation peak (ccp) and fails to become one of the congruent matching profile segments according to the multi segment lengths strategy. The identified top five peaks at scale one are also examples of "false positive" peaks. The "true positive" peak (the peak within the tolerance zone of the congruent registration position) is identified at scale two and three by increasing the segment length, which justifies the usage of multi segment lengths strategy.
 
 ## Results
 
@@ -519,27 +494,53 @@ hamby44_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44_results.rds"
 ```
 
 
-As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in (original paper) and is able to be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann using the same set of parameters for both data sets, removed outliers, and obtained bullet signatures for each bullet land engraving. Note that in the work of @cmps they used a different framework to obtain bullet signatures. However, since NIST's work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
+As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that in the work of @cmps they used a different framework to obtain bullet signatures. However, since the work of @cmps is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
-The CMPS score can be considered as a similarity score of two signatures. Then how can we get a similarity score of two bullets based on CMPS scores? In (the original paper) researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet comparisons based on CMPS scores of bullet signature comparisons. For example, there are in total 6 $\times$ 6 signature comparisons in order to compare two bullets in Hamby study since each bullet has 6 LEAs and each LEA generates a bullet signature. And a CMPS score will be found for every signature comparison. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of signature comparisons that are in the same phase.
+The CMPS score can be considered as a similarity score of two signatures. Then how can we get a similarity score of two bullets based on CMPS scores (each bullet consists of six bullet signatures in our case)? In @cmps researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
 
-Here are the CMPS scores of all 36 signature comparisons of the bullets in the example above.
+We can continue with the example used in previous sections. `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`. As mentioned before, each bullet has six land engravings, resulting in six bullet signatures. Thus, there are 36 pairwise bullet signature comparisons in total. We compute the CMPS scores for all 36 comparisons using multi segment lengths strategy with default parameters, and the result is shown in \autoref{fig:tiles}
 
-```{r}
-#      [,1] [,2] [,3] [,4] [,5] [,6]
-# [1,]    2    3    2    3    1    2
-# [2,]    2    1   17    1    2    3
-# [3,]    1    1    3   14    2    2
-# [4,]    2    1    1    1   10    1
-# [5,]    2    2    1    1    1   15
-# [6,]   16    3    1    2    1    1
+```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets", out.width=".7\\textwidth", fig.align="center"}
+dframe <- dframe %>% mutate(
+  landA = paste0("L", landA),
+  landB = paste0("L", landB),
+  landB = factor(landB, levels = paste0("L", c(2:6,1))),
+  bulletA = paste0("Bullet ", bulletA),
+  bulletB = paste0("Bullet ", bulletB)
+)
+
+dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) + 
+  geom_tile() + 
+  geom_tile(aes(colour="same barrel"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
+  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
+  scale_colour_manual("Source", values="darkorange") +
+  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
+  ylab("Bullet2 Lands") + theme(aspect.ratio = 1) +
+  geom_text(aes(label=cmps_score)) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
 ```
 
-In this example, the $\mathrm{CMPS_{max}}=17$ and $\mathrm{\overline{CMPS}_{max}}=(16+3+17+14+10+15)/6=12.5$. 
+
+<!-- based on CMPS scores of bullet signature comparisons. For example, there are in total 6 $\times$ 6 signature comparisons in order to compare two bullets in Hamby study since each bullet has 6 LEAs and each LEA generates a bullet signature. And a CMPS score will be found for every signature comparison. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of signature comparisons that are in the same phase. -->
+
+<!-- Here are the CMPS scores of all 36 signature comparisons of the bullets in the example above. -->
+
+<!-- ```{r} -->
+<!-- #      [,1] [,2] [,3] [,4] [,5] [,6] -->
+<!-- # [1,]    2    3    2    3    1    2 -->
+<!-- # [2,]    2    1   17    1    2    3 -->
+<!-- # [3,]    1    1    3   14    2    2 -->
+<!-- # [4,]    2    1    1    1   10    1 -->
+<!-- # [5,]    2    2    1    1    1   15 -->
+<!-- # [6,]   16    3    1    2    1    1 -->
+<!-- ``` -->
+
+In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score is 17, and $\mathrm{\overline{CMPS}_{max}}$, the highest possible mean CMPS score of comparisons in the same phase, is $(3+17+14+10+15+16)/6=12.5$. 
 
 **Hamby 252**
 
-Figure 2 shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in the [original paper] since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). Table x shows some summary statistics. 
+Figure 2 shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). Table x shows some summary statistics. 
 
 The parameters we used in `extract_feature_cmps` are:
 
@@ -563,7 +564,7 @@ knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 
 table 1:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(knitr)
 library(kableExtra)
 # rtt <- readRDS("summary_table.rds")
