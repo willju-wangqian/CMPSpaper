@@ -52,6 +52,8 @@ output: rticles::rjournal_article
 library(knitr)
 library(tidyverse)
 library(bulletxtrctr)
+library(knitr)
+library(kableExtra)
 
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -249,8 +251,7 @@ The command `get_segs(x, len=50)` implements this step:  it takes  bullet signat
 
 
 
-3. **determine the congruent registration position:** Each candidate position corresponding to each of the basis segments gets one `vote`. Votes for candidate positions within a tolerance of `Tx` are tallied and the position with the highest number of votes gets chosen as the *congruent registration position*. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison. \hh{XXX what happens when there are ties after the vote?}
-
+3. **determine the congruent registration position:** \wj{A candidate position "receives" `votes` from basis segments that identify it or a close position within a tolerance zone of `Tx` as a candidate position in step 2. Votes for all candidate positions} are tallied and the position with the highest number of votes gets chosen as the *congruent registration position*. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison. \hh{XXX what happens when there are ties after the vote?}
 
 In the CMPS package, these three steps are implemented using a set of key functions:
 
@@ -261,7 +262,7 @@ In the CMPS package, these three steps are implemented using a set of key functi
 
 * `get_ccr_peaks(comp, segments, seg_scale, nseg = 1, npeaks = 5)` computes the cross-correlation curve between a basis or scaled segment and the comparison signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to `npeaks`, which is an integer. `segments`, `seg_scale`, and `nseg` determines the segment in the cross-correlation computation, and `comp` gives the comparison signature. If the multi segment lengths strategy is used, then `get_ccr_peaks(...)` is called in a `lapply()` for each scale of the basis segment. The resulting list is called `ccr.list`.
 
-* `get_ccp(ccr.list, Tx = 25)` tries to identify the "consistent correlation peak" (defined in algorithm step 2) under the framework of multi segment lengths strategy. `ccr.list` is described in the previous bullet point, and `Tx` determines the size of a tolerance zone used in identifying the consistent correlation peak. \hh{XXX what happens when there is no consistent correlation peak?}
+* `get_ccp(ccr.list, Tx = 25)` tries to identify the "consistent correlation peak" (defined in algorithm step 2) under the framework of multi segment lengths strategy. `ccr.list` is described in the previous bullet point, and `Tx` determines the size of a tolerance zone used in identifying the consistent correlation peak. \hh{XXX what happens when there is no consistent correlation peak?} `get_ccp(...)` returns `NULL` if there is no consistent correlation peak.
 
 
 * `get_CMPS(input.ccp, Tx = 25)` \hh{XXX how is `get\_CMPS` different from the extract function?} tallies votes from all basis segments and determines the congruent registration position. A position "receives" a vote from a basis segment if this basis segment identifies this position or a closed-enough position (within a tolerance zone defined by `Tx`) as a candidate registration position in algorithm step 2. The goal is to find a shift in registration position that is agreed by the most number of basis segments, so the position receiving the most number of votes is the congruent registration position. In case of ties the middle position is taken as the congruent registration position. Basis segments with the congruent registration position identified are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score.
@@ -331,7 +332,7 @@ data(bullets)
 `bullets$sigs` is a list of 12 numeric vectors corresponding to 12 bullet signatures. `bullets$source` contains the URLs to the corresponding x3p file containing the topographic scan  from the NIST Ballistics Toolmark Research Database [@nistdb]. 
 
 
-The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sigs1, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects `sigs2` and `sigs1`, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
 
 ```{r, eval=TRUE}
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
@@ -486,9 +487,138 @@ In \autoref{fig:seg_all}, the red vertical dashed line indicates the congruent r
 
 **Metrics Based on CMPS scores**
 
-```{r, eval=FALSE, echo=FALSE}
-hamby252_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252_results.rds")
-hamby44_results <- readRDS("C:/Research/Bullet/Bullet_Rcode/hamby44_results.rds")
+```{r hamby252-data, eval=TRUE, echo=FALSE}
+# for hamby 252
+N <- 3
+CMPS_hamby252_results <- list()
+CMPS_hamby252_results$span1 <- list(0.75, 0.25, 0.25)
+CMPS_hamby252_results$signame <-
+  list("sigs75", "sigs25", "sigs25_1062")
+CMPS_hamby252_results$npeaks.set <-
+  list(c(5, 3, 1),
+       c(5, 3, 1),
+       c(10, 6, 2))
+CMPS_hamby252_results$seg_length <- list(50, 50, 50)
+CMPS_hamby252_results$Tx <- list(25, 25, 25)
+CMPS_hamby252_results$titlee <- list()
+CMPS_hamby252_results$filename <- list()
+for (i in 1:N) {
+  CMPS_hamby252_results$titlee[[i]] <-
+    paste0(
+      "npeaks.set=c(",
+      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
+      ")",
+      ", span1=",
+      CMPS_hamby252_results$span1[[i]],
+      ", span2=0.03, len=",
+      CMPS_hamby252_results$seg_length[[i]],
+      ", Tx=",
+      CMPS_hamby252_results$Tx[[i]]
+    )
+  CMPS_hamby252_results$filename[[i]] <- 
+    paste(
+      "hamby252",
+      CMPS_hamby252_results$span1[[i]]*100,
+      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
+      CMPS_hamby252_results$seg_length[[i]],
+      CMPS_hamby252_results$Tx[[i]],
+      sep = "_"
+    )
+}
+CMPS_hamby252_results$cmps.table <- list()
+CMPS_hamby252_results$plot <- list()
+
+for(i in 1:N){
+  CMPS_hamby252_results$cmps.table[[i]] <- 
+  read.csv(file = paste("./data/", 
+                        CMPS_hamby252_results$filename[[i]], 
+                        ".csv",
+                        sep = ""))
+}
+
+# generate plots
+for (i in 1:3) {
+  hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
+  
+  hamby252.plot.list <- list()
+  titlee <- CMPS_hamby252_results$titlee[[i]]
+  
+  hamby252.plot.list[[1]] <- hamby252.cmps %>% ggplot() +
+    geom_histogram(aes(x = cmps.max.m,
+                       fill = as.factor(type_truth)), binwidth = 1) +
+    labs(
+      fill = "Comparison Type",
+      x = expression(CMPS[max]),
+      title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 27, 1)) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) 
+    
+  
+  hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
+    geom_histogram(aes(x = cmps.maxbar.m,
+                       fill = as.factor(type_truth)), binwidth = 1) +
+    labs(
+      x = expression(bar(CMPS)[max]),
+      fill = "Comparison Type",
+      title = expression(paste(
+        "Hamby252 - ", bar(CMPS)[max], " Distribution"
+      )),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 24, 1)) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) 
+  
+  plot <- ggarrange(plotlist = hamby252.plot.list,
+                    nrow = 1,
+                    ncol = 2)
+  CMPS_hamby252_results$plot[[i]] <- plot
+}
+
+```
+
+```{r hamby44-data, eval=TRUE, echo=FALSE}
+N <- 3
+CMPS_hamby44_results <- list()
+CMPS_hamby44_results$span1 <- list(0.25, 0.25, 0.75)
+CMPS_hamby44_results$signame <-
+  list("sigs25_531", "sigs25_1061", "sigs75_531")
+CMPS_hamby44_results$npeaks.set <-
+  list(c(5, 3, 1),
+       c(10, 6, 1),
+       c(5, 3, 1))
+CMPS_hamby44_results$seg_length <- as.list(rep(61, 3))
+CMPS_hamby44_results$Tx <- as.list(rep(30, 3))
+CMPS_hamby44_results$titlee <- list()
+CMPS_hamby44_results$filename <- list()
+for (i in 1:N) {
+  CMPS_hamby44_results$titlee[[i]] <-
+    paste0(
+      "npeaks.set=c(",
+      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
+      ")",
+      ", span1=",
+      CMPS_hamby44_results$span1[[i]],
+      ", span2=0.03, len=",
+      CMPS_hamby44_results$seg_length[[i]],
+      ", Tx=",
+      CMPS_hamby44_results$Tx[[i]]
+    )
+  CMPS_hamby44_results$filename[[i]] <- 
+    paste(
+      "hamby44",
+      CMPS_hamby44_results$span1[[i]]*100,
+      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
+      CMPS_hamby44_results$seg_length[[i]],
+      CMPS_hamby44_results$Tx[[i]],
+      sep = "_"
+    )
+}
+CMPS_hamby44_results$cmps.table <- list()
+CMPS_hamby44_results$plot <- list()
 ```
 
 
@@ -534,7 +664,7 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
 <!-- # [6,]   16    3    1    2    1    1 -->
 <!-- ``` -->
 
-In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score is 17, and $\mathrm{\overline{CMPS}_{max}}$, the highest possible mean CMPS score of comparisons in the same phase, is $(3+17+14+10+15+16)/6=12.5$. 
+In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score, is 17, and $\mathrm{\overline{CMPS}_{max}}$, the highest possible mean CMPS score of comparisons in the same phase, is $(3+17+14+10+15+16)/6=12.5$. 
 
 **Hamby 252**
 
@@ -563,8 +693,6 @@ knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 table 1:
 
 ```{r, echo=FALSE, warning=FALSE}
-library(knitr)
-library(kableExtra)
 # rtt <- readRDS("summary_table.rds")
 # colnames(rtt) <- 
 rtt <- data.frame(parameters = c("span1=0.25, (5, 3, 1)", "span1=0.25, (10, 6, 1)", "span1=0.75, (5, 3, 1)"),
