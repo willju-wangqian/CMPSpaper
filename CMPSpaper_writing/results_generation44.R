@@ -45,6 +45,7 @@ CMPS_hamby44_results$npeaks.set <-
 CMPS_hamby44_results$seg_length <- as.list(rep(61, 3))
 CMPS_hamby44_results$Tx <- as.list(rep(30, 3))
 CMPS_hamby44_results$titlee <- list()
+CMPS_hamby44_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby44_results$titlee[[i]] <-
     paste0(
@@ -57,6 +58,15 @@ for (i in 1:N) {
       CMPS_hamby44_results$seg_length[[i]],
       ", Tx=",
       CMPS_hamby44_results$Tx[[i]]
+    )
+  CMPS_hamby44_results$filename[[i]] <- 
+    paste(
+      "hamby44",
+      CMPS_hamby44_results$span1[[i]]*100,
+      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
+      CMPS_hamby44_results$seg_length[[i]],
+      CMPS_hamby44_results$Tx[[i]],
+      sep = "_"
     )
 }
 CMPS_hamby44_results$cmps.table <- list()
@@ -172,7 +182,7 @@ for (i in 1:N) {
   ))
   
   ## parallel setup
-  cl <- makeCluster(6)
+  cl <- makeCluster(7)
   
   par.setup <- parLapply(cl, 1:length(cl),
                          function(xx) {
@@ -310,6 +320,16 @@ for (i in 1:N) {
   # save result in a list
   CMPS_hamby44_results$cmps.table[[i]] <- hamby44.cmps
   
+}
+
+################################
+# save data as csv
+data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/"
+
+for(i in 1:N){
+  write.csv(
+    CMPS_hamby44_results$cmps.table[[i]] %>% select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
+    file = paste(data_path, CMPS_hamby44_results$filename[[i]], ".csv", sep = ""))
 }
 
 

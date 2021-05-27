@@ -9,6 +9,8 @@ library(parallel)
 # from the x3p data, re-run CMPS results for hamby 252
 # hamby252_results <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252_results.rds")
+hamby252_results <- 
+  readRDS("~/Research/CMPSpaper/preconsideration/hamby252_results.rds")
 
 # b252.full <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252/bullets_hamby252_Sep9.rds")
@@ -24,7 +26,104 @@ bulletid.tb <- bulletid.tb %>% mutate(
   bullet_id = paste(barrel_id, bullet)
 )
 
+# remove x3p files
+b252 <- b252.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
 
+# get bullet id
+b252$bullet_id <- bulletid.tb %>% pull(bullet_id)
+
+# get all comparisons
+b.cb <- unique(b252$bullet_id) %>% utils::combn(m = 2)
+p <- 1:595
+
+# remove damaged data
+tmp.tibble <- tibble(bullet1 = b.cb[1,], 
+                     bullet2 = b.cb[2,])
+
+tmp.tibble <- tmp.tibble %>% mutate(
+  type = if_else(
+    bullet1 %>% str_extract("Br\\d+") ==
+      bullet2 %>% str_extract("Br\\d+"),
+    "KM",
+    "KNM"
+  ),
+  type = if_else(is.na(type), "Ukn", type)
+)
+
+# include tank-rashed data
+# [TODO] MAKE THIS A CSV FILE
+t1.df <-
+  # read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
+  read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
+tr.id <-
+  c(
+    t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
+    "Br6-2-1",
+    "Br9-2-4"
+  )
+
+######################################
+# add ground-truth for hamby 252
+studyinfo <-
+  readxl::read_xlsx(
+    "~/Research/CMPSpaper/preconsideration/StudyInfo.xlsx",
+    sheet = 3,
+    skip = 1
+  )
+# readxl::read_xlsx(
+#   "C:/Research/Bullet/Bullet_Rcode/grooves/NRBTDSearchResults/Hamby (2009) Barrel/StudyInfo.xlsx",
+#   sheet = 3,
+#   skip = 1
+# )
+
+keyss <- studyinfo$`Specimen ID`[-length(studyinfo$`Specimen ID`)]
+keyss <- tibble(specimen = keyss)
+keyss <- keyss %>% mutate(
+  barrel = specimen %>% str_split(" "),
+  barrel.id = purrr::map_chr(barrel, function(bb) {
+    bb[1]
+  }),
+  bullet.id = purrr::map_chr(barrel, function(bb) {
+    bb[3]
+  })
+) %>% select(-barrel)
+
+# obtain the matching keys
+keyss <- keyss %>% filter(!(bullet.id %>% str_detect("\\d+")))
+
+tmp.ukn <-
+  tibble(
+    col1 = tmp.tibble$bullet1 %>% str_extract(" [A-Z]") %>% str_trim(),
+    col2 = tmp.tibble$bullet2 %>% str_extract(" [A-Z]") %>% str_trim()
+  )
+
+# left join the ground truth
+tmp.tibble$b1t <-
+  tmp.ukn %>% left_join(keyss, by = c("col1" = "bullet.id")) %>%
+  pull(barrel.id) %>% str_remove("Brl")
+tmp.tibble$b2t <-
+  tmp.ukn %>% left_join(keyss, by = c("col2" = "bullet.id")) %>%
+  pull(barrel.id) %>% str_remove("Brl")
+
+# find KM KNM
+tmp.tibble <- tmp.tibble %>% mutate(
+  b1t = if_else(
+    is.na(b1t),
+    bullet1 %>% str_extract("Br\\d+") %>% str_remove("Br"),
+    b1t
+  ),
+  b2t = if_else(
+    is.na(b2t),
+    bullet2 %>% str_extract("Br\\d+") %>% str_remove("Br"),
+    b2t
+  ),
+  b1t = as.numeric(b1t),
+  b2t = as.numeric(b2t),
+  type_truth = if_else(b1t == b2t, "KM", "KNM")
+)
+
+### set up parameters
+N <- 3
 CMPS_hamby252_results <- list()
 CMPS_hamby252_results$span1 <- list(0.75, 0.25, 0.25)
 CMPS_hamby252_results$signame <-
@@ -36,7 +135,8 @@ CMPS_hamby252_results$npeaks.set <-
 CMPS_hamby252_results$seg_length <- list(50, 50, 50)
 CMPS_hamby252_results$Tx <- list(25, 25, 25)
 CMPS_hamby252_results$titlee <- list()
-for (i in 1:3) {
+CMPS_hamby252_results$filename <- list()
+for (i in 1:N) {
   CMPS_hamby252_results$titlee[[i]] <-
     paste0(
       "npeaks.set=c(",
@@ -49,14 +149,21 @@ for (i in 1:3) {
       ", Tx=",
       CMPS_hamby252_results$Tx[[i]]
     )
+  CMPS_hamby252_results$filename[[i]] <- 
+    paste(
+      "hamby252",
+      CMPS_hamby252_results$span1[[i]]*100,
+      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
+      CMPS_hamby252_results$seg_length[[i]],
+      CMPS_hamby252_results$Tx[[i]],
+      sep = "_"
+    )
 }
 CMPS_hamby252_results$cmps.table <- list()
 CMPS_hamby252_results$plot <- list()
 
-# remove x3p files
-b252 <- b252.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
 
-for (i in 1:3) {
+for (i in 1:N) {
   # i <- 1
   
   b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
@@ -92,31 +199,28 @@ for (i in 1:3) {
     }
   ))
   
-  b252$bullet_id <- bulletid.tb %>% pull(bullet_id)
-  
-  # get all comparisons
-  b.cb <- unique(b252$bullet_id) %>% utils::combn(m = 2)
-  p <- 1:595
+
   
   ## parallel setup
-  cl <- makeCluster(6)
-  
-  par.setup <- parLapply(cl, 1:length(cl),
-                         function(xx) {
-                           library(tidyverse)
-                           library(bulletxtrctr)
-                           library(x3ptools)
-                           library(CMPS)
-                         })
-  
-  clusterExport(cl,
-                c("b252", "b.cb", "p",
-                  "CMPS_hamby252_results", "i"),
-                envir = globalenv())
+  # cl <- makeCluster(6)
+  # 
+  # par.setup <- parLapply(cl, 1:length(cl),
+  #                        function(xx) {
+  #                          library(tidyverse)
+  #                          library(bulletxtrctr)
+  #                          library(x3ptools)
+  #                          library(CMPS)
+  #                        })
+  # 
+  # clusterExport(cl,
+  #               c("b252", "b.cb", "p",
+  #                 "CMPS_hamby252_results", "i"),
+  #               envir = globalenv())
   
   # start the parallel computing
   system.time({
-    tmp.252.list <- parLapply(cl, p, function(cb.idx) {
+    # tmp.252.list <- parLapply(cl, p, function(cb.idx) {
+    tmp.252.list <- mclapply(p, function(cb.idx) {
       # cat(" ############# \n", "start of ", cb.idx, "\n")
       
       tmp.lands <-
@@ -171,7 +275,8 @@ for (i in 1:3) {
         bullet2 = b.cb[, cb.idx][2],
         cmps.table = list(cmps.table)
       )
-    })
+    # })
+    }, mc.cores = detectCores())
   })
   
   # user  system elapsed
@@ -180,7 +285,7 @@ for (i in 1:3) {
   
   hamby252.cmps <- do.call(rbind, tmp.252.list)
   
-  stopCluster(cl)
+  # stopCluster(cl)
   
   ##################################################
   # before removing tank-rashed data
@@ -201,27 +306,7 @@ for (i in 1:3) {
     )
   )
   
-  hamby252.cmps <- hamby252.cmps %>% mutate(
-    type = if_else(
-      bullet1 %>% str_extract("Br\\d+") ==
-        bullet2 %>% str_extract("Br\\d+"),
-      "KM",
-      "KNM"
-    ),
-    type = if_else(is.na(type), "Ukn", type)
-  )
   
-  # include tank-rashed data
-  # [TODO] MAKE THIS A CSV FILE
-  t1.df <-
-    # read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
-    read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
-  tr.id <-
-    c(
-      t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
-      "Br6-2-1",
-      "Br9-2-4"
-    )
   
   hamby252.cmps$cmps.table.m <-
     lapply(hamby252.cmps$cmps.table, function(tt) {
@@ -249,71 +334,26 @@ for (i in 1:3) {
     )
   )
   
-  ######################################
-  # add ground-truth for hamby 252
-  studyinfo <-
-    readxl::read_xlsx(
-      "~/Research/CMPSpaper/preconsideration/StudyInfo.xlsx",
-      sheet = 3,
-      skip = 1
-    )
-    # readxl::read_xlsx(
-    #   "C:/Research/Bullet/Bullet_Rcode/grooves/NRBTDSearchResults/Hamby (2009) Barrel/StudyInfo.xlsx",
-    #   sheet = 3,
-    #   skip = 1
-    # )
-  
-  keyss <- studyinfo$`Specimen ID`[-length(studyinfo$`Specimen ID`)]
-  keyss <- tibble(specimen = keyss)
-  keyss <- keyss %>% mutate(
-    barrel = specimen %>% str_split(" "),
-    barrel.id = purrr::map_chr(barrel, function(bb) {
-      bb[1]
-    }),
-    bullet.id = purrr::map_chr(barrel, function(bb) {
-      bb[3]
-    })
-  ) %>% select(-barrel)
-  
-  # obtain the matching keys
-  keyss <- keyss %>% filter(!(bullet.id %>% str_detect("\\d+")))
-  
-  tmp.ukn <-
-    tibble(
-      col1 = hamby252.cmps$bullet1 %>% str_extract(" [A-Z]") %>% str_trim(),
-      col2 = hamby252.cmps$bullet2 %>% str_extract(" [A-Z]") %>% str_trim()
-    )
-  
-  # left join the ground truth
-  hamby252.cmps$b1t <-
-    tmp.ukn %>% left_join(keyss, by = c("col1" = "bullet.id")) %>%
-    pull(barrel.id) %>% str_remove("Brl")
-  hamby252.cmps$b2t <-
-    tmp.ukn %>% left_join(keyss, by = c("col2" = "bullet.id")) %>%
-    pull(barrel.id) %>% str_remove("Brl")
-  
-  # find KM KNM
-  hamby252.cmps <- hamby252.cmps %>% mutate(
-    b1t = if_else(
-      is.na(b1t),
-      bullet1 %>% str_extract("Br\\d+") %>% str_remove("Br"),
-      b1t
-    ),
-    b2t = if_else(
-      is.na(b2t),
-      bullet2 %>% str_extract("Br\\d+") %>% str_remove("Br"),
-      b2t
-    ),
-    b1t = as.numeric(b1t),
-    b2t = as.numeric(b2t),
-    type_truth = if_else(b1t == b2t, "KM", "KNM")
-  )
+  # add type and type_truth
+  hamby252.cmps$type <- tmp.tibble$type
+  hamby252.cmps$type_truth <- tmp.tibble$type_truth
   
   ###################################
   # save result in a list
   CMPS_hamby252_results$cmps.table[[i]] <- hamby252.cmps
   
 }
+
+################################
+# save data as csv
+data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/"
+
+for(i in 1:N){
+  write.csv(
+    CMPS_hamby252_results$cmps.table[[i]] %>% select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
+    file = paste(data_path, CMPS_hamby252_results$filename[[i]], ".csv", sep = ""))
+}
+
 
 
 #################################################
@@ -359,6 +399,16 @@ for (i in 1:3) {
   CMPS_hamby252_results$plot[[i]] <- plot
 }
 
+
 CMPS_hamby252_results$plot[[1]]
 CMPS_hamby252_results$plot[[2]]
 CMPS_hamby252_results$plot[[3]]
+
+####
+# check 281 for second setup
+tt1 <- CMPS_hamby252_results$cmps.table[[2]]$cmps.max.m
+tt2 <- hamby252_results$cmps.table[[4]]$cmps.max.m
+ck_idx <- tt1 != tt2
+(1:595)[ck_idx]
+tt1 - tt2
+tt1[ck_idx]
