@@ -284,6 +284,7 @@ extract_feature_cmps(
 
 
 \wj{the followings are revised} \hh{XXX this section feels a bit repetitive}
+
 * `x` and `y` are the two bullet signatures. Usually we take `x` as the reference signature (that will be divided into basis segments) and `y` as the comparison signature;
 * `seg_length` specifies the length of basis segments [(in mm?)] mentioned in algorithm step 1; 
 * `Tx` determines the size of the tolerance zone mentioned in both step 2 and 3;
@@ -349,9 +350,9 @@ signatures %>% ggplot(aes(x = x/1000, y = sig)) + geom_line() + facet_wrap(~bull
   ylab("Relative height in micron")
 ```
 
-The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects `sigs2` and `sigs1`, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects `sigs2` and `sigs1`, respectively. This comparison is one of a pair of signatures that are known to be a match -- a KM (known match) comparison. We compute the CMPS score using two versions of the CMPS algorithm:
 
-one of a pair of signatures that are known to be a match -- a KM (known match) comparison
+
 
 
 ```{r, eval=TRUE}
@@ -599,6 +600,11 @@ for (i in 1:3) {
 }
 
 ```
+
+```{r, eval=TRUE, echo=TRUE, fig.height=3}
+CMPS_hamby252_results$plot[[1]]
+```
+
 
 ```{r hamby44-data, eval=TRUE, echo=FALSE}
 N <- 3
