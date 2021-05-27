@@ -337,15 +337,18 @@ data(bullets)
 
 \hh{XXX include some signatures here.}
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. ..."}
 signatures <- bullets %>% unnest(sigs)
+signatures <- signatures %>% mutate(
+  bulletland = factor(bulletland, levels=c(paste(rep(c(1,2), each=6), c(1:6,2:6,1), sep="-")))
+)
 signatures %>% ggplot(aes(x = x/1000, y = sig)) + geom_line() + facet_wrap(~bulletland, ncol=6) +
   theme_bw() +
   xlab("Length in mm") +
   ylab("Relative height in micron")
 ```
 
-The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sigs1, respectively. This comparison is one of the KM comparisons. We compute the CMPS score using two versions of the CMPS algorithm:
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects sigs2 and sigs1, respectively. This comparison is \hh{one of a pair of signatures that are known to be a match -- a KM (known match) comparison}. We compute the CMPS score using two versions of the CMPS algorithm:
 
 ```{r, eval=TRUE}
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
