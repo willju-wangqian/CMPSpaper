@@ -18,6 +18,7 @@ author:
     - Ames, IA 50011
     url: https://github.com/willju-wangqian
     email:  wju@iastate.edu
+    orcid: 0000-0002-9977-377X
   - name: Heike Hofmann
     url: https://github.com/heike
     email: hofmann@iastate.edu
