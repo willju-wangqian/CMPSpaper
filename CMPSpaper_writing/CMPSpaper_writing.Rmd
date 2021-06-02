@@ -367,7 +367,7 @@ cmps_without_multi_scale <-
 \hh{How about you go into a description of the results from the function `extract\_feature\_cmps`?}
 
 \wj{revised the following}
-Since `npeaks.set = c(5,3,1)`, `cmps_with_multi_scale` uses the multi segment lengths strategy. On the other hand, `cmps_without_multi_scale` doesn't use the multi segment lengths strategy, and each basis segment finds 5 candidate positions due to `npeaks.set = 5`. Since `include = "full_result"` the outputs of `extract_feature_cmps(...)` contain everything listed in the previous section. Moreover, as mentioned before, multi segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12.
+Since `npeaks.set = c(5,3,1)`, `cmps_with_multi_scale` uses the multi segment lengths strategy. On the other hand, `cmps_without_multi_scale` doesn't use the multi segment lengths strategy, and each basis segment finds 5 candidate positions due to `npeaks.set = 5`. Since `include = "full_result"` the outputs of `extract_feature_cmps(...)` contain everything listed in the previous section. Moreover, \wj{XXX as mentioned before, }multi segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12. \wj{XXX how should we address the advantage of multi segment lengths strategy}
 \wj{revised end}
 
 ```{r alternative, echo = FALSE}
@@ -518,12 +518,13 @@ for (i in 1:N) {
       "npeaks.set=c(",
       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
       ")",
-      ", span1=",
-      CMPS_hamby252_results$span1[[i]],
-      ", span2=0.03, len=",
+      ", len=",
       CMPS_hamby252_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby252_results$Tx[[i]]
+       ", Tx=",
+      CMPS_hamby252_results$Tx[[i]],
+      ", \nspan1=",
+      CMPS_hamby252_results$span1[[i]],
+      ", span2=0.03"
     )
   CMPS_hamby252_results$filename[[i]] <- 
     paste(
@@ -546,6 +547,10 @@ for(i in 1:N){
                         sep = ""))
 }
 
+com.title252 <- expression(paste(
+  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
+))
+
 # generate plots
 for (i in 1:3) {
   hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
@@ -559,39 +564,38 @@ for (i in 1:3) {
     labs(
       fill = "Comparison Type",
       x = expression(CMPS[max]),
-      title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
+      # title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
       subtitle = titlee
     ) +
     scale_x_continuous(breaks = seq(0, 27, 1)) +
     theme_bw() +
-    theme(panel.grid.minor = element_blank()) 
+    theme(panel.grid.minor = element_blank()) +
+    font("x.text", size = 6)
     
-  
   hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
     geom_histogram(aes(x = cmps.maxbar.m,
                        fill = as.factor(type_truth)), binwidth = 1) +
     labs(
       x = expression(bar(CMPS)[max]),
       fill = "Comparison Type",
-      title = expression(paste(
-        "Hamby252 - ", bar(CMPS)[max], " Distribution"
-      )),
+      # title = expression(paste(
+      #   "Hamby252 - ", bar(CMPS)[max], " Distribution"
+      # )),
       subtitle = titlee
     ) +
     scale_x_continuous(breaks = seq(0, 24, 1)) +
     theme_bw() +
-    theme(panel.grid.minor = element_blank()) 
+    theme(panel.grid.minor = element_blank())
   
   plot <- ggarrange(plotlist = hamby252.plot.list,
                     nrow = 1,
-                    ncol = 2)
+                    ncol = 2,
+                    common.legend = TRUE, legend = "bottom")
+  plot <- annotate_figure(plot, 
+                          top = text_grob(com.title252))
   CMPS_hamby252_results$plot[[i]] <- plot
 }
 
-```
-
-```{r, eval=TRUE, echo=TRUE, fig.height=3}
-CMPS_hamby252_results$plot[[1]]
 ```
 
 
@@ -615,12 +619,13 @@ for (i in 1:N) {
       "npeaks.set=c(",
       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
       ")",
-      ", span1=",
-      CMPS_hamby44_results$span1[[i]],
-      ", span2=0.03, len=",
+      ", len=",
       CMPS_hamby44_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby44_results$Tx[[i]]
+       ", Tx=",
+      CMPS_hamby44_results$Tx[[i]],
+      ", \nspan1=",
+      CMPS_hamby44_results$span1[[i]],
+      ", span2=0.03"
     )
   CMPS_hamby44_results$filename[[i]] <- 
     paste(
@@ -634,8 +639,64 @@ for (i in 1:N) {
 }
 CMPS_hamby44_results$cmps.table <- list()
 CMPS_hamby44_results$plot <- list()
-```
 
+for(i in 1:N){
+  CMPS_hamby44_results$cmps.table[[i]] <- 
+  read.csv(file = paste("./data/", 
+                        CMPS_hamby44_results$filename[[i]], 
+                        ".csv",
+                        sep = ""))
+}
+
+com.title44 <- expression(paste(
+  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
+))
+
+# generate plots
+for (i in 1:3) {
+  hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
+  
+  hamby44.plot.list <- list()
+  titlee <- CMPS_hamby44_results$titlee[[i]]
+  
+  hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
+    geom_histogram(aes(x = cmps.max.m,
+                       fill = as.factor(type_truth)), binwidth = 1) +
+    labs(
+      fill = "Comparison Type",
+      x = expression(CMPS[max]),
+      # title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 27, 1)) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) +
+    font("x.text", size = 6)
+    
+  hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
+    geom_histogram(aes(x = cmps.maxbar.m,
+                       fill = as.factor(type_truth)), binwidth = 1) +
+    labs(
+      x = expression(bar(CMPS)[max]),
+      fill = "Comparison Type",
+      # title = expression(paste(
+      #   "Hamby252 - ", bar(CMPS)[max], " Distribution"
+      # )),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 24, 1)) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank())
+  
+  plot <- ggarrange(plotlist = hamby44.plot.list,
+                    nrow = 1,
+                    ncol = 2,
+                    common.legend = TRUE, legend = "bottom")
+  plot <- annotate_figure(plot, 
+                          top = text_grob(com.title44))
+  CMPS_hamby44_results$plot[[i]] <- plot
+}
+```
 
 As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that in the work of @cmps they used a different framework to obtain bullet signatures. However, since the work of @cmps is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
@@ -672,7 +733,7 @@ In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score, is 17, and $\mat
 
 **Hamby 252**
 
-Figure 2 shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). Table x shows some summary statistics. 
+\autoref{fig:result1_252} shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). \autoref{tab:table1} shows some summary statistics. 
 
 The parameters we used in `extract_feature_cmps` are:
 
@@ -686,17 +747,18 @@ extract_feature_cmps(
 )
 ```
 
-Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in the [original paper].
+Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in @cmps.
 
 <!-- this is figure 2 -->
-```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) "}
+```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) "}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
-knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
+# knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
+CMPS_hamby252_results$plot[[1]]
 ```
 
-table 1:
+Table 1:
 
-```{r, echo=FALSE, warning=FALSE}
+```{r table1, echo=FALSE, warning=FALSE}
 # rtt <- readRDS("summary_table.rds")
 # colnames(rtt) <- 
 rtt <- data.frame(parameters = c("span1=0.25, (5, 3, 1)", "span1=0.25, (10, 6, 1)", "span1=0.75, (5, 3, 1)"),
@@ -718,7 +780,7 @@ knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
 
 
 
-Figure 3 shows the results for Hamby set 44. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged. Table 1 shows some summary statistics for Hamby set 44. 
+\autoref{fig:result1_44} shows the results for Hamby set 44. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged. \wj{Table x} shows some summary statistics for Hamby set 44. 
 
 For Hamby set 44, the parameters we used in `extract_feature_cmps` are:
 
@@ -736,27 +798,30 @@ Note that we used different values here for `seg_length` and `Tx` because our Ha
 
 <!-- this is figure 3 -->
 
-```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25"}
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25"}
 # [1] "span1=0.25, span2=0.03, rm_outliers"
-knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
+# knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[1]]
 ```
 
-Figure 4 shows another Hamby set 44 results, but the parameter `npeaks.set` is now `c(10, 6, 1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm can affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
+\autoref{fig:result2_44} shows another Hamby set 44 results, but the parameter `npeaks.set` is now `c(10, 6, 1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm can affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
 
 <!-- this is figure 4 -->
 
-```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 "}
+```{r result2_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 "}
 # [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
-knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
+# knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[2]]
 ```
 
-For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the signatures; however, in this example we used `span1=0.75` and changed the characteristic of those signatures. As we can see in figure 5, this change also affects the CMPS results.
+For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the signatures; however, in this example we used `span1=0.75` and changed the characteristic of those signatures. As we can see in \autoref{fig:result3_44}, this change also affects the CMPS results.
 
 <!-- this is figure 5 -->
 
-```{r, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75"}
+```{r result3_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75"}
 # [4] "span1=0.75, span2=0.03, rm_outliers"  
-knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
+# knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[3]]
 ```
 
 [The codes generating those results can be found in the appendix. ???]

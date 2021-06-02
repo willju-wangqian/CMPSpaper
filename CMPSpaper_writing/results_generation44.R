@@ -52,12 +52,13 @@ for (i in 1:N) {
       "npeaks.set=c(",
       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
       ")",
-      ", span1=",
-      CMPS_hamby44_results$span1[[i]],
-      ", span2=0.03, len=",
+      ", len=",
       CMPS_hamby44_results$seg_length[[i]],
       ", Tx=",
-      CMPS_hamby44_results$Tx[[i]]
+      CMPS_hamby44_results$Tx[[i]],
+      ", \nspan1=",
+      CMPS_hamby44_results$span1[[i]],
+      ", span2=0.03"
     )
   CMPS_hamby44_results$filename[[i]] <- 
     paste(
@@ -71,6 +72,10 @@ for (i in 1:N) {
 }
 CMPS_hamby44_results$cmps.table <- list()
 CMPS_hamby44_results$plot <- list()
+
+com.title44 <- expression(paste(
+  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
+))
 
 # remove x3p files
 b44 <- b44.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
@@ -335,7 +340,7 @@ for(i in 1:N){
 
 #################################################
 # generate plots
-for (i in 1:N) {
+for (i in 1:3) {
   hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
   
   hamby44.plot.list <- list()
@@ -344,28 +349,38 @@ for (i in 1:N) {
   hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
     geom_histogram(aes(x = cmps.max.m,
                        fill = as.factor(type_truth)), binwidth = 1) +
-    labs(fill = "Comparison Type",
-         x = expression(CMPS[max]),
-         title = expression(paste("Hamby44 - ", CMPS[max], " Distribution")),
-         subtitle = titlee) + 
-    scale_x_continuous(breaks = seq(0, 27, 1))+
-    theme_bw()+
-    theme(panel.grid.minor = element_blank())
+    labs(
+      fill = "Comparison Type",
+      x = expression(CMPS[max]),
+      # title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 27, 1)) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) +
+    font("x.text", size = 6)
   
   hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
     geom_histogram(aes(x = cmps.maxbar.m,
                        fill = as.factor(type_truth)), binwidth = 1) +
-    labs(x = expression(bar(CMPS)[max]),
-         fill = "Comparison Type",
-         title = expression(paste("Hamby44 - ", bar(CMPS)[max], " Distribution")),
-         subtitle = titlee) +
-    scale_x_continuous(breaks = seq(0, 24, 1))+
-    theme_bw()+
+    labs(
+      x = expression(bar(CMPS)[max]),
+      fill = "Comparison Type",
+      # title = expression(paste(
+      #   "Hamby252 - ", bar(CMPS)[max], " Distribution"
+      # )),
+      subtitle = titlee
+    ) +
+    scale_x_continuous(breaks = seq(0, 24, 1)) +
+    theme_bw() +
     theme(panel.grid.minor = element_blank())
   
-  plot <- ggarrange(plotlist = hamby44.plot.list, nrow = 1, ncol = 2)
-  
-  
+  plot <- ggarrange(plotlist = hamby44.plot.list,
+                    nrow = 1,
+                    ncol = 2,
+                    common.legend = TRUE, legend = "bottom")
+  plot <- annotate_figure(plot, 
+                          top = text_grob(com.title44))
   CMPS_hamby44_results$plot[[i]] <- plot
 }
 

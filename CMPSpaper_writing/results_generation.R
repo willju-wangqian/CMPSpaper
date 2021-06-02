@@ -142,12 +142,13 @@ for (i in 1:N) {
       "npeaks.set=c(",
       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
       ")",
-      ", span1=",
-      CMPS_hamby252_results$span1[[i]],
-      ", span2=0.03, len=",
+      ", len=",
       CMPS_hamby252_results$seg_length[[i]],
       ", Tx=",
-      CMPS_hamby252_results$Tx[[i]]
+      CMPS_hamby252_results$Tx[[i]],
+      ", \nspan1=",
+      CMPS_hamby252_results$span1[[i]],
+      ", span2=0.03"
     )
   CMPS_hamby252_results$filename[[i]] <- 
     paste(
@@ -161,6 +162,10 @@ for (i in 1:N) {
 }
 CMPS_hamby252_results$cmps.table <- list()
 CMPS_hamby252_results$plot <- list()
+
+com.title252 <- expression(paste(
+  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
+))
 
 
 for (i in 1:N) {
@@ -350,7 +355,8 @@ data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/"
 
 for(i in 1:N){
   write.csv(
-    CMPS_hamby252_results$cmps.table[[i]] %>% select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
+    CMPS_hamby252_results$cmps.table[[i]] %>% 
+      select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
     file = paste(data_path, CMPS_hamby252_results$filename[[i]], ".csv", sep = ""))
 }
 
@@ -370,13 +376,13 @@ for (i in 1:3) {
     labs(
       fill = "Comparison Type",
       x = expression(CMPS[max]),
-      title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
+      # title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
       subtitle = titlee
     ) +
     scale_x_continuous(breaks = seq(0, 27, 1)) +
     theme_bw() +
-    theme(panel.grid.minor = element_blank()) 
-    
+    theme(panel.grid.minor = element_blank()) +
+    font("x.text", size = 6)
   
   hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
     geom_histogram(aes(x = cmps.maxbar.m,
@@ -384,21 +390,23 @@ for (i in 1:3) {
     labs(
       x = expression(bar(CMPS)[max]),
       fill = "Comparison Type",
-      title = expression(paste(
-        "Hamby252 - ", bar(CMPS)[max], " Distribution"
-      )),
+      # title = expression(paste(
+      #   "Hamby252 - ", bar(CMPS)[max], " Distribution"
+      # )),
       subtitle = titlee
     ) +
     scale_x_continuous(breaks = seq(0, 24, 1)) +
     theme_bw() +
-    theme(panel.grid.minor = element_blank()) 
+    theme(panel.grid.minor = element_blank())
   
   plot <- ggarrange(plotlist = hamby252.plot.list,
                     nrow = 1,
-                    ncol = 2)
+                    ncol = 2,
+                    common.legend = TRUE, legend = "bottom")
+  plot <- annotate_figure(plot, 
+                          top = text_grob(com.title252))
   CMPS_hamby252_results$plot[[i]] <- plot
 }
-
 
 CMPS_hamby252_results$plot[[1]]
 CMPS_hamby252_results$plot[[2]]
