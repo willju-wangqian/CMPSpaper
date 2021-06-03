@@ -7,6 +7,7 @@ header-includes:
   - \usepackage[font=small,skip=5pt]{caption}
   - \usepackage{subcaption}
   - \usepackage{afterpage}
+  - \usepackage{bbm}
 author:
   # see ?rjournal_article for more information
   - name: Will W. Ju
@@ -698,11 +699,41 @@ for (i in 1:3) {
 }
 ```
 
-As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that in the work of @cmps they used a different framework to obtain bullet signatures. However, since the work of @cmps is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
+As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that in the work of @cmps researchers used a different framework to obtain bullet signatures. However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
-The CMPS score can be considered as a similarity score of two signatures. Then how can we get a similarity score of two bullets based on CMPS scores (each bullet consists of six bullet signatures in our case)? In @cmps researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
+The CMPS score can be considered as a similarity score of two signatures. Then in order to obtain a similarity score of two bullets based on CMPS scores, researchers in @cmps introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
 
-We can continue with the example used in previous sections. `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`. As mentioned before, each bullet has six land engravings, resulting in six bullet signatures. Thus, there are 36 pairwise bullet signature comparisons in total. We compute the CMPS scores for all 36 comparisons using multi segment lengths strategy with default parameters, and the result is shown in \autoref{fig:tiles}
+In general, we assume each bullet has $n$ land engravings (in our case $n=6$). Let $c_{ij}$ denote the CMPS score of comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$. Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function. For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
+
+Then we have  
+
+$$
+\mathrm{CMPS_{max}} = \max_{i,j} c_{ij}
+$$
+
+and
+
+$$
+\mathrm{\overline{CMPS}_{max}} = \max_{k} \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_k} c_{ij}\right]
+$$
+
+We can continue with the example used in previous sections. `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`. As mentioned before, each bullet has six land engravings, resulting in six bullet signatures. Thus, there are 36 pairwise bullet signature comparisons, resulting in 36 $c_{ij}$ values in total. We use multi segment lengths strategy with default parameters to compute these CMPS scores, and the result is shown in \autoref{fig:tiles}. We can see that in this example, 
+
+$$
+\mathrm{CMPS_{max}} =  \max_{ij} c_{ij} = 17
+$$
+
+and since bullet lands in phase $\mathcal{P}_1$ gives the highest mean CMPS score, we have
+
+$$
+\begin{aligned}
+\mathrm{\overline{CMPS}_{max}} &= \frac{1}{6} \sum_{(i,j) \in \mathcal{P}_1} c_{ij} \\
+                        &= \frac{1}{6} (c_{12} + c_{23} + c_{34} + c_{45} + c_{56} + c_{61}) \\
+                        &= \frac{1}{6} (3+17+14+10+15+16) \\
+                        &= 12.5
+\end{aligned}
+$$
+
 
 ```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
@@ -719,17 +750,18 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
   scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
   scale_colour_manual("Source", values="darkorange") +
   facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
-  ylab("Bullet2 Lands") + theme(aspect.ratio = 1) +
+  ylab("Bullet2 Lands") + 
   geom_text(aes(label=cmps_score)) +
   theme_bw() +
   theme(aspect.ratio = 1)
 ```
 
 
+
 <!-- based on CMPS scores of bullet signature comparisons. For example, there are in total 6 $\times$ 6 signature comparisons in order to compare two bullets in Hamby study since each bullet has 6 LEAs and each LEA generates a bullet signature. And a CMPS score will be found for every signature comparison. $\mathrm{CMPS_{max}}$ is the highest CMPS score among all signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible average CMPS score of signature comparisons that are in the same phase. -->
 
 
-In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score, is 17, and $\mathrm{\overline{CMPS}_{max}}$, the highest possible mean CMPS score of comparisons in the same phase, is $(3+17+14+10+15+16)/6=12.5$. 
+<!-- In this example, $\mathrm{CMPS_{max}}$, the highest CMPS score, is 17, and $\mathrm{\overline{CMPS}_{max}}$, the highest possible mean CMPS score of comparisons in the same phase, is $()/6=12.5$.  -->
 
 **Hamby 252**
 
