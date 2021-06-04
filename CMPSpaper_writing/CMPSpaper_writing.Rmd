@@ -1,5 +1,5 @@
 ---
-title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Similarity of Bullet Signatures
+title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Similarity of Bullet  = 
 header-includes:
   - \usepackage{xcolor}
   - \usepackage{longtable}
@@ -152,8 +152,9 @@ codefig = list(codefig = TRUE, fig.show = "hide",
 
 In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps conceptually described the CMPS algorithm  in their paper, the authors did not release an implementation of their method. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm  to use, review, and  improve. Our implementation is made available as part of the  `R` package  `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
 
- Firearm examination has  played an important role in  convictions in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX}
- 
+\wj{XXX According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms"} [@fbiucr], and firearm examination could play an important role in all these cases.
+ <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} -->
+<!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide -->
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel. 
 Assessing the similarity between two bullets is based on a comparison of  striation marks acquired during the firing process as bullets are propelled through the barrel. Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope. This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].
 
@@ -198,11 +199,12 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 
 ### Conceptual idea of CMPS
-\hh{Most algorithms for comparing striation marks are based on the digitized signatures XXX} and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
+Most algorithms for comparing striation marks are based on the digitized signatures and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
  The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
   High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.
-  \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?}
-  \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'}
+\wj{However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparison is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters. Further research is needed to understand how to determine the threshold. XXX}
+  <!-- \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?} -->
+  <!-- \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'} -->
  The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair. Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm. 
 Thus, in this paper we present an open-source implementation of the CMPS algorithm \hh{in the R package CMPS available from XXX github / CRAN}. 
 With our implementation, one can compute the CMPS score of a comparison using the following code:
@@ -773,10 +775,61 @@ extract_feature_cmps(
 Note that for Hamby set 252, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in @cmps.
 
 <!-- this is figure 2 -->
-```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) "}
+```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) ", fig.height=3}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
-CMPS_hamby252_results$plot[[1]]
+CMPS_hamby252_results$plot[[2]]
+```
+
+
+
+**Hamby 44**
+
+For Hamby set 44 we not only generated comparable results but also used different sets of parameters to examine their potential effects. 
+
+\autoref{fig:result1_44} shows the Hamby 44 results that are comparable with Hamby 252 results. The parameters used in `extract_feature_cmps` are: 
+
+```{r, eval=FALSE}
+extract_feature_cmps(
+  x, y,
+  seg_length = 61, 
+  Tx = 30,
+  npeaks.set = c(5,3,1),
+  include = "nseg"
+)
+```
+
+Since the Hamby set 44 scans have a different scanning resolution, we need to adjust the value of `seg_length` and `Tx` accordingly. One unit in Hamby 44 represents 1.29 \textmu m. Thus, we make `seg_length = 61` and `Tx = 30` to ensure that each basis segment has length 78.69 \textmu m, and the tolerance zone is $\pm 38.7$ \textmu m. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged, which motivates us to examine different sets of parameters.
+
+
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25", fig.height=3}
+# [1] "span1=0.25, span2=0.03, rm_outliers"
+# knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[1]]
+```
+
+\autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while fixing other parameters. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
+
+<!-- this is figure 4 -->
+
+```{r result2_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 ", fig.height=3}
+# [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
+# knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[2]]
+```
+
+For the third result of Hamby 44, we changed a parameter used in the data-processing procedure. `span1=0.25` is used in previous results, and we changed it to `span1=0.75` \wj{in this case to make bullet signatures capture more global patterns XXX}.
+<!-- For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the  = ; however, in this example we used `span1=0.75` and changed the characteristic of those  = . -->
+As we can see in \autoref{fig:result3_44}, changing some characteristics of bullet signatures will also change the final CMPS results. 
+\autoref{tab:table1} presents some summary statistics of the Hamby 44 results above. These summary statistics are used to show the separation between the KM and KNM groups in the distribution of both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$.
+
+\wj{XXX talk about the table: Not exhaustive, more research is needed to cross-validate the parameters}
+<!-- this is figure 5 -->
+
+```{r result3_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75", fig.height=3}
+# [4] "span1=0.75, span2=0.03, rm_outliers"  
+# knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
+CMPS_hamby44_results$plot[[3]]
 ```
 
 ```{r table1, echo=FALSE, warning=FALSE}
@@ -799,52 +852,7 @@ knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
   column_spec(2:5, width = "2cm")
 ```
 
-**Hamby 44**
-
-For Hamby set 44 we not only generated comparable results but also used different sets of parameters to examine their potential effects. 
-
-\autoref{fig:result1_44} shows the Hamby 44 results that are comparable with Hamby 252 results. The parameters used in `extract_feature_cmps` are: 
-
-```{r, eval=FALSE}
-extract_feature_cmps(
-  x, y,
-  seg_length = 61, 
-  Tx = 30,
-  npeaks.set = c(5,3,1),
-  include = "nseg"
-)
-```
-
-Since the Hamby set 44 scans have a different scanning resolution, we need to adjust the value of `seg_length` and `Tx` accordingly. One unit in Hamby 44 represents 1.29 \textmu m. Thus, we make `seg_length = 61` and `Tx = 30` to ensure that each basis segment has length 78.69 \textmu m, and the tolerance zone is $\pm 38.7$ \textmu m. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged, which motivates us to examine different sets of parameters.
-\autoref{tab:table1} shows some summary statistics. 
-
-```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25"}
-# [1] "span1=0.25, span2=0.03, rm_outliers"
-# knitr::include_graphics("img/hamby44_v1.png", dpi = 100)
-CMPS_hamby44_results$plot[[1]]
-```
-
-\autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while fixing other parameters. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
-
-<!-- this is figure 4 -->
-
-```{r result2_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 "}
-# [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
-# knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
-CMPS_hamby44_results$plot[[2]]
-```
-
-For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the signatures; however, in this example we used `span1=0.75` and changed the characteristic of those signatures. As we can see in \autoref{fig:result3_44}, this change also affects the CMPS results.
-
-<!-- this is figure 5 -->
-
-```{r result3_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75"}
-# [4] "span1=0.75, span2=0.03, rm_outliers"  
-# knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
-CMPS_hamby44_results$plot[[3]]
-```
-
-[The codes generating those results can be found in the appendix. ???]
+\wj{The codes generating those results can be found in the appendix.XXX}
 
 
 ## Conclusion

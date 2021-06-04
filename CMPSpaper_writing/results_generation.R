@@ -123,17 +123,18 @@ tmp.tibble <- tmp.tibble %>% mutate(
 )
 
 ### set up parameters
-N <- 3
+N <- 4
 CMPS_hamby252_results <- list()
-CMPS_hamby252_results$span1 <- list(0.75, 0.25, 0.25)
+CMPS_hamby252_results$span1 <- list(0.75, 0.25, 0.25, 0.15)
 CMPS_hamby252_results$signame <-
-  list("sigs75", "sigs25", "sigs25_1062")
+  list("sigs75", "sigs25", "sigs25_1062", "sigs15")
 CMPS_hamby252_results$npeaks.set <-
   list(c(5, 3, 1),
        c(5, 3, 1),
-       c(10, 6, 2))
-CMPS_hamby252_results$seg_length <- list(50, 50, 50)
-CMPS_hamby252_results$Tx <- list(25, 25, 25)
+       c(10, 6, 2),
+       c(5,3,1))
+CMPS_hamby252_results$seg_length <- as.list(rep(50, 4))
+CMPS_hamby252_results$Tx <- as.list(rep(25, 4))
 CMPS_hamby252_results$titlee <- list()
 CMPS_hamby252_results$filename <- list()
 for (i in 1:N) {
@@ -423,15 +424,24 @@ tt1[ck_idx]
 
 
 ### phase
-1 2 3 4 5 6
-2 3 4 5 6 1
-3 4 5 6 1 2
+# 1 2 3 4 5 6
+# 2 3 4 5 6 1
+# 3 4 5 6 1 2
 
 
+(b252$sigs75[[1]] %>% ggplot() +
+  geom_line(aes(x=x, y=sig))) / 
+(b252$sigs25[[1]] %>% ggplot() +
+  geom_line(aes(x=x, y=sig))) / 
+(b252$sigs15[[1]] %>% ggplot() +
+   geom_line(aes(x=x, y=sig)))
 
-
-
-
+(b252$sigs75[[1]] %>% ggplot() +
+    geom_line(aes(x=x, y=value-raw_sig))) / 
+  (b252$sigs25[[1]] %>% ggplot() +
+     geom_line(aes(x=x, y=value-raw_sig))) / 
+  (b252$sigs15[[1]] %>% ggplot() +
+     geom_line(aes(x=x, y=value-raw_sig)))
 
 
 
