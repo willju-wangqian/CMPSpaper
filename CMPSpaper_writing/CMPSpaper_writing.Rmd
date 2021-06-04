@@ -10,7 +10,7 @@ header-includes:
   - \usepackage{bbm}
 author:
   # see ?rjournal_article for more information
-  - name: Will W. Ju
+  - name: Wangqian W. Ju
     affiliation: Department of Statistics
     address:
     - Center for Statistics and Applications in Forensic Evidence
@@ -269,10 +269,7 @@ extract_feature_cmps(
 )
 ```
 
-
-\wj{the followings are revised} \hh{XXX this section feels a bit repetitive}
-
-Besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx` \hh{the function `extract\_feature\_cmps` allows for the following input from users}:
+Besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`, the function `extract_feature_cmps` allows for the following input from users:\wj{XXX the code text is a little bit off}
 
 * `x` and `y` are the two bullet signatures. Usually we take `x` as the reference signature (that will be divided into basis segments) and `y` as the comparison signature;
 
@@ -290,8 +287,8 @@ Besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`
 <!-- [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf] -->
 <!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
 
-
-\hh{XXX you need a bit of an overview here on the structure of what is coming next: in the remainder of the paper we showcase the use of the CMPS functionality on some examples ...}
+\wj{In the remainder of the paper we showcase the use of the CMPS functionality on some examples and present the results of applying it to two datasets.}
+<!-- \hh{XXX you need a bit of an overview here on the structure of what is coming next: in the remainder of the paper we showcase the use of the CMPS functionality on some examples ...} -->
 
 **Installation**
 
@@ -355,14 +352,15 @@ cmps_without_multi_scale <-
                        npeaks.set = 5, include = "full_result")
 ```
 
-\hh{How about you go into a description of the results from the function `extract\_feature\_cmps`?}
 
 \wj{revised the following}
 In the first example, `npeaks.set` is a vector of three integers. This means that  the algorithm uses the multi-segment lengths strategy to create `cmps_with_multi_scale`, while for `cmps_without_multi_scale` each basis segment is linked to the top 5 candidate positions. 
-We use `include = "full_result"` to capture all results. 
-Moreover, \wj{XXX as mentioned before, }multi-segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12. \wj{XXX how should we address the advantage of multi-segment lengths strategy} \hh{XXX any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced (by being more conservatives) the number of false negatives might rise. The multi scale method might also be slower because the algorithm is run a couple of times.}
+We use `include = "full_result"` to capture all results. In this example, the `cmps_with_multi_scale$CMPS.score` is 9, while `cmps_without_multi_scale$CMPS.score` is 12. \wj{As discussed in} @cmps, \wj{using multi-segment lengths strategy can reduce the number of false positives when identifying candidate positions; however, any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced the number of false negatives might rise. More discussion and comparisons between the two versions of the CMPS algorithm will be presented in later sections. Note that the multi scale method might also be slower because the algorithm is run a couple of times.}
 
-\hh{XXX this is just a single example - a claim of 'more conservative' is quite big. At this point, it is only a claim. How would you go about finding evidence for it? }
+
+<!-- \wj{XXX as mentioned before, }multi-segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12. \wj{XXX how should we address the advantage of multi-segment lengths strategy} \hh{XXX any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced (by being more conservatives) the number of false negatives might rise. The multi scale method might also be slower because the algorithm is run a couple of times.} -->
+
+<!-- \hh{XXX this is just a single example - a claim of 'more conservative' is quite big. At this point, it is only a claim. How would you go about finding evidence for it? } -->
 
 ```{r alternative, echo = FALSE}
 lands <- unique(bullets$bulletland)
@@ -692,9 +690,9 @@ for (i in 1:3) {
 }
 ```
 
-As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Since the CMPS algorithm works with, in our case, bullet signatures, we conducted some data-processing. For both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that in the work of @cmps researchers used a different framework to obtain bullet signatures. However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
+As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. Because the CMPS algorithm works with bullet signatures in our case, we conducted some data-processing: for both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by Hare and Hofmann [@aoas] with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that researchers of @cmps used a different framework to obtain bullet signatures. However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
-The CMPS score can be considered as a similarity score of two signatures. Then in order to obtain a similarity score of two bullets based on CMPS scores, researchers in @cmps introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
+The CMPS score can be considered as a similarity score of two signatures. Then in order to obtain a similarity score of two bullets based on CMPS scores, researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons [@cmps]. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
 
 In general, we assume each bullet has $n$ land engravings (in our case $n=6$). Let $c_{ij}$ denote the CMPS score of comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$. Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function. For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
 
@@ -713,7 +711,7 @@ $$
 We can continue with the example used in previous sections. `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`. As mentioned before, each bullet has six land engravings, resulting in six bullet signatures. Thus, there are 36 pairwise bullet signature comparisons, resulting in 36 $c_{ij}$ values in total. We use multi-segment lengths strategy with default parameters to compute these CMPS scores, and the result is shown in \autoref{fig:tiles}. We can see that in this example, 
 
 $$
-\mathrm{CMPS_{max}} =  \max_{ij} c_{ij} = 17
+\mathrm{CMPS_{max}} =  \max_{i,j} c_{ij} = 17
 $$
 
 and since bullet lands in phase $\mathcal{P}_1$ gives the highest mean CMPS score, we have
@@ -728,7 +726,7 @@ $$
 $$
 
 
-```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets", out.width=".7\\textwidth", fig.align="center"}
+```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
@@ -758,7 +756,7 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
 
 **Hamby 252**
 
-\autoref{fig:result1_252} shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained are promising. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM). \autoref{tab:table1} shows some summary statistics. 
+\autoref{fig:result1_252} shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252 with the multi-segment lengths strategy. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained qualitatively agree with their results. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM).  
 
 The parameters we used in `extract_feature_cmps` are:
 
@@ -772,7 +770,7 @@ extract_feature_cmps(
 )
 ```
 
-Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in @cmps.
+Note that for Hamby set 252, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in @cmps.
 
 <!-- this is figure 2 -->
 ```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) "}
@@ -780,8 +778,6 @@ Note that for Hamby set 44, one unit represents 1.5625 \textmu m so setting `seg
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 CMPS_hamby252_results$plot[[1]]
 ```
-
-Table 1:
 
 ```{r table1, echo=FALSE, warning=FALSE}
 # rtt <- readRDS("summary_table.rds")
@@ -803,11 +799,11 @@ knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
   column_spec(2:5, width = "2cm")
 ```
 
+**Hamby 44**
 
+For Hamby set 44 we not only generated comparable results but also used different sets of parameters to examine their potential effects. 
 
-\autoref{fig:result1_44} shows the results for Hamby set 44. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged. \wj{Table x} shows some summary statistics for Hamby set 44. 
-
-For Hamby set 44, the parameters we used in `extract_feature_cmps` are:
+\autoref{fig:result1_44} shows the Hamby 44 results that are comparable with Hamby 252 results. The parameters used in `extract_feature_cmps` are: 
 
 ```{r, eval=FALSE}
 extract_feature_cmps(
@@ -819,9 +815,8 @@ extract_feature_cmps(
 )
 ```
 
-Note that we used different values here for `seg_length` and `Tx` because our Hamby set 44 scans have a different scanning resolution. One unit here represents 1.29 \textmu m. So here each basis segment has length 78.69 \textmu m, and the tolerance zone is $\pm 38.7$ \textmu m.
-
-<!-- this is figure 3 -->
+Since the Hamby set 44 scans have a different scanning resolution, we need to adjust the value of `seg_length` and `Tx` accordingly. One unit in Hamby 44 represents 1.29 \textmu m. Thus, we make `seg_length = 61` and `Tx = 30` to ensure that each basis segment has length 78.69 \textmu m, and the tolerance zone is $\pm 38.7$ \textmu m. Again, we are able to see a clear separation between the KM comparisons and the KNM comparisons, but it would be better if the separation can be further enlarged, which motivates us to examine different sets of parameters.
+\autoref{tab:table1} shows some summary statistics. 
 
 ```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.25"}
 # [1] "span1=0.25, span2=0.03, rm_outliers"
@@ -829,7 +824,7 @@ Note that we used different values here for `seg_length` and `Tx` because our Ha
 CMPS_hamby44_results$plot[[1]]
 ```
 
-\autoref{fig:result2_44} shows another Hamby set 44 results, but the parameter `npeaks.set` is now `c(10, 6, 1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm can affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
+\autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while fixing other parameters. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that the separation between KM comparisons and KNM comparisons is increased. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
 
 <!-- this is figure 4 -->
 
