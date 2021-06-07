@@ -1,5 +1,5 @@
 ---
-title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Similarity of Bullet  = 
+title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Similarity of Bullets
 header-includes:
   - \usepackage{xcolor}
   - \usepackage{longtable}
