@@ -438,14 +438,10 @@ sig.plot$seg_shift
 <!-- which basis segments are the congruent matching profile segments. -->
 
 While `cmps_signature_plot()` focuses on the signature level,  `cmps_segment_plot()` focuses on the segment level. It provides the "full result" of `extract_feature_cmps()`, but also takes an argument, `seg.idx`, indicating which segment should be inspected.  When checking `sig.plot$seg_shift` we notice that  segment number 6 is not one of the congruent matching profile segments. We can therefore set `seg.idx = 6` in `cmps_segment_plot()` and investigate the reason why this segment disagrees with the congruent registration position.
-\autoref{fig:segplots}  shows the top five registration positions for segment number 6 overlaid on top of the reference signature using hashed lines, the solid line in black shows the original position of the segment (which in this instance is close to the actual registration position). 
-Then at each segment level, we will have two plots, `segment_plot` and `scale_ccf_plot`. 
 
-*   \autoref{fig:segplot} is the `segment_plot` of basis segment 6 at level one (in its original length). Since when computing the CMPS score we used `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()`, 5 peaks are identified in the cross-correlation curve at level one, and segment 6 at level one is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. 
+For each segment scale, we have two plots: `segment_plot` and `scale_ccf_plot`, as shown in \autoref{fig:segplots} for the example of segment number 6: 
 
-<!-- Take the first element of `seg.plot` as an example, it corresponds to the first segment scale (the original scale) of the 6th basis segment and carries two plots, `segment_plot` and `scale_ccf_plot`. -->
-<!-- Remember that when computing the CMPS score, we were using `npeaks.set = c(5, 3, 1)`. This means that for the first segment scale, 5 peaks are identified in the cross-correlation curve. `segment_plot` plots the 6th basis segment in its first scale at its original position as well as the positions where the basis segment obtains its 5 cross-correlation peaks.  -->
-
+*   \autoref{fig:segplot} is the `segment_plot` for basis segment 6 at level one (in its original length). We used  `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()` when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position). 
 *   \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at level one. It shows the cross-correlation curve computed by the comparison signature and the level-one basis segment 6. The five highest peaks are marked by dots on the curve.
 
 \begin{figure}
@@ -460,7 +456,7 @@ seg.plot[[1]]$segment_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at level one. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in its highest segment level; the blue dashed lines show the tolerance zone around the green dashed line. We can see here none of the five highest peaks at level one is within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi-segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
+\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at level one. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in the highest segment level; the blue dashed lines show the tolerance zone around the green dashed line. We can see that none of the five highest peaks at level one falls within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi-segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
 ```{r segplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 seg.plot[[1]]$scale_ccf_plot
 ```
