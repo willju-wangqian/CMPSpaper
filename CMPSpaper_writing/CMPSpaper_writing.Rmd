@@ -228,7 +228,7 @@ In this example, the comparison between `sig1` and `sig2`, two signatures coming
 
 We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
 
-The section "Implementation" will go through the algorithm and show how to use the "CMPS" package. An further example that illustrates the main points are also included. The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44. And the last section covers some final discussion and conclusions.
+The section "Implementation" will go through the algorithm and show how to use the "CMPS" package. A further example that illustrates the main points are also included. The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44. And the last section covers some final discussion and conclusions.
 
 
 ## Implementation
