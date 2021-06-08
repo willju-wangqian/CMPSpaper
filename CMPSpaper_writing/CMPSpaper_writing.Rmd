@@ -479,7 +479,7 @@ ggarrange(
   ncol = 2, 
   nrow = 3)
 ```
-\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since `npeaks.set = c(5, 3, 1)`. The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
+\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since npeaks.set = c(5, 3, 1). The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
 \end{figure}
 
 
