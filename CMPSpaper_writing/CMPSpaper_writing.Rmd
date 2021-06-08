@@ -270,16 +270,16 @@ extract_feature_cmps(
 )
 ```
 
-Besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`, the function `extract_feature_cmps` allows for the following input from users:\wj{XXX the code text is a little bit off}
+The function `extract_feature_cmps` allows for the following input from users besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`:
 
-* `x` and `y` are the two bullet signatures. Usually we take `x` as the reference signature (that will be divided into basis segments) and `y` as the comparison signature;
+* `x` and `y` are  two  signatures:  `x` serves as the reference signature (which will be divided into basis segments) and `y` is the comparison signature;
 
-* `include` determines the output of the function. Besides the `CMPS.score`, many details of the comparison might be used to understand how the `CMPS.score` is computed. By default, `include = NULL` and the function output will only contain the `CMPS.score`; `include` can also be (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. if `"full_result"` (or its abbreviation) is specified, the ouput will include everything listed below.
-  - `nseg`: the number of basis segments we get from the reference signature; this is also the highest possible CMPS score of the comparison;
+* `include` determines the \hh{format of the function result}. Besides the `CMPS.score`, other aspects of the comparison help in understanding how the `CMPS.score` is computed. By default `include` is set to `NULL` and  only  the `CMPS.score` is returned; further results are included when `include` is (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. If `include` is specified as `"full_result"` (or its abbreviation), the ouput includes everything listed below.
+  - `nseg`: the number of basis segments  from the reference signature; this is also the highest possible CMPS score of the comparison;
   - `congruent.pos`: the congruent registration position;
   - `congruent.seg.idx`: the indices of all congruent matching profile segments;
   - `ccp.list`: a list showing identified candidate positions of all basis segments; 
-  - `pos.df`: a data frame containing all candidate positions and the number of votes they received;
+  - `pos.df`: a data frame containing all candidate positions and their respective number of votes;
   - `segments`: a list containing all basis segments;
   - `parameters`: a list containing all input arguments of `extract_feature_cmps`;
   
@@ -288,7 +288,7 @@ Besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`
 <!-- [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf] -->
 <!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
 
-\wj{In the remainder of the paper we showcase the use of the CMPS functionality on some examples and present the results of applying it to two datasets.}
+In the remainder of the paper we showcase the use of the CMPS functionality on some examples and present the results of applying it to two datasets.
 <!-- \hh{XXX you need a bit of an overview here on the structure of what is coming next: in the remainder of the paper we showcase the use of the CMPS functionality on some examples ...} -->
 
 **Installation**
@@ -354,9 +354,8 @@ cmps_without_multi_scale <-
 ```
 
 
-\wj{revised the following}
-In the first example, `npeaks.set` is a vector of three integers. This means that  the algorithm uses the multi-segment lengths strategy to create `cmps_with_multi_scale`, while for `cmps_without_multi_scale` each basis segment is linked to the top 5 candidate positions. 
-We use `include = "full_result"` to capture all results. In this example, the `cmps_with_multi_scale$CMPS.score` is 9, while `cmps_without_multi_scale$CMPS.score` is 12. \wj{As discussed in} @cmps, \wj{using multi-segment lengths strategy can reduce the number of false positives when identifying candidate positions; however, any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced the number of false negatives might rise. More discussion and comparisons between the two versions of the CMPS algorithm will be presented in later sections. Note that the multi scale method might also be slower because the algorithm is run a couple of times.}
+In the first example, `npeaks.set` is a vector of three integers, i.e.  the algorithm uses the multi-segment lengths strategy to create the result object `cmps_with_multi_scale`.  For `cmps_without_multi_scale` each basis segment is linked to the top 5 candidate positions. 
+We use `include = "full_result"` to capture all results. In this example, the CMPS is 9 when using multiple segments, and 12 when using a single segment. As discussed in @cmps, using multi-segment lengths strategy can reduce the number of false positives when identifying candidate positions; however, any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced the number of false negatives might rise. More discussion and comparisons between the two versions of the CMPS algorithm will be presented in later sections. Note, that the multi scale method is slower because the algorithm is run once for each segment length.
 
 
 <!-- \wj{XXX as mentioned before, }multi-segment lengths strategy provides a more conservative ways of finding candidate positions, so the `CMPS.score` of `cmps_with_multi_scale` is 9, while that of `cmps_without_multi_scale` is 12. \wj{XXX how should we address the advantage of multi-segment lengths strategy} \hh{XXX any score based method is walking the line between false positives and false negatives. As the number of false positives is reduced (by being more conservatives) the number of false negatives might rise. The multi scale method might also be slower because the algorithm is run a couple of times.} -->
