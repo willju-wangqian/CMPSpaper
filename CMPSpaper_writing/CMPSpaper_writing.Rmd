@@ -820,7 +820,7 @@ CMPS_hamby44_results$plot[[1]]
 CMPS_hamby44_results$plot[[2]]
 ```
 
-For the third result of Hamby 44, we changed a parameter used in the data-processing procedure. `span1=0.25` is used in previous results, and we changed it to `span1=0.75` \wj{in this case to make bullet signatures capture more global patterns XXX}.
+For the third result of Hamby 44, we changed a parameter used in the data-processing procedure. `span1=0.25` is used for the previous results. Here, we change the span of 0.75, which captures a more global pattern in the bullet signatures.
 <!-- For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the  = ; however, in this example we used `span1=0.75` and changed the characteristic of those  = . -->
 As we can see in \autoref{fig:result3_44}, changing some characteristics of bullet signatures will also change the final CMPS results. 
 \autoref{tab:table1} presents some summary statistics of the Hamby 44 results above. These summary statistics are used to show the separation between the KM and KNM groups in the distribution of both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. As shown in \autoref{tab:table1}, some parameter settings are better than others in terms of the separation between the two distributions. \wj{However, we are not suggesting any set of parameters to users since further research is needed to provide a comprehensive cross-validation on these parameters, which can be facilitated by an open-source implementation of the CMPS algorithm.}
