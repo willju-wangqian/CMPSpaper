@@ -153,7 +153,7 @@ codefig = list(codefig = TRUE, fig.show = "hide",
 
 In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method. @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations. Although @cmps conceptually described the CMPS algorithm  in their paper, the authors did not release an implementation of their method. Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm  to use, review, and  improve. Our implementation is made available as part of the  `R` package  `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}. 
 
-\wj{XXX According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms"} [@fbiucr], and firearm examination could play an important role in all these cases.
+According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms" [@fbiucr], and firearm examination could play an important role in all these cases.
  <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} -->
 <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide -->
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm. Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel. 
@@ -201,9 +201,9 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 ### Conceptual idea of CMPS
 Most algorithms for comparing striation marks are based on the digitized signatures and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
- The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the comparison  and  for each segment find the "best" registration position on the reference  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. \wj{XXX Note that researchers in} @cmps \wj{refers the origin of basis segments as the reference, but in this paper we refer it as the comparison.}
+ The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the comparison  and  for each segment find the "best" registration position on the reference  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. Note that researchers in @cmps refers the origin of basis segments as the reference, but in this paper we refer it as the comparison.
   High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.
-\wj{However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters. Further research is needed to understand how to determine the threshold. XXX}
+However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters. Further research is needed to understand how to determine the threshold.
   <!-- \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?} -->
   <!-- \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'} -->
  The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair. Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm. 
@@ -256,8 +256,8 @@ The command `get_segs(x, len=50)` implements this step:  it takes  bullet signat
 
 <!-- In the CMPS package, these three steps are implemented using a set of key functions: -->
 
-Note that there are \hh{several} parameters in the CMPS algorithm \hh{that are left to} the users \hh{to decide}, such as the length of basis segments `seg_length` in step 1, the number of peaks `npeaks.set` identified on each level in step 2, and the length of the tolerance zone `Tx` in both step 2 and 3. 
-In our implementation of the CMPS algorithm we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters. \hh{However, the authors state that no cross-validation has been done - there might be also issues with respect to resolution of the scans. Further research is needed, until then users are advised to think of default values as starting values and consider alternatives.}
+Note that there are several parameters in the CMPS algorithm that are left to the users to decide, such as the length of basis segments `seg_length` in step 1, the number of peaks `npeaks.set` identified on each level in step 2, and the length of the tolerance zone `Tx` in both step 2 and 3. 
+In our implementation of the CMPS algorithm we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters. However, the authors state that no cross-validation has been done - there might be also issues with respect to resolution of the scans. Further research is needed, until then users are advised to think of default values as starting values and consider alternatives.
 <!--Additionally, as shown in @cmps, using multi-segment lengths strategy reduces the number of "false positive" peaks in the cross-correlation curves, thus providing a more conservative way of identifying candidate positions.-->
 The main function that combines all steps in the CMPS algorithm described above is called `extract_feature_cmps(...)`. Here we present it with its default parameters.
 
@@ -276,7 +276,7 @@ The function `extract_feature_cmps` allows for the following input from users be
 
 * `x` and `y` are  two  signatures:  `x` serves as the comparison signature (which will be divided into basis segments) and `y` is the reference signature;
 
-* `include` determines the \hh{format of the function result}. Besides the `CMPS.score`, other aspects of the comparison help in understanding how the `CMPS.score` is computed. By default `include` is set to `NULL` and  only  the `CMPS.score` is returned; further results are included when `include` is (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. If `include` is specified as `"full_result"` (or its abbreviation), the ouput includes everything listed below.
+* `include` determines the format of the function result. Besides the `CMPS.score`, other aspects of the comparison help in understanding how the `CMPS.score` is computed. By default `include` is set to `NULL` and  only  the `CMPS.score` is returned; further results are included when `include` is (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. If `include` is specified as `"full_result"` (or its abbreviation), the ouput includes everything listed below.
   - `nseg`: the number of basis segments  from the comparison signature; this is also the highest possible CMPS score of the comparison;
   - `congruent.pos`: the congruent registration position;
   - `congruent.seg.idx`: the indices of all congruent matching profile segments;
@@ -295,13 +295,13 @@ In the remainder of the paper we showcase the use of the CMPS functionality on s
 
 **Installation**
 
-The CMPS package is (not) publicly available from CRAN, and can be installed by 
+The CMPS package is not publicly available from CRAN yet, and its development version is available from Github and can be installed by
 
-```{r, eval=FALSE}
-install.packages("CMPS")
-```
+<!-- ```{r, eval=FALSE} -->
+<!-- install.packages("CMPS") -->
+<!-- ``` -->
 
-The development version is available from Github can be installed by using 
+<!-- The development version is available from Github can be installed by using  -->
 
 ```{r, eval=FALSE}
 # install.packages("remotes") 
@@ -810,7 +810,7 @@ Since the Hamby set 44 scans have a different scanning resolution, we need to ad
 CMPS_hamby44_results$plot[[1]]
 ```
 
-\autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while adjusting other parameters. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that this results in an increased separation between KM comparisons and KNM comparisons. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
+\autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while holding other parameters fixed. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that this results in an increased separation between KM comparisons and KNM comparisons. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters.
 
 <!-- this is figure 4 -->
 
@@ -823,7 +823,7 @@ CMPS_hamby44_results$plot[[2]]
 For the third result of Hamby 44, we changed a parameter used in the data-processing procedure. `span1=0.25` is used for the previous results. Here, we change the span of 0.75, which captures a more global pattern in the bullet signatures.
 <!-- For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the  = ; however, in this example we used `span1=0.75` and changed the characteristic of those  = . -->
 As we can see in \autoref{fig:result3_44}, changing some characteristics of bullet signatures will also change the final CMPS results. 
-\autoref{tab:table1} presents some summary statistics of the Hamby 44 results above. These summary statistics are used to show the separation between the KM and KNM groups in the distribution of both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. As shown in \autoref{tab:table1}, some parameter settings are better than others in terms of the separation between the two distributions. \wj{However, we are not suggesting any set of parameters to users since further research is needed to provide a comprehensive cross-validation on these parameters, which can be facilitated by an open-source implementation of the CMPS algorithm.}
+\autoref{tab:table1} presents some summary statistics of the Hamby 44 results above. These summary statistics are used to show the separation between the KM and KNM groups in the distribution of both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. As shown in \autoref{tab:table1}, some parameter settings are better than others in terms of the separation between the two distributions. However, we are not suggesting any set of parameters to users since further research is needed to provide a comprehensive cross-validation on these parameters, which can be facilitated by an open-source implementation of the CMPS algorithm.
 
 
 <!-- this is figure 5 -->
