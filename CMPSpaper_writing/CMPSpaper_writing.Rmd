@@ -182,8 +182,8 @@ The automated framework  used in this paper was proposed by @aoas. In order to o
 The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view. 
 Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in \autoref{fig:process}(c) and \autoref{fig:process}(d)). A non-parametric LOESS smooth  [@loess] is fitted to capture the bullet curvature (\autoref{fig:process}(e)) and, finally, the **bullet signature** (\autoref{fig:process}(f)) is obtained as residuals of the cross-section and the fitted smooth. 
 Note, that in @cmps bullet signatures are  referred to as bullet profiles. However, to avoid confusion, we distinguish the notion of bullet signatures from bullet profiles. Bullet profiles are shown in panels (b), (c), and (d) of \autoref{fig:process}, while \autoref{fig:process}(f) shows the corresponding bullet signature.
-Identifiying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures. To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny],  `bulletinspectR` to identify and correct those errors. 
-\hh{An example of the extraction process with corresponding code and parameter settings can be found at XXX.}
+Identifying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures. To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny],  `bulletinspectR` to identify and correct those errors. 
+An example of the extraction process with corresponding code and parameter settings can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
 Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
 
 
@@ -201,13 +201,13 @@ knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
 
 ### Conceptual idea of CMPS
 Most algorithms for comparing striation marks are based on the digitized signatures and produce a similarity score [@song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940 ].
- The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the reference   and  for each segment find the "best" registration position on the comparison  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. 
+ The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm. The algorithm's main idea  is to take a set of consecutive and non-overlapping basis segments from  the comparison  and  for each segment find the "best" registration position on the reference  (the other bullet signature) with respect to their cross-correlation values. From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score. \wj{XXX Note that researchers in} @cmps \wj{refers the origin of basis segments as the reference, but in this paper we refer it as the comparison.}
   High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair. Low scores between pairs of signatures are attributed to different source pairs.
-\wj{However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparison is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters. Further research is needed to understand how to determine the threshold. XXX}
+\wj{However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters. Further research is needed to understand how to determine the threshold. XXX}
   <!-- \hh{XXX What threshold did @cmps identify as the boundary between different source and same source? And what was the error rate in their example?} -->
   <!-- \wj{they didn't talk about a specific threshold or error rates} \hh{XXX Is there a way to infer the error based on the example? ... 'while the authors did not mention a specific threshold of the CMPS to distinguish between same-source and different-source comparison, a CMPS value of Y results in an error rate of Z in the example.'} -->
  The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair. Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm. 
-Thus, in this paper we present an open-source implementation of the CMPS algorithm \hh{in the R package CMPS available from XXX github / CRAN}. 
+Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package CMPS available from Github \url{https://github.com/willju-wangqian/CMPS}
 With our implementation, one can compute the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
@@ -239,20 +239,20 @@ The section "Implementation" will go through the algorithm and show how to use t
 
 Conceptually, the CMPS algorithm consists of three main steps:
 
-1. **cut the reference signature into consecutive, non-overlapping and equal-length basis segments:**
+1. **cut the comparison signature into consecutive, non-overlapping and equal-length basis segments:**
 The command `get_segs(x, len=50)` implements this step:  it takes  bullet signature `x` in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length `len`, which are referred to as "basis segments".
 
-2. **identify candidate positions:** For each basis segment a set of candidate registration  positions on the comparison signature is identified based on the segment's similarity to the comparison. In a first step, the cross-correlation function of the segment to the comparison is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are considered further. \autoref{fig:segplots} and \autoref{fig:seg_all} illustrate these ideas.
-    + **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the comparison signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the comparison.
+2. **identify candidate positions:** For each basis segment a set of candidate registration  positions on the comparison signature is identified based on the segment's similarity to the reference signature. In a first step, the cross-correlation function of the segment to the reference is calculated, then a number of positions with high correlation values are identified as candidate positions. In case multiple segment lengths are considered, the length of each basis segment is doubled and these two steps are repeated. Only when candidate positions coincide (or are similar enough), they are considered further. \autoref{fig:segplots} and \autoref{fig:seg_all} illustrate these ideas.
+    + **Calculate the cross-correlation curve:**  Calculate the cross-correlation curve between a basis segment `x` and the reference signature `y` using the function `get_ccf4(x, y, ...)` as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the reference.
     + **Correlation peaks:** Two strategies referred to as "multi-peak inspection" and "multi-peak inspection at different segment lengths" in @cmps are used for identifying positions of correlation peaks as candidate positions. The latter is also called "multi-segment lengths strategy". The parameter `npeaks.set` in `extract_feature_cmps(...)` determines which strategy to use and the number of candidate positions: 
         -   If `npeaks.set` is an integer vector of length 1, for example `npeaks.set = 5`, the positions of the top five peaks in the cross-correlation curve are identified as candidate positions for registration. 
         -   If `npeaks.set` is an integer vector of length more than 1, for example `npeaks.set = c(5, 3, 1)`, the multi-segment lengths strategy will be used: find the top five peaks at the first level, double the segment length and recalculate the cross-correlation function, then identify 3 peaks at the second level and repeat the process for a basis segment that is doubled again to identify 1 peak at the third level. \autoref{fig:seg_all} shows an example of three levels of basis segment 6 and their corresponding cross-correlation curves and identified peaks.
-        -   `get_ccr_peaks(comp, segments, seg_scale, nseg = 1, npeaks = 5)` computes the cross-correlation curve between a basis or scaled segment and the comparison signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to `npeaks`, which is an integer. `segments`, `seg_scale`, and `nseg` determines the segment in the cross-correlation computation, and `comp` gives the comparison signature. If the multi-segment lengths strategy is used, then `get_ccr_peaks(...)` is called in a `lapply()` for each level of the basis segment. The resulting list is called `ccr.list`.
+        -   `get_ccr_peaks(comp, segments, seg_scale, nseg = 1, npeaks = 5)` computes the cross-correlation curve between a basis or scaled segment and the reference signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to `npeaks`, which is an integer. `segments`, `seg_scale`, and `nseg` determines the segment in the cross-correlation computation, and `comp` gives the reference signature. If the multi-segment lengths strategy is used, then `get_ccr_peaks(...)` is called in a `lapply()` for each level of the basis segment. The resulting list is called `ccr.list`.
     +  **multi-segment lengths strategy:** with the multi-segment lengths strategy being used, a position is identified as a candidate position for registration and is called as a "consistent correlation peak" if it results in a top peak in the cross-correlation curve with a tolerance zone determined by `Tx` in all segment levels Note that in @cmps, a segment at its largest scale (highest level) always identifies one peak.
         -   the function `get_seg_scale(segments, nseg, scale = 2)` is used to obtain the scaled version of a basis segment. `segments` is a list containing all basis segments, generated by the function `get_segs(...)` in step 1; `nseg` is an integer indicating which basis segment the function should work with. `scale=1` gives the original length of the basis segment. Increasing `scale` by 1 will double the segment length. 
         -   `get_ccp(ccr.list, Tx = 25)` tries to identify the "consistent correlation peak". `ccr.list` is the result of `lapply()` and `get_ccr_peaks(...)`, and `Tx` determines the size of a tolerance zone used in identifying the consistent correlation peak. `get_ccp(...)` returns `NULL` if there is no consistent correlation peak.
 
-3. **determine the congruent registration position:** A candidate position "receives" `votes` from basis segments that identify it or a close position within a tolerance zone of `Tx` as a candidate position in step 2. Votes for all candidate positions are tallied, and the position with the highest number of votes gets chosen as the *congruent registration position*,  indicating that most of the basis segments find their highly similar counterpart in the comparison signature in terms of correlation at this registration position. In case of ties the middle position is taken as the congruent registration position. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison. `get_CMPS(input.ccp, Tx = 25)` is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (cmps).
+3. **determine the congruent registration position:** A candidate position "receives" `votes` from basis segments that identify it or a close position within a tolerance zone of `Tx` as a candidate position in step 2. Votes for all candidate positions are tallied, and the position with the highest number of votes gets chosen as the *congruent registration position*,  indicating that most of the basis segments find their highly similar counterpart in the reference signature in terms of correlation at this registration position. In case of ties the middle position is taken as the congruent registration position. Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS). The total number of CMPS is the CMPS score of the comparison. `get_CMPS(input.ccp, Tx = 25)` is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (cmps).
 
 <!-- In the CMPS package, these three steps are implemented using a set of key functions: -->
 
@@ -274,10 +274,10 @@ extract_feature_cmps(
 
 The function `extract_feature_cmps` allows for the following input from users besides the previously discussed parameters `seg_length`, `npeaks.set`, and `Tx`:
 
-* `x` and `y` are  two  signatures:  `x` serves as the reference signature (which will be divided into basis segments) and `y` is the comparison signature;
+* `x` and `y` are  two  signatures:  `x` serves as the comparison signature (which will be divided into basis segments) and `y` is the reference signature;
 
 * `include` determines the \hh{format of the function result}. Besides the `CMPS.score`, other aspects of the comparison help in understanding how the `CMPS.score` is computed. By default `include` is set to `NULL` and  only  the `CMPS.score` is returned; further results are included when `include` is (an abbreviation of) one of or a vector of the following strings: `"nseg", "congruent.pos", "congruent.seg.idx", "segments", "parameters"`, and `"full_result"`. If `include` is specified as `"full_result"` (or its abbreviation), the ouput includes everything listed below.
-  - `nseg`: the number of basis segments  from the reference signature; this is also the highest possible CMPS score of the comparison;
+  - `nseg`: the number of basis segments  from the comparison signature; this is also the highest possible CMPS score of the comparison;
   - `congruent.pos`: the congruent registration position;
   - `congruent.seg.idx`: the indices of all congruent matching profile segments;
   - `ccp.list`: a list showing identified candidate positions of all basis segments; 
@@ -313,7 +313,7 @@ remotes::install_github("willju-wangqian/CMPS")
 **An Example**
 
 The `CMPS` package contains a simple example to illustrate the basic usage of the package. The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 [@hamby].  The procedure for generating signatures from high-resolution 3D topographic scans of bullet lands used here follows the methodology described in @aoas (as discussed above). 
-The two bullets under consideration are known to have been fired from the same gun barrel, so for the 36 pairwise land-by-land comparisons, six comparison are from same-source pairs (known matches) while thirty are from different-source pairs (known non-matches). To access the example data, we use
+The two bullets under consideration are known to have been fired from the same gun barrel, so for the 36 pairwise land-by-land comparisons, six comparisons are from same-source pairs (known matches) while thirty are from different-source pairs (known non-matches). To access the example data, we use
 
 ```{r, eval=TRUE}
 library(CMPS)
@@ -333,7 +333,7 @@ signatures %>% ggplot(aes(x = x/1000, y = sig)) + geom_line() + facet_wrap(~bull
   ylab("Relative height in micron")
 ```
 
-The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects `sigs2` and `sigs1`, respectively. This comparison is one of a pair of signatures that are known to be a match -- a KM (known match) comparison. We compute the CMPS score using two versions of the CMPS algorithm:
+The signatures of Land 4 of Bullet 1 and Land 5 of Bullet 2 are stored in objects `sigs2` and `sigs1`, respectively. This comparison consists of a pair of signatures that are known to be a match -- a KM (known match) comparison. We compute the CMPS score using two versions of the CMPS algorithm:
 
 
 
@@ -403,13 +403,13 @@ dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=land
 
 **Visualize and Understand CMPS results**
 
-We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. \autoref{fig:sigplots} shows the plots generated by the first graphing function, `cmps_signature_plot()`, and continues with the example above. `cmps_signature_plot()` takes the output of `extract_feature_cmps(..., include = "full_result")` and returns a list of 5 elements. It creates an overall impression of how the reference signature aligns with the comparison signature at the congruent registration position.
+We also implemented graphing tools for visualizing results of the CMPS algorithm. The goal is to provide users with tools to inspect each of the basis segments and to help them have a better understanding of how the algorithm works. \autoref{fig:sigplots} shows the plots generated by the first graphing function, `cmps_signature_plot()`, and continues with the example above. `cmps_signature_plot()` takes the output of `extract_feature_cmps(..., include = "full_result")` and returns a list of 5 elements. It creates an overall impression of how the comparison signature aligns with the reference signature at the congruent registration position.
 
 *   The first element is a plot called `segment_shift_plot`, shown in \autoref{fig:sigplot}. On this plot the reference signature is drawn as a black line,  congruent matching profile segments from the comparison signature are overlaid in red at the congruent registration position. 
 
 <!-- basis segments that agree with the congruent registration position (i.e. the segments that are congruent matching profile segments) are plotted along with the comparison signature. When plotting, each of those basis segments will be shifted to the position where the basis segment obtains a cross-correlation peak and is within the tolerance zone of the congruent registration position. -->
 
-*   The second plot is called `signature_shift_plot`, shown in \autoref{fig:sigplot2}. This visual presents both the reference signature and the comparison signature. The comparison signature is aligned with the reference signature based on the congruent registration position. Congruent matching profile segments are highlighted by  solid red lines. 
+*   The second plot is called `signature_shift_plot`, shown in \autoref{fig:sigplot2}. This visual presents both the comparison signature and the reference signature. The comparison signature is aligned with the reference signature based on the congruent registration position. Congruent matching profile segments are highlighted by  solid red lines. 
 
 \begin{figure}[hbt]
 \begin{subfigure}[t]{\textwidth}
@@ -422,7 +422,7 @@ sig.plot$segment_shift_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:sigplot2}The black line shows the comparison signature; the red line shows the reference signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
+\caption{\label{fig:sigplot2}The black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
 ```{r sigplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 sig.plot$signature_shift_plot
 ```
@@ -444,7 +444,7 @@ While `cmps_signature_plot()` focuses on the signature level,  `cmps_segment_plo
 For each segment scale, we have two plots: `segment_plot` and `scale_ccf_plot`, as shown in \autoref{fig:segplots} for the example of segment number 6: 
 
 *   \autoref{fig:segplot} is the `segment_plot` for basis segment 6 at level one (in its original length). We used  `npeaks.set = c(5, 3, 1)` in `extract_feature_cmps()` when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position). 
-*   \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at level one. It shows the cross-correlation curve computed by the comparison signature and the level-one basis segment 6. The five highest peaks are marked by dots on the curve.
+*   \autoref{fig:segplot2} is the `scale_ccf_plot` of basis segment 6 at level one. It shows the cross-correlation curve computed by the reference signature and the level-one basis segment 6. The five highest peaks are marked by dots on the curve.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -458,7 +458,7 @@ seg.plot[[1]]$segment_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the comparison signature and segment 6 at level one. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in the highest segment level; the blue dashed lines show the tolerance zone around the green dashed line. We can see that none of the five highest peaks at level one falls within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi-segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
+\caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the reference signature and segment 6 at level one. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in the highest segment level; the blue dashed lines show the tolerance zone around the green dashed line. We can see that none of the five highest peaks at level one falls within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi-segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
 ```{r segplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 seg.plot[[1]]$scale_ccf_plot
 ```
@@ -694,7 +694,7 @@ As presented in the work of @cmps, researchers applied the CMPS method to one of
 
 The CMPS score can be considered as a similarity score of two signatures. Then in order to obtain a similarity score of two bullets based on CMPS scores, researchers introduced two similarity metrics, $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, for bullet-level comparisons [@cmps]. $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all pairwise bullet signature comparisons. And $\mathrm{\overline{CMPS}_{max}}$ is the highest possible mean CMPS score of signature comparisons that are in the same phase.
 
-In general, we assume each bullet has $n$ land engravings (in our case $n=6$). Let $c_{ij}$ denote the CMPS score of comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$. Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function. For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
+In general, we assume each bullet has $n$ land engravings (in our case $n=6$). Let $c_{ij}$ denote the CMPS score of a comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$. Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function. For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
 
 Then we have  
 
@@ -850,7 +850,7 @@ knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
   column_spec(2:5, width = "2cm")
 ```
 
-\wj{The codes generating those results can be found in the appendix.XXX}
+The codes generating those results can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
 
 
 ## Conclusion
@@ -863,759 +863,6 @@ In the CMPS package we also implemented some graphing tools for users to visuali
 Additionally, we applied the CMPS package to two datasets in Hamby study (Hamby set 252 and Hamby set 44), and the results we obtained were promising since we were able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known-match (KM) comparisons and known-nonmatch (KNM) comparisons. However, the results of Hamby set 44 suggested that the CMPS method is sensitive to the choice of parameters in the algorithm, such as the length of basis segments and the number of peaks detected at each segment level. This indicates that further research is needed to provide a comprehensive cross-validation on parameters used the algorithm. Moreover, we might want to compare the two versions of the CMPS algorithm in the future as well.
 
 The CMPS package as an open-source implementation introduces the CMPS algorithm to the `R` community and allows people to use it for their own projects. It would also facilitate future studies on parameter cross-validations, method comparisons, and the development of statistical methods for modeling KM and KNM CMPS score distributions, which can potentially be used to estimate error rates or define an identification criterion.  
-
-<!-- <div id="refs"></div> -->
-
-
-\newpage
-
-# Appendix
-
-```{r generate252, echo=TRUE, eval=FALSE}
-library(tidyverse)
-library(bulletxtrctr)
-library(x3ptools)
-library(CMPS)
-library(ggpubr)
-library(parallel)
-
-###########
-# from the x3p data, re-run CMPS results for hamby 252
-hamby252_results <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/hamby252_results.rds")
-
-b252.full <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/bullets_hamby252_Sep9.rds")
-
-# generate bullet_id
-bulletid.tb <- b252.full %>% select(scan_id)
-bulletid.tb <- bulletid.tb %>% mutate(
-  barrel_id = sapply(strsplit(scan_id, "-"), "[[", 1),
-  bullet = sapply(strsplit(scan_id, "-"), "[[", 2),
-  land_id = sapply(strsplit(scan_id, "-"), "[[", 3),
-  bullet_id = paste(barrel_id, bullet)
-)
-
-# remove x3p files
-b252 <- b252.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
-
-# get bullet id
-b252$bullet_id <- bulletid.tb %>% pull(bullet_id)
-
-# get all comparisons
-b.cb <- unique(b252$bullet_id) %>% utils::combn(m = 2)
-p <- 1:595
-
-# remove damaged data
-tmp.tibble <- tibble(bullet1 = b.cb[1,], 
-                     bullet2 = b.cb[2,])
-
-tmp.tibble <- tmp.tibble %>% mutate(
-  type = if_else(
-    bullet1 %>% str_extract("Br\\d+") ==
-      bullet2 %>% str_extract("Br\\d+"),
-    "KM",
-    "KNM"
-  ),
-  type = if_else(is.na(type), "Ukn", type)
-)
-
-# include tank-rashed data
-t1.df <-
-  read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
-tr.id <-
-  c(
-    t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
-    "Br6-2-1",
-    "Br9-2-4"
-  )
-
-######################################
-# add ground-truth for hamby 252
-studyinfo <-
-  readxl::read_xlsx(
-    "~/Research/CMPSpaper/preconsideration/StudyInfo.xlsx",
-    sheet = 3,
-    skip = 1
-  )
-
-keyss <- studyinfo$`Specimen ID`[-length(studyinfo$`Specimen ID`)]
-keyss <- tibble(specimen = keyss)
-keyss <- keyss %>% mutate(
-  barrel = specimen %>% str_split(" "),
-  barrel.id = purrr::map_chr(barrel, function(bb) {
-    bb[1]
-  }),
-  bullet.id = purrr::map_chr(barrel, function(bb) {
-    bb[3]
-  })
-) %>% select(-barrel)
-
-# obtain the matching keys
-keyss <- keyss %>% filter(!(bullet.id %>% str_detect("\\d+")))
-
-tmp.ukn <-
-  tibble(
-    col1 = tmp.tibble$bullet1 %>% str_extract(" [A-Z]") %>% str_trim(),
-    col2 = tmp.tibble$bullet2 %>% str_extract(" [A-Z]") %>% str_trim()
-  )
-
-# left join the ground truth
-tmp.tibble$b1t <-
-  tmp.ukn %>% left_join(keyss, by = c("col1" = "bullet.id")) %>%
-  pull(barrel.id) %>% str_remove("Brl")
-tmp.tibble$b2t <-
-  tmp.ukn %>% left_join(keyss, by = c("col2" = "bullet.id")) %>%
-  pull(barrel.id) %>% str_remove("Brl")
-
-# find KM KNM
-tmp.tibble <- tmp.tibble %>% mutate(
-  b1t = if_else(
-    is.na(b1t),
-    bullet1 %>% str_extract("Br\\d+") %>% str_remove("Br"),
-    b1t
-  ),
-  b2t = if_else(
-    is.na(b2t),
-    bullet2 %>% str_extract("Br\\d+") %>% str_remove("Br"),
-    b2t
-  ),
-  b1t = as.numeric(b1t),
-  b2t = as.numeric(b2t),
-  type_truth = if_else(b1t == b2t, "KM", "KNM")
-)
-
-### set up parameters
-N <- 4
-CMPS_hamby252_results <- list()
-CMPS_hamby252_results$span1 <- list(0.75, 0.25, 0.25, 0.15)
-CMPS_hamby252_results$signame <-
-  list("sigs75", "sigs25", "sigs25_1062", "sigs15")
-CMPS_hamby252_results$npeaks.set <-
-  list(c(5, 3, 1),
-       c(5, 3, 1),
-       c(10, 6, 2),
-       c(5,3,1))
-CMPS_hamby252_results$seg_length <- as.list(rep(50, 4))
-CMPS_hamby252_results$Tx <- as.list(rep(25, 4))
-CMPS_hamby252_results$titlee <- list()
-CMPS_hamby252_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby252_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby252_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby252_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby252_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby252_results$filename[[i]] <- 
-    paste(
-      "hamby252",
-      CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby252_results$seg_length[[i]],
-      CMPS_hamby252_results$Tx[[i]],
-      sep = "_"
-    )
-}
-CMPS_hamby252_results$cmps.table <- list()
-CMPS_hamby252_results$plot <- list()
-
-com.title252 <- expression(paste(
-  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
-
-
-for (i in 1:N) {
-  b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
-    .x = b252.full$ccdata,
-    .y = b252.full$grooves,
-    .f = function(x, y) {
-      cc_get_signature(
-        ccdata = x,
-        grooves = y,
-        span1 = CMPS_hamby252_results$span1[[i]],
-        span2 = 0.03
-      )
-    }
-  )
-  
-  # process of removing outliers
-  tt <-
-    lapply(b252[[CMPS_hamby252_results$signame[[i]]]], function(x) {
-      x$sig
-    }) %>% unlist()
-  qtt <- quantile(tt, na.rm = TRUE)
-  multi.iqr <- 3
-  outrange <-
-    c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]), qtt[4] + multi.iqr * (qtt[4] -
-                                                                      qtt[2]))
-  
-  b252 <- b252 %>% mutate(sigs_main = purrr::map(
-    .x = .data[[CMPS_hamby252_results$signame[[i]]]],
-    .f = function(x) {
-      tmp <- x$sig
-      tmp[tmp < outrange[1] | tmp > outrange[2]] <- NA
-      list(sig = tmp)
-    }
-  ))
-  
-  # start the parallel computing
-  system.time({
-    tmp.252.list <- mclapply(p, function(cb.idx) {
-      
-      tmp.lands <-
-        c(
-          b252 %>% filter(bullet_id %in% b.cb[, cb.idx][1]) %>% pull(scan_id),
-          b252 %>% filter(bullet_id %in% b.cb[, cb.idx][2]) %>% pull(scan_id)
-        )
-      tmp.comp <-
-        data.frame(expand.grid(land1 = tmp.lands[1:6], land2 = tmp.lands[7:12]),
-                   stringsAsFactors = FALSE)
-      
-      tmp.comp$cmps <-
-        purrr::map2(
-          .x = tmp.comp$land1,
-          .y = tmp.comp$land2,
-          .f = function(xx, yy) {
-            sig1 <- b252$sigs_main[b252$scan_id == xx][[1]]$sig
-            sig2 <- b252$sigs_main[b252$scan_id == yy][[1]]$sig
-            
-            extract_feature_cmps(
-              sig1,
-              sig2,
-              npeaks.set = CMPS_hamby252_results$npeaks.set[[i]],
-              seg_length = CMPS_hamby252_results$seg_length[[i]],
-              Tx = CMPS_hamby252_results$Tx[[i]],
-              include = "nseg"
-            )
-          }
-        )
-      
-      tmp.comp <- tmp.comp %>%
-        mutate(
-          cmps_score = sapply(tmp.comp$cmps, function(x)
-            x$CMPS.score),
-          cmps_nseg = sapply(tmp.comp$cmps, function(x)
-            x$nseg)
-        )
-      
-      cmps.table <-
-        tmp.comp %>% select(land1, land2, cmps_score, cmps_nseg)
-      
-      tibble(
-        bullet1 = b.cb[, cb.idx][1],
-        bullet2 = b.cb[, cb.idx][2],
-        cmps.table = list(cmps.table)
-      )
-    }, mc.cores = detectCores())
-  })
-  
-  hamby252.cmps <- do.call(rbind, tmp.252.list)
-  
-  ##################################################
-  # before removing tank-rashed data
-  hamby252.cmps <- hamby252.cmps %>% mutate(
-    cmps.max = cmps.table %>% purrr::map_dbl(
-      .f = function(t) {
-        max(t$cmps_score)
-      }
-    ),
-    cmps.maxbar = cmps.table %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_average_scores(landidx1, landidx2, t$cmps_score) %>% max()
-      }
-    )
-  )
-  
-  hamby252.cmps$cmps.table.m <-
-    lapply(hamby252.cmps$cmps.table, function(tt) {
-      tt.idx <- tt %>% rowid_to_column %>%
-        filter(land1 %in% tr.id | land2 %in% tr.id) %>% pull(rowid)
-      tt[tt.idx, "cmps_score"] <- NA
-      tt
-    })
-  
-  # after removing tank-rashed data
-  hamby252.cmps <- hamby252.cmps %>% mutate(
-    cmps.max.m = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        max(t$cmps_score, na.rm = TRUE)
-      }
-    ),
-    cmps.maxbar.m = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_average_scores(
-          landidx1, landidx2, t$cmps_score, addNA = TRUE
-        ) %>% max()
-      }
-    )
-  )
-  
-  # add type and type_truth
-  hamby252.cmps$type <- tmp.tibble$type
-  hamby252.cmps$type_truth <- tmp.tibble$type_truth
-  
-  ###################################
-  # save result in a list
-  CMPS_hamby252_results$cmps.table[[i]] <- hamby252.cmps
-  
-}
-
-################################
-# save data as csv
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/"
-
-for(i in 1:N){
-  write.csv(
-    CMPS_hamby252_results$cmps.table[[i]] %>% 
-      select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
-    file = paste(
-      data_path, CMPS_hamby252_results$filename[[i]], 
-      ".csv", sep = ""))
-}
-
-#################################################
-# generate plots
-for (i in 1:3) {
-  hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
-  
-  hamby252.plot.list <- list()
-  titlee <- CMPS_hamby252_results$titlee[[i]]
-  
-  hamby252.plot.list[[1]] <- hamby252.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.max.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      fill = "Comparison Type",
-      x = expression(CMPS[max]),
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 27, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank()) +
-    font("x.text", size = 6)
-  
-  hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.maxbar.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      x = expression(bar(CMPS)[max]),
-      fill = "Comparison Type",
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 24, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank())
-  
-  plot <- ggarrange(plotlist = hamby252.plot.list,
-                    nrow = 1,
-                    ncol = 2,
-                    common.legend = TRUE, legend = "bottom")
-  plot <- annotate_figure(plot, 
-                          top = text_grob(com.title252))
-  CMPS_hamby252_results$plot[[i]] <- plot
-}
-
-```
-
-```{r generate44, echo=TRUE, eval=FALSE}
-library(tidyverse)
-library(bulletxtrctr)
-library(x3ptools)
-library(CMPS)
-library(ggpubr)
-library(parallel)
-
-###########
-# from the x3p data, re-run CMPS results for hamby 44
-b44.full <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/hamby44_manual5.rds")
-
-# rds file that stores indices of damaged scans
-idf.idx <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/idfidx.rds")
-
-idf.scan_id <- b44.full %>% slice(idf.idx) %>% .$scan_id
-
-
-# generate bullet_id
-bulletid.tb <- b44.full %>% select(scan_id)
-bulletid.tb <- bulletid.tb %>% mutate(
-  barrel_id = sapply(strsplit(scan_id, "-"), "[[", 1),
-  bullet = sapply(strsplit(scan_id, "-"), "[[", 2),
-  land_id = sapply(strsplit(scan_id, "-"), "[[", 3),
-  bullet_id = paste(barrel_id, bullet)
-)
-
-N <- 3
-CMPS_hamby44_results <- list()
-CMPS_hamby44_results$span1 <- list(0.25, 0.25, 0.75)
-CMPS_hamby44_results$signame <-
-  list("sigs25_531", "sigs25_1061", "sigs75_531")
-CMPS_hamby44_results$npeaks.set <-
-  list(c(5, 3, 1),
-       c(10, 6, 1),
-       c(5, 3, 1))
-CMPS_hamby44_results$seg_length <- as.list(rep(61, 3))
-CMPS_hamby44_results$Tx <- as.list(rep(30, 3))
-CMPS_hamby44_results$titlee <- list()
-CMPS_hamby44_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby44_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby44_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby44_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby44_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby44_results$filename[[i]] <- 
-    paste(
-      "hamby44",
-      CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby44_results$seg_length[[i]],
-      CMPS_hamby44_results$Tx[[i]],
-      sep = "_"
-    )
-}
-CMPS_hamby44_results$cmps.table <- list()
-CMPS_hamby44_results$plot <- list()
-
-com.title44 <- expression(paste(
-  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
-
-# remove x3p files
-b44 <- b44.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
-
-# get all comparisons
-b44$bullet_id <- bulletid.tb %>% pull(bullet_id)
-b.cb <- unique(b44$bullet_id) %>% utils::combn(m = 2)
-p <- 1:595
-
-# get ground-truth
-key.table <- tibble(
-  bullet.id = c(
-    "K",
-    "O",
-    "L",
-    "P",
-    "J",
-    "H",
-    "I",
-    "Y",
-    "G",
-    "E",
-    "U",
-    "X",
-    "F",
-    "T",
-    "S"
-  ),
-  barrel.id = c(1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7, 8, 9, 10)
-)
-
-tmp.table.44 <- tibble(bullet1 = b.cb[1, ],
-                       bullet2 = b.cb[2, ])
-
-tmp.table.44$b1t <-
-  tmp.table.44$bullet1 %>% str_extract("'[A-Z]'") %>% str_extract("[A-Z]")
-tmp.table.44$b2t <-
-  tmp.table.44$bullet2 %>% str_extract("'[A-Z]'") %>% str_extract("[A-Z]")
-
-tmp.table.44$b1b <-
-  tmp.table.44 %>% 
-  left_join(key.table, by = c("b1t" = "bullet.id")) %>% 
-  pull(barrel.id)
-tmp.table.44$b2b <-
-  tmp.table.44 %>% 
-  left_join(key.table, by = c("b2t" = "bullet.id")) %>% 
-  pull(barrel.id)
-
-tmp.table.44 <- tmp.table.44 %>% mutate(
-  b1b = if_else(
-    is.na(b1b),
-    bullet1 %>% str_extract("Barrel \\d+") %>% 
-      str_extract("\\d+") %>% as.numeric(),
-    b1b
-  ),
-  b2b = if_else(
-    is.na(b2b),
-    bullet2 %>% str_extract("Barrel \\d+") %>% 
-      str_extract("\\d+") %>% as.numeric(),
-    b2b
-  ),
-  type_truth = if_else(b1b == b2b, "KM", "KNM")
-)
-
-tmp.table.44 <- tmp.table.44 %>% mutate(
-  type = if_else(
-    bullet1 %>% str_extract("(Unknowns|Barrel) (\\d+|[A-Z])") ==
-      bullet2 %>% str_extract("(Unknowns|Barrel) (\\d+|[A-Z])"),
-    "KM",
-    "KNM"
-  ),
-  type = if_else(
-    bullet1 %>% str_extract("(Unknowns|Barrel) (\\d+|[A-Z])") == "Unknowns B" | 
-      bullet2 %>% str_extract("(Unknowns|Barrel) (\\d+|[A-Z])") == "Unknowns B", 
-    "UKN", 
-    type
-  )
-)
-
-
-for (i in 1:N) {
-  b44[[CMPS_hamby44_results$signame[[i]]]] <- purrr::map2(
-    .x = b44.full$ccdata,
-    .y = b44.full$grooves,
-    .f = function(x, y) {
-      cc_get_signature(
-        ccdata = x,
-        grooves = y,
-        span1 = CMPS_hamby44_results$span1[[i]],
-        span2 = 0.03
-      )
-    }
-  )
-  
-  # process of removing outliers
-  tt <-
-    lapply(b44[[CMPS_hamby44_results$signame[[i]]]], function(x) {
-      x$sig
-    }) %>% unlist()
-  qtt <- quantile(tt, na.rm = TRUE)
-  multi.iqr <- 3
-  outrange <-
-    c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]),
-      qtt[4] + multi.iqr * (qtt[4] - qtt[2]))
-  
-  b44 <- b44 %>% mutate(sigs_main = purrr::map(
-    .x = .data[[CMPS_hamby44_results$signame[[i]]]],
-    .f = function(x) {
-      tmp <- x$sig
-      tmp[tmp < outrange[1] | tmp > outrange[2]] <- NA
-      list(sig = tmp)
-    }
-  ))
-  
-  ## parallel setup
-  cl <- makeCluster(7)
-  
-  par.setup <- parLapply(cl, 1:length(cl),
-                         function(xx) {
-                           library(tidyverse)
-                           library(bulletxtrctr)
-                           library(x3ptools)
-                           library(CMPS)
-                         })
-  
-  clusterExport(cl,
-                c("b44", "b.cb", "p",
-                  "CMPS_hamby44_results", "i"),
-                envir = globalenv())
-  
-  # start the parallel computing
-  system.time({
-    tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-      tmp.lands <-
-        c(
-          b44 %>% filter(bullet_id %in% b.cb[, cb.idx][1]) %>% pull(scan_id),
-          b44 %>% filter(bullet_id %in% b.cb[, cb.idx][2]) %>% pull(scan_id)
-        )
-      tmp.comp <-
-        data.frame(expand.grid(land1 = tmp.lands[1:6], land2 = tmp.lands[7:12]),
-                   stringsAsFactors = FALSE)
-      
-      tmp.comp$cmps <-
-        purrr::map2(
-          .x = tmp.comp$land1,
-          .y = tmp.comp$land2,
-          .f = function(xx, yy) {
-            sig1 <- b44$sigs_main[b44$scan_id == xx][[1]]$sig
-            sig2 <- b44$sigs_main[b44$scan_id == yy][[1]]$sig
-            
-            extract_feature_cmps(
-              sig1,
-              sig2,
-              npeaks.set = CMPS_hamby44_results$npeaks.set[[i]],
-              seg_length = CMPS_hamby44_results$seg_length[[i]],
-              Tx = CMPS_hamby44_results$Tx[[i]],
-              include = "nseg"
-            )
-          }
-        )
-      
-      tmp.comp <- tmp.comp %>%
-        mutate(
-          cmps_score = sapply(tmp.comp$cmps, function(x)
-            x$CMPS.score),
-          cmps_nseg = sapply(tmp.comp$cmps, function(x)
-            x$nseg)
-        )
-      
-      cmps.table <-
-        tmp.comp %>% select(land1, land2, cmps_score, cmps_nseg)
-      
-      
-      tibble(
-        bullet1 = b.cb[, cb.idx][1],
-        bullet2 = b.cb[, cb.idx][2],
-        cmps.table = list(cmps.table)
-      )
-    })
-  })
-  
-  hamby44.cmps <- do.call(rbind, tmp.44.list)
-  
-  stopCluster(cl)
-  
-  ##################################################
-  # before removing tank-rashed data
-  hamby44.cmps <- hamby44.cmps %>% mutate(
-    cmps.max = cmps.table %>% purrr::map_dbl(
-      .f = function(t) {
-        max(t$cmps_score)
-      }
-    ),
-    cmps.maxbar = cmps.table %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_average_scores(landidx1, landidx2, t$cmps_score) %>% max()
-      }
-    )
-  )
-  
-  
-  hamby44.cmps$cmps.table.m <-
-    lapply(hamby44.cmps$cmps.table, function(tt) {
-      tt.idx <- tt %>% rowid_to_column %>%
-        filter(land1 %in% idf.scan_id |
-                 land2 %in% idf.scan_id) %>% pull(rowid)
-      tt[tt.idx, "cmps_score"] <- NA
-      tt
-    })
-  
-  
-  # after removing tank-rashed data
-  hamby44.cmps <- hamby44.cmps %>% mutate(
-    cmps.max.m = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        max(t$cmps_score, na.rm = TRUE)
-      }
-    ),
-    cmps.maxbar.m = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_average_scores(
-          landidx1, landidx2, t$cmps_score, addNA = TRUE
-        ) %>% max()
-      }
-    )
-  )
-  
-  # add groundtruth
-  hamby44.cmps$type_truth <- tmp.table.44$type_truth
-  hamby44.cmps$type <- tmp.table.44$type
-  
-  # save result in a list
-  CMPS_hamby44_results$cmps.table[[i]] <- hamby44.cmps
-  
-}
-
-################################
-# save data as csv
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/"
-
-for(i in 1:N){
-  write.csv(
-    CMPS_hamby44_results$cmps.table[[i]] %>% 
-      select(-cmps.table, -cmps.table.m) %>% 
-      as.data.frame(),
-    file = paste(data_path, 
-                 CMPS_hamby44_results$filename[[i]], 
-                 ".csv", sep = ""))
-}
-
-
-#################################################
-# generate plots
-for (i in 1:3) {
-  hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
-  
-  hamby44.plot.list <- list()
-  titlee <- CMPS_hamby44_results$titlee[[i]]
-  
-  hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.max.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      fill = "Comparison Type",
-      x = expression(CMPS[max]),
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 27, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank()) +
-    font("x.text", size = 6)
-  
-  hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.maxbar.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      x = expression(bar(CMPS)[max]),
-      fill = "Comparison Type",
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 24, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank())
-  
-  plot <- ggarrange(plotlist = hamby44.plot.list,
-                    nrow = 1,
-                    ncol = 2,
-                    common.legend = TRUE, legend = "bottom")
-  plot <- annotate_figure(plot, 
-                          top = text_grob(com.title44))
-  CMPS_hamby44_results$plot[[i]] <- plot
-}
-
-```
-
-\newpage
-
-<!-- open source -->
-<!-- module -->
-<!-- hamby 44 new data set -->
-<!-- hamby 252 -->
-<!-- threshold -->
-
 
 <!-- ### About this format and the R Journal requirements -->
 
