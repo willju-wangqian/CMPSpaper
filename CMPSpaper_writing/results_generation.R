@@ -9,8 +9,8 @@ library(parallel)
 # from the x3p data, re-run CMPS results for hamby 252
 # hamby252_results <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252_results.rds")
-hamby252_results <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/hamby252_results.rds")
+# hamby252_results <- 
+#   readRDS("~/Research/CMPSpaper/preconsideration/hamby252_results.rds")
 
 # b252.full <-
 #   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252/bullets_hamby252_Sep9.rds")
@@ -52,15 +52,17 @@ tmp.tibble <- tmp.tibble %>% mutate(
 
 # include tank-rashed data
 # [TODO] MAKE THIS A CSV FILE
-t1.df <-
-  # read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
-  read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
-tr.id <-
-  c(
-    t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
-    "Br6-2-1",
-    "Br9-2-4"
-  )
+# t1.df <-
+#   # read_rds("C:/Research/Bullet/Bullet_Rcode/hamby252/t1.df.rds")
+#   read_rds("~/Research/CMPSpaper/preconsideration/t1.df.rds")
+# tr.id <-
+#   c(
+#     t1.df %>% filter(type == "TR") %>% pull(scan_id) %>% as.character(),
+#     "Br6-2-1",
+#     "Br9-2-4"
+#   )
+
+tr.id <- c("Br3-1-4", "Ukn-B-2", "Ukn-Q-4", "Br6-2-1", "Br9-2-4")
 
 ######################################
 # add ground-truth for hamby 252
