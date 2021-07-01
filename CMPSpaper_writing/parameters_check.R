@@ -279,7 +279,17 @@ for (i in 1:4) {
   CMPS_hamby252_results$plot_scaled[[i]] <- plot
 }
 
-check_idx <- 3
+data(bullets)
+land2_3 <- bullets$sigs[bullets$bulletland == "2-3"][[1]]
+land1_2 <- bullets$sigs[bullets$bulletland == "1-2"][[1]]
+cmps_with_multi_scale <- 
+  extract_feature_cmps(land2_3$sig, land1_2$sig, include = "full_result",
+                       seg_length = 50, npeaks.set = c(10,6,4,2,1))
+cmps_with_multi_scale$CMPS.score
+cmps_with_multi_scale$nseg
+
+
+check_idx <- 1
 
 CMPS_hamby252_results$plot_scaled[[check_idx]]
 CMPS_hamby252_results$plot[[check_idx]]
@@ -287,9 +297,12 @@ CMPS_hamby252_results$titlee[[check_idx]]
 # compute variance ratio for the three plots
 with(CMPS_hamby252_results$cmps.table[[check_idx]], {
   cbind(cmps.max.m, cmps.maxbar.m, cmps.denoise, 
-        cmps.max.m_scaled, cmps.maxbar.m_scaled, cmps.denoise_scaled) %>% 
+        cmps.max.m_scaled, cmps.maxbar.m_scaled, cmps.denoise_scaled,
+        cmps.max, cmps.maxbar) %>% 
     apply(2, compute_var_ratio, label = type_truth)
 }) 
+
+
 
 # ANOVA?
 # https://en.wikipedia.org/wiki/F-test
