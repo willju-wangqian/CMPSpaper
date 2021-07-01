@@ -1,6 +1,7 @@
 ---
 title: An Open-Source Implementation of the CMPS Algorithm for Assessing  Similarity of Bullets
 header-includes:
+  - \usepackage{amsmath}
   - \usepackage{xcolor}
   - \usepackage{longtable}
   - \usepackage{adjustbox}            
@@ -700,17 +701,12 @@ The CMPS score can be considered as a similarity score of two signatures. Then i
 
 In general, we assume each bullet has $n$ land engravings (in our case $n=6$). Let $c_{ij}$ denote the CMPS score of a comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$. Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function. For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
 
-Then we have  
-
-$$
-\mathrm{CMPS_{max}} = \max_{i,j} c_{ij}
-$$
-
-and
-
-$$
-\mathrm{\overline{CMPS}_{max}} = \max_{k} \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_k} c_{ij}\right]
-$$
+With that, the two measures to evaluate accuracy used in @cmps are defined as 
+\begin{align}
+\mathrm{CMPS_{max}} &= \max_{i,j} c_{ij}, \text{and }\\
+\mathrm{\overline{CMPS}_{max}} &= \max_{k} \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_k} c_{ij}\right].
+\end{align}
+\hh{XXX point out that neither of these measures evaluates the non-matches, and introduce CMPS diff here}
 
 We can continue with the example used in previous sections. `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`. As mentioned before, each bullet has six land engravings, resulting in six bullet signatures. Thus, there are 36 pairwise bullet signature comparisons, resulting in 36 $c_{ij}$ values in total. We use multi-segment lengths strategy with default parameters to compute these CMPS scores, and the result is shown in \autoref{fig:tiles}. We can see that in this example, 
 
