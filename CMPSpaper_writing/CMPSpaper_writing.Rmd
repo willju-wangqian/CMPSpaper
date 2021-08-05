@@ -745,6 +745,16 @@ dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
   geom_text(aes(label=cmps_score)) +
   theme_bw() +
   theme(aspect.ratio = 1)
+# dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score/cmps_nseg)) +
+#   geom_tile() +
+#   geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) +
+#   scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6/25) +
+#   scale_colour_manual("Source", values="darkorange") +
+#   facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") +
+#   ylab("Bullet2 Lands") +
+#   geom_text(aes(label=round(cmps_score/cmps_nseg, digits = 2))) +
+#   theme_bw() +
+#   theme(aspect.ratio = 1)
 ```
 
 
