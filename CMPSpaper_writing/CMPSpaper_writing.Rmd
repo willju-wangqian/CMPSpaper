@@ -51,6 +51,11 @@ editor_options:
 \setlength{\parindent}{0pt}
 ```
 
+\hh{Still to add: the CMPS diff measure, in which you subtract the background. 
+A comparison to results from bulletxtrctr's random forest.}
+\hh{The random forest is spitting out results on a [0-1] interval - so we might need to compare to the adjusted measure. That comarison should go into a separate section just before the discussion. Like - comparison to other existing methods ... special request from Alicia :)}
+
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
 library(tidyverse)
