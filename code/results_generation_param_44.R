@@ -5,7 +5,7 @@ library(CMPS)
 library(ggpubr)
 library(parallel)
 
-source("CMPSpaper_writing/func_collection.R")
+source("code/func_collection.R")
 
 ###########
 # from the x3p data, re-run CMPS results for hamby 44
@@ -329,7 +329,7 @@ for (i in 1:N) {
   CMPS_hamby44_results$cmps.table[[i]] <- hamby44.cmps
   
 }
-saveRDS(CMPS_hamby44_results, "./CMPSpaper_writing/data/h44-seg_length.rds")
+saveRDS(CMPS_hamby44_results, "./code/saved_rds/h44-seg_length.rds")
 
 
 
@@ -382,10 +382,10 @@ for (i in 1:N) {
   CMPS_hamby44_results$plot[[i]] <- plot
 }
 
-# saveRDS(CMPS_hamby44_results, "./CMPSpaper_writing/data/h44-neapk.rds")
+# saveRDS(CMPS_hamby44_results, "./code/saved_rds/h44-neapk.rds")
 
 
-CMPS_hamby44_results <- readRDS("~/Research/CMPSpaper/CMPSpaper_writing/data/h44-neapk.rds")
+CMPS_hamby44_results <- readRDS("~/Research/CMPSpaper/code/saved_rds/h44-neapk.rds")
 CMPS_hamby44_results$plot[[9]]
 CMPS_hamby44_results$plot[[3]]
 CMPS_hamby44_results$plot[[5]]

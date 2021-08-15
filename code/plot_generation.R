@@ -287,3 +287,12 @@ longer.tt %>%
   scale_linetype_manual(values = c("solid", "dotted", "dashed")) +
   theme_bw()
 
+
+
+
+
+
+
+
+
+

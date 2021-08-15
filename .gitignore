@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 for_paper - Shortcut.lnk
+.DS_Store
+*/.DS_Store
+preconsideration/

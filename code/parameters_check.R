@@ -9,6 +9,14 @@ CMPS_hamby252_results$cmps.table[[check.idx]] %>% length()
 
 tmp.table <- CMPS_hamby252_results$cmps.table[[check.idx]]
 
+#########################
+# Aug. 4
+# modify func for median
+compute_avgscore_denoise(rep(1:6, 6),
+                         rep(1:6, each = 6), 
+                         cp1$cmps_score, FUNC = median)
+
+
 aa <- tmp.table$cmps.table.m[[1]]
 aa$land1idx <- aa$land1 %>% str_sub(-1, -1) %>% as.numeric()
 aa$land2idx <- aa$land2 %>% str_sub(-1, -1) %>% as.numeric()
