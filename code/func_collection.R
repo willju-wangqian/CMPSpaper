@@ -136,3 +136,70 @@ cmps_metric_plot_helper <- function(cmps.metric, metric) {
   return(p)
 }
 
+
+###################
+# update sig_align
+sig_align <- function (sig1, sig2) 
+{
+  assertthat::assert_that(is.numeric(sig1), is.numeric(sig2))
+  sig1 <- CMPS::cmps_na_trim(sig1)
+  sig2 <- CMPS::cmps_na_trim(sig2)
+  
+  n1 <- length(sig1)
+  n2 <- length(sig2)
+  if (n1 > n2) {
+    x <- sig1
+    y <- sig2
+  }
+  else {
+    x <- sig2
+    y <- sig1
+  }
+  cors <- CMPS::get_ccf4(x, y, round(0.75 * min(length(sig1), length(sig2))))
+  lag <- cors$lag[which.max(cors$ccf)]
+  if (lag < 0) {
+    x <- c(rep(NA, abs(lag)), x)
+  }
+  if (lag > 0) {
+    y <- c(rep(NA, lag), y)
+  }
+  delta <- length(x) - length(y)
+  if (delta < 0) 
+    x <- c(x, rep(NA, abs(delta)))
+  if (delta > 0) 
+    y <- c(y, rep(NA, delta))
+  if (n1 > n2) {
+    dframe0 <- data.frame(x = 1:length(x), sig1 = x, sig2 = y)
+  }
+  else {
+    dframe0 <- data.frame(x = 1:length(x), sig1 = y, sig2 = x)
+  }
+  maxcor <- max(cors$ccf, na.rm = TRUE)
+  list(ccf = maxcor, lag = lag, lands = dframe0)
+}
+
+
+get_ccf2 <- function (x, y, min.overlap = round(0.1 * max(length(x), length(y)))) 
+{
+  x <- as.vector(unlist(x))
+  y <- as.vector(unlist(y))
+  nx <- length(x)
+  ny <- length(y)
+  assert_that(is.numeric(x), is.numeric(y))
+  assert_that(nx > 0, ny > 0, nx >= ny)
+  xx <- c(rep(NA, ny - min.overlap), x, rep(NA, ny - min.overlap))
+  yy <- c(y, rep(NA, length(xx) - ny))
+  lag.max <- length(yy) - length(y)
+  lags <- 0:lag.max
+  cors <- sapply(lags, function(lag) {
+    cor(xx, lag(yy, lag), use = "pairwise.complete")
+  })
+  ns <- sapply(lags, function(lag) {
+    dim(na.omit(cbind(xx, lag(yy, lag))))[1]
+  })
+  cors[ns < min.overlap] <- NA
+  lag <- lags - (ny - min.overlap)
+  return(list(lag = lag, ccf = cors))
+}
+  
+

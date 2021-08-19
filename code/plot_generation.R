@@ -289,7 +289,72 @@ longer.tt %>%
 
 
 
+##################
+# from the paper
+lands <- unique(bullets$bulletland)
 
+comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
+                          stringsAsFactors = FALSE)
+
+comparisons <- comparisons %>% 
+  left_join(bullets %>% select(bulletland, sig1=sigs),
+            by = c("land1" = "bulletland")) %>%
+  left_join(bullets %>% select(bulletland, sig2=sigs),
+            by = c("land2" = "bulletland"))
+
+comparisons <- comparisons %>% mutate(
+  cmps = purrr::map2(sig1, sig2, .f = function(x, y) {
+    extract_feature_cmps(x$sig, y$sig, include = "full")
+  })
+)
+
+comparisons <- comparisons %>% 
+  mutate(
+    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
+    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
+  )
+
+comparisons <- comparisons %>%
+  mutate(
+    bulletA = gsub("(\\d)-\\d", "\\1", land1),
+    landA = gsub("\\d-(\\d)", "\\1", land1),
+    bulletB = gsub("(\\d)-\\d", "\\1", land2),
+    landB = gsub("\\d-(\\d)", "\\1", land2)
+  )
+
+dframe <- comparisons %>% select(-sig1, -sig2)
+
+dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
+
+dframe <- dframe %>% mutate(
+  landA = paste0("L", landA),
+  landB = paste0("L", landB),
+  landB = factor(landB, levels = paste0("L", c(2:6,1))),
+  bulletA = paste0("Bullet ", bulletA),
+  bulletB = paste0("Bullet ", bulletB)
+)
+
+dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_nseg)) + 
+  geom_tile() + 
+  geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
+  scale_fill_gradient2("Highest Possible cmps", low = "gray80", high = "gray80", midpoint = 24) + 
+  scale_colour_manual("Source", values="darkorange") +
+  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
+  ylab("Bullet2 Lands") + 
+  geom_text(aes(label=cmps_nseg)) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) + 
+  geom_tile() + 
+  geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
+  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
+  scale_colour_manual("Source", values="darkorange") +
+  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
+  ylab("Bullet2 Lands") + 
+  geom_text(aes(label=cmps_score)) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
 
 
 

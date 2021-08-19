@@ -233,7 +233,6 @@ for (i in 1:N) {
   system.time({
     # tmp.252.list <- parLapply(cl, p, function(cb.idx) {
     tmp.252.list <- mclapply(p, function(cb.idx) {
-      # cat(" ############# \n", "start of ", cb.idx, "\n")
       
       tmp.lands <-
         c(
@@ -439,13 +438,16 @@ table.cmps.diff %>%
                names_to = "score") %>% 
   ggplot(aes(x=npeak, y=value)) +
   geom_bar(aes(fill = score),position = "dodge", stat = "identity") + 
+  ylab("variance ratio") +
   coord_flip() + 
   theme_bw()
 
-order(table.cmps.diff$cmps.diff_scaled, decreasing = TRUE)
-
+# cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff")
 cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff_scaled")
+cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[1]], "cmps.diff_scaled")
 
+CMPS_hamby252_results$signame
+order(table.cmps.diff$cmps.diff_scaled, decreasing = TRUE)
 
 # seg_length
 table.cmps.diff$seg_length <- unlist(CMPS_hamby252_results$seg_length)
