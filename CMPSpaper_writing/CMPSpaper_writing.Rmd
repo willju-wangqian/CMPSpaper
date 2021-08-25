@@ -613,9 +613,9 @@ y_{kl} = \mu_k + e_{kl}
 
 where $\mu_k$ is the true mean of group $k$ and $e_{kl}$ is a random effect of different observations. Then we can define the sum of squares ratio $V$ as:
 
-$$
+\begin{align}
 V = \frac{\sum_k n_k (\bar{y}_{k.} - \bar{y}_{..})^2}{\sum_k \sum_l^{n_k} (y_{kl} - \bar{y}_{k.})^2 }
-$$
+\end{align}
 
 The numerator of the sum of squares ratio $V$ quantifies the variation between the two groups, while the denominator quantifies the variation within each group. The sum of squares ratio $V$ can be used as an index for evaluating scans, metrics, and different sets of parameters if the same data set is being used. Some examples will be presented in the following section. If we impose the normality and independence assumptions on the random effects $e_{kl}$, the sum of squares ratio $V$ becomes a scaled F-statistic with degrees of freedom of $k-1$ and $n_T - k$ and $F = \frac{n_T - k}{k- 1} V$. If we want to compare different data sets, stating that a certain setup can achieve better separation on one data set than another, we can scale the sum of squares ratio $V$ and obtain the F-statistic to compare the p-values. 
 
@@ -831,14 +831,12 @@ for (i in 1:3) {
 }
 ```
 
-As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252 \wj{to the best of our knowledge} ). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. \wj{For the purpose of reproducibility, we present how we obtained bullet signatures from the Hamby set data}: for both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by @aoas with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. \wj{More details and code can be found in the Appendix.} Note that researchers of @cmps \wj{applied the CMPS algorithm to bullet signatures as well but used a framework different from ours.} However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
+As presented in the work of @cmps, researchers applied the CMPS method to one of the Hamby set scans (Hamby 252 \wj{to the best of our knowledge} ). In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44. \wj{For the purpose of reproducibility, we present how we obtained bullet signatures from the Hamby set data and include code in the appendix}: for both Hamby 252 and Hamby 44, we started with x3p files in the database, followed the framework proposed by @aoas with the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures. Note that researchers of @cmps \wj{applied the CMPS algorithm to bullet signatures as well but used a framework different from ours.} However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
 
 
 **Hamby 252**
 
-\autoref{fig:result1_252} shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252 with the multi-segment lengths strategy. Although the CMPS scores we found here are not exactly the same as those presented in @cmps since we don't have the exact parameters and functions used by the researchers, the results we obtained qualitatively agree with their results. For both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ we can observe a clear separation between the known matching comparisons (KM) and known non-matching comparisons (KNM).  
-
-The parameters we used in `extract_feature_cmps` are:
+\autoref{fig:result1_252} shows the distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ after we applied the CMPS algorithm to Hamby set 252 with the multi-segment lengths strategy. The parameters we used in `extract_feature_cmps` for the CMPS algorithm are:
 
 ```{r, eval=FALSE}
 extract_feature_cmps(
@@ -850,7 +848,20 @@ extract_feature_cmps(
 )
 ```
 
-Note that for Hamby set 252, one unit represents 1.5625 \textmu m so setting `seg_length = 50` makes each basis segment have length 78.125 \textmu m. And `Tx = 25` makes the tolerance zone be $\pm 39.0625$ \textmu m. This is to mimic the parameters used in @cmps.
+As noted above, the CMPS scores we found here are not exactly the same as those presented in @cmps since we were not able to follow their framework, but the results presented in \autoref{fig:result1_252} are qualitatively equivalent to those presented in @cmps, showing a clear separation between the known matching comparisons (KM) group and the known non-matching comparisons (KNM) group for both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$.
+
+Additionally, to mimic the parameters used in @cmps, we set `seg_length = 50` and `Tx = 25` to make sure that each basis segment has length of 78.125 \textmu m and the tolerance zone is $\pm 39.0625$ \textmu m (one unit represents 1.5625 \textmu for Hamby set 252).
+
+The sum of squares ratios are 20.85 and 29.32 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively. \wj{TODO: add some comments following this result}
+
+```{r, echo=FALSE, eval=FALSE}
+with(CMPS_hamby252_results$cmps.table[[2]], {
+  tibble(cmps.max.m, cmps.maxbar.m) %>% 
+    apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
+})
+```
+
+
 
 <!-- this is figure 2 -->
 ```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) ", fig.height=3}
