@@ -603,16 +603,27 @@ ggarrange(p1, p2,
           common.legend = TRUE, legend = "bottom", labels = c("(a)", "(b)"))
 ```
 
-**Variance Ratio**
+**Sum of Squares Ratio**
 
-We now introduce a measure called "variance ratio" that evaluates the separation between two groups. Let $n_k$ denote the number of observations in group $k$ and $y_{kl}$ denote the $l$-th observation in group $k$, for $k = 1,2$ and $l = 1, \dots, n_k$. Let $\bar{y}_{k.}$ denote the mean value in group $k$ and $\bar{y}_{..}$ denote the overall mean. Then we can define the variance ratio $V$ as:
+We now introduce a measure called "sum of squares ratio" that quantifies the separation between two groups. Let $n_T$ denote the total number of observations, $n_k$ denote the number of observations in group $k$, and $y_{kl}$ denote the $l$-th observation in group $k$, for $k = 1,2$ and $l = 1, \dots, n_k$. Let $\bar{y}_{k.} = \frac{1}{n_k} \sum_{l=1}^{n_k} y_{kl}$ denote the mean value in group $k$ and $\bar{y}_{..} = \frac{1}{n_T} \left(  \sum_{k} \sum_{l = 1}^{n_k} y_{kl} \right)$ denote the mean value of all observations. Since we are interested in the separation between two groups, we can model $y_{kl}$ as:
 
+\begin{align}
+y_{kl} = \mu_k + e_{kl}
+\end{align}
+
+where $\mu_k$ is the true mean of group $k$ and $e_{kl}$ is a random effect of different observations. Then we can define the sum of squares ratio $V$ as:
 
 $$
-V = \frac{\sum n_k (\bar{y}_{k.} - \bar{y}_{..})^2}{\sum_k \sum_l^{n_k} (y_{kl} - \bar{y}_{k.})^2 }
+V = \frac{\sum_k n_k (\bar{y}_{k.} - \bar{y}_{..})^2}{\sum_k \sum_l^{n_k} (y_{kl} - \bar{y}_{k.})^2 }
 $$
 
-This is called "variance ratio" since the numerator evaluates the "variance" between the two groups, and the denominator evaluates the "variance" within each group. \wj{Note that this quantity is not equal to the F-statistic in one-way ANOVA since we ignore the degrees of freedom of both the numerator and the denominator. We do not need the degrees of freedom because all the variance ratio values compared in the next sections have exactly the same number of observations in both goups (the known-match group and the known-nonmatch group), resulting in exactly the same degrees of freedom.}
+The numerator of the sum of squares ratio $V$ quantifies the variation between the two groups, while the denominator quantifies the variation within each group. The sum of squares ratio $V$ can be used as an index for evaluating scans, metrics, and different sets of parameters if the same data set is being used. Some examples will be presented in the following section. If we impose the normality and independence assumptions on the random effects $e_{kl}$, the sum of squares ratio $V$ becomes a scaled F-statistic with degrees of freedom of $k-1$ and $n_T - k$ and $F = \frac{n_T - k}{k- 1} V$. If we want to compare different data sets, stating that a certain setup can achieve better separation on one data set than another, we can scale the sum of squares ratio $V$ and obtain the F-statistic to compare the p-values. 
+
+\wj{add citation for one way ANOVA?}
+
+With the sum of squares ratio $V$ being defined, we are able to construct a pipeline that aims to find the optimal parameter value for the CMPS algorithm maximizing the sum of squares ratio. In the following section, we will use the sum of squares ratio to compare the CMPS metrics introduced above and investigate effects of different sets of parameters.
+
+\wj{we might not find the real optimal parameter since the parameter space of npeaks.set is too complicated...}
 
 ## Results
 
