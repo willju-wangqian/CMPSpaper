@@ -104,35 +104,68 @@ cmps_metrics_helper <- function(cmps.table) {
   return(result)
 }
 
-cmps_metric_plot_helper <- function(cmps.metric, metric) {
-  scaled <- str_detect(metric, "_scaled")
-  if(scaled) {
-    p <- cmps.metric %>% ggplot() +
-      geom_histogram(aes(x = .data[[metric]],
-                         fill = as.factor(.data$type_truth)), binwidth = 0.04) +
-      labs(
-        x = metric,
-        fill = "Comparison Type",
-        subtitle = titlee
-      ) +
-      scale_x_continuous(breaks = seq(0, 1, 0.05)) +
-      theme_bw() +
-      theme(panel.grid.minor = element_blank()) +
-      scale_fill_manual(values=c("darkorange", "darkgrey"))
-  } else {
-    p <- cmps.metric %>% ggplot() +
-      geom_histogram(aes(x = .data[[metric]],
-                         fill = as.factor(.data$type_truth)), binwidth = 1) +
-      labs(
-        x = metric,
-        fill = "Comparison Type",
-        subtitle = titlee
-      ) +
-      scale_x_continuous(breaks = seq(0, 24, 1)) +
-      theme_bw() +
-      theme(panel.grid.minor = element_blank()) +
-      scale_fill_manual(values=c("darkorange", "darkgrey"))
+score_metrics_helper <- function(cmps.table, score = "cmps_score", scaled = NULL) {
+  
+  landidx1 <- cmps.table$landidx1
+  landidx2 <- cmps.table$landidx2
+  score <- cmps.table[[score]]
+  result <- data.frame(
+    diff = compute_avgscore_denoise(landidx1, landidx2, score, addNA = TRUE),
+    diff.med = compute_avgscore_denoise(landidx1, landidx2, 
+                                             score, FUNC = median, addNA = TRUE),
+    max = max(score, na.rm = TRUE),
+    maxbar = compute_average_scores(landidx1, landidx2, score) %>% max(na.rm = TRUE)
+  )
+  
+  if(!is.null(scaled)) {
+    score_scaled <- cmps.table[[scaled]]
+    result <- result %>% mutate(
+      diff_scaled = compute_avgscore_denoise(landidx1, landidx2, score_scaled, addNA = TRUE),
+      diff.med_scaled = compute_avgscore_denoise(landidx1, landidx2, 
+                                                      score_scaled, FUNC = median, addNA = TRUE),
+      max_scaled = max(score_scaled, na.rm = TRUE),
+      maxbar_scaled = compute_average_scores(landidx1, landidx2, score_scaled) %>% 
+        max(na.rm = TRUE)
+    )
   }
+
+  return(result)
+}
+
+metric_plot_helper <- function(cmps.metric, metric, scaled = FALSE, ...) {
+  # scaled <- str_detect(metric, "_scaled")
+  dots <- list(...)
+  if(scaled) {
+    if(is.null(dots$breaks)) {
+      dots$breaks <- seq(0,1,0.05)
+    }
+    
+    if(is.null(dots$binwidth)) {
+      dots$binwidth <- 0.04
+    }
+    
+  } else {
+    if(is.null(dots$breaks)) {
+      dots$breaks <- seq(0,24,1)
+    }
+    
+    if(is.null(dots$binwidth)) {
+      dots$binwidth <- 1
+    }
+  }
+  
+  p <- cmps.metric %>% ggplot() +
+    geom_histogram(aes(x = .data[[metric]],
+                       fill = as.factor(.data$type_truth)), binwidth = dots$binwidth) +
+    labs(
+      x = metric,
+      fill = "Comparison Type",
+      subtitle = dots$subtitle
+    ) +
+    scale_x_continuous(breaks = dots$breaks) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) +
+    scale_fill_manual(values=c("darkorange", "darkgrey"))
   return(p)
 }
 
@@ -202,4 +235,60 @@ get_ccf2 <- function (x, y, min.overlap = round(0.1 * max(length(x), length(y)))
   return(list(lag = lag, ccf = cors))
 }
   
+# aligned <- tmp.comp$aligned[[1]]$lands
+my_extract_feature_lag <- function(aligned)
+{
+  assert_that(dim(aligned)[2] > 2, msg = "aligned must have at least 3 columns")
+  for (i in 2:dim(aligned)[2]) {
+    assert_that(is.numeric(aligned[, i]), msg = sprintf("Column %d (%s) is not numeric", 
+                                                        i, names(aligned)[i]))
+  }
+  lags <- sapply(aligned[, -1], function(x) {
+    if (!is.na(x[1])) 
+      return(0)
+    diffs <- diff(is.na(x))
+    which(diffs == -1)
+  })
+  if (length(lags) == 2) 
+    return(diff(lags))
+  lags
+}
+
+my_extract_feature_all <- function (aligned, striae, resolution, tmpfile = NULL, ...) 
+{
+  feature <- value <- NULL
+  assert_that(!is.null(aligned), !is.null(striae), msg = "aligned and striae must not be NULL")
+  features <- apropos("^extract_feature_") # change: added a start anchor
+  features <- features[!str_detect(features, "extract_feature_cmps")] # change: exclude _cmps from the search list
+  dots <- list(...)
+  values <- features %>% purrr::map_dbl(.f = function(f) {
+    fun <- getFromNamespace(f, asNamespace("bulletxtrctr"))
+    fun_args <- names(formals(fun))
+    matching_args <- dots[names(dots) %in% fun_args]
+    if ("aligned" %in% fun_args) {
+      matching_args$aligned <- aligned$lands
+    }
+    if ("striae" %in% fun_args) {
+      matching_args$striae <- striae$lines
+    }
+    if ("resolution" %in% fun_args) {
+      matching_args$resolution <- resolution
+    }
+    res <- do.call(fun, matching_args)
+    res
+  })
+  dframe <- data.frame(feature = gsub("extract_feature_", "", 
+                                      features), value = values) %>% spread(feature, value)
+  if (!is.null(tmpfile)) {
+    if (file.exists(tmpfile)) {
+      write.table(dframe, file = tmpfile, sep = ",", append = TRUE, 
+                  col.names = FALSE, row.names = FALSE)
+    }
+    else {
+      write.table(dframe, file = tmpfile, sep = ",", append = FALSE, 
+                  col.names = TRUE, row.names = FALSE)
+    }
+  }
+  dframe
+}
 

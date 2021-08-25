@@ -355,7 +355,8 @@ for (i in 1:N) {
 }
 
 saveRDS(CMPS_hamby252_results, "code/saved_rds/h252_npeak8.rds")
-
+CMPS_hamby252_results <- 
+  readRDS("~/Research/CMPSpaper/code/saved_rds/h252_npeak8.rds")
 
 #################################################
 # generate plots
@@ -443,8 +444,8 @@ table.cmps.diff %>%
   theme_bw()
 
 # cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff")
-cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff_scaled")
-cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[1]], "cmps.diff_scaled")
+metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff_scaled", scaled = TRUE)
+metric_plot_helper(CMPS_hamby252_results$cmps.table[[1]], "cmps.diff_scaled", scaled = TRUE)
 
 CMPS_hamby252_results$signame
 order(table.cmps.diff$cmps.diff_scaled, decreasing = TRUE)
