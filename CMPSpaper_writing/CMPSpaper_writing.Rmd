@@ -1047,6 +1047,20 @@ p.seg_252_plot <- table.252.cmps_seg %>%
   ylab("Sum of Squares Ratio") + 
   xlab("seg_length")
 
+p.seg_252_plot <- table.252.cmps_seg %>%
+  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
+               names_to = "Metric") %>%
+  ggplot(aes(x = factor(seg_length))) +
+  geom_bar(aes(weight =  value, fill = Metric), position=position_dodge(width = 0.5), width=.1) +
+  geom_point(aes(y =  value, color = Metric), position=position_dodge(width = 0.5), size = 5) +
+#  scale_x_continuous(breaks = table.252.cmps_seg$seg_length) +
+  theme_bw() +
+  ggtitle("A Temp Title") +
+  ylab("Sum of Squares Ratio") + 
+  xlab("seg_length")
+
+
+
 # 252 - npeak
 table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
