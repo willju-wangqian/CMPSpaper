@@ -1,3 +1,5 @@
+library(assertthat)
+
 compute_var_ratio <- function(score, label) {
   score.split <- split(score, label)
   
@@ -34,14 +36,8 @@ compute_var_ratio_anova <- function(score, label, MS=TRUE) {
   return(var.ratio)
 }
 
-## the function re-written from compute_average_scores
-compute_avgscore_denoise <- function (land1, land2, score, FUNC = mean, addNA = FALSE, na.rm = TRUE) 
+get_all_phases <- function(land1, land2, score, addNA = FALSE)
 {
-  # if (!is.numeric(land1)) 
-  #   land1 <- readr::parse_number(as.character(land1))
-  # if (!is.numeric(land2)) 
-  #   land2 <- readr::parse_number(as.character(land2))
-  # assert_that(is.numeric(land1), is.numeric(land2), is.numeric(score))
   maxland <- max(land1, land2)
   fullframe <- data.frame(expand.grid(land1 = 1:maxland, land2 = 1:maxland))
   bcompare <- data.frame(land1, land2, score)
@@ -62,12 +58,33 @@ compute_avgscore_denoise <- function (land1, land2, score, FUNC = mean, addNA = 
       diag(matrix[, -(1:i)])
     }
   })
+  
+  return(scores.list)
+}
+
+
+## the function re-written from compute_average_scores
+compute_avgscore_denoise <- function (land1, land2, score, FUNC = mean, addNA = FALSE, na.rm = TRUE) 
+{
+  
+  scores.list <- get_all_phases(land1, land2, score, addNA)
+  
+  result <- compute_diff_phase(scores.list, FUNC, na.rm)
+  
+  return(result)
+}
+
+compute_diff_phase <- function(scores.list, FUNC = mean, na.rm = TRUE, both = FALSE)
+{
   scores <- sapply(scores.list, FUNC, na.rm=na.rm)
   max.phase <- which.max(scores)
   result.match <- max(scores, na.rm=na.rm)
-  result.nmatch <- 
-    scores.list[-max.phase] %>% unlist() %>% FUNC(na.rm=na.rm)
-  result.match - result.nmatch
+  result.nmatch <- scores.list[-max.phase] %>% unlist() %>% FUNC(na.rm=na.rm)
+  if(both) {
+    return(c(result.match, result.nmatch))
+  } else {
+    return(result.match - result.nmatch)
+  }
 }
 
 cmps_metrics_helper <- function(cmps.table) {
@@ -104,35 +121,77 @@ cmps_metrics_helper <- function(cmps.table) {
   return(result)
 }
 
-score_metrics_helper <- function(cmps.table, score = "cmps_score", scaled = NULL) {
+compute_score_metrics <- function(land1, land2, score, 
+                                  addNA = TRUE, na.rm = TRUE, include = NULL, out_names = NULL) {
+  
+  assert_that(
+    is.numeric(land1), is.numeric(land2), is.numeric(score)
+  )
+  
+  scores.list <- get_all_phases(land1, land2, score, addNA = addNA)
+  tmp.diff <- compute_diff_phase(scores.list, mean, na.rm, both = TRUE)
+  
+  result <- data.frame(
+    diff = tmp.diff[1] - tmp.diff[2],
+    diff.med = compute_diff_phase(scores.list, median, na.rm = na.rm),
+    max = max(score, na.rm = na.rm),
+    maxbar = tmp.diff[1]
+  )
+  
+  
+  if(is.null(include)) {
+    if(!is.null(out_names) && length(out_names) == ncol(result)) {
+      names(result) <- out_names
+    } else if (!is.null(out_names)) {
+      warning("Warning: Fail to change the variable names in the result.")
+    }
+    return(result)
+  } else {
+    mm <- match.arg(include, c("diff", "diff.med", "max", "maxbar"), several.ok = TRUE)
+    
+    if(!is.null(out_names) && length(out_names) == length(mm)) {
+      names(result[mm]) <- out_names
+      return(result[out_names])
+    } else if (!is.null(out_names)) {
+      warning("Warning: Fail to change the variable names in the result.")
+    }
+    
+    return(result[mm])
+    
+  }
+}
+
+
+score_metrics_helper <- function(cmps.table, score = "cmps_score", 
+                                 scaled = NULL, addNA = TRUE, na.rm = TRUE) {
   
   landidx1 <- cmps.table$landidx1
   landidx2 <- cmps.table$landidx2
   score <- cmps.table[[score]]
   result <- data.frame(
-    diff = compute_avgscore_denoise(landidx1, landidx2, score, addNA = TRUE),
+    diff = compute_avgscore_denoise(landidx1, landidx2, score, addNA = addNA),
     diff.med = compute_avgscore_denoise(landidx1, landidx2, 
-                                             score, FUNC = median, addNA = TRUE),
-    max = max(score, na.rm = TRUE),
-    maxbar = compute_average_scores(landidx1, landidx2, score) %>% max(na.rm = TRUE)
+                                             score, FUNC = median, addNA = addNA),
+    max = max(score, na.rm = na.rm),
+    maxbar = compute_average_scores(landidx1, landidx2, score, addNA = addNA) %>% max(na.rm = na.rm)
   )
   
   if(!is.null(scaled)) {
     score_scaled <- cmps.table[[scaled]]
     result <- result %>% mutate(
-      diff_scaled = compute_avgscore_denoise(landidx1, landidx2, score_scaled, addNA = TRUE),
+      diff_scaled = compute_avgscore_denoise(landidx1, landidx2, score_scaled, addNA = addNA),
       diff.med_scaled = compute_avgscore_denoise(landidx1, landidx2, 
-                                                      score_scaled, FUNC = median, addNA = TRUE),
-      max_scaled = max(score_scaled, na.rm = TRUE),
-      maxbar_scaled = compute_average_scores(landidx1, landidx2, score_scaled) %>% 
-        max(na.rm = TRUE)
+                                                      score_scaled, FUNC = median, addNA = addNA),
+      max_scaled = max(score_scaled, na.rm = na.rm),
+      maxbar_scaled = compute_average_scores(landidx1, landidx2, score_scaled, addNA = addNA) %>% 
+        max(na.rm = na.rm)
     )
   }
 
   return(result)
 }
 
-metric_plot_helper <- function(cmps.metric, metric, scaled = FALSE, ...) {
+metric_plot_helper <- function(cmps.metric, metric, scaled = FALSE, SSratio = TRUE, ...) {
   # scaled <- str_detect(metric, "_scaled")
   dots <- list(...)
   if(scaled) {
@@ -166,6 +225,15 @@ metric_plot_helper <- function(cmps.metric, metric, scaled = FALSE, ...) {
     theme_bw() +
     theme(panel.grid.minor = element_blank()) +
     scale_fill_manual(values=c("darkorange", "darkgrey"))
+  
+  ss.ratio <- compute_var_ratio_anova(cmps.metric[[metric]], cmps.metric$type_truth, MS = FALSE)
+  if(SSratio) {
+    p <- p + 
+      annotate(geom = "label", x = Inf, y = Inf, 
+               label = paste("SS Ratio:", round(ss.ratio, 2)), 
+               fill = "white", hjust = 1, vjust = 1)
+  }
+  
   return(p)
 }
 

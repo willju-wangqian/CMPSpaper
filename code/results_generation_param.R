@@ -444,8 +444,9 @@ table.cmps.diff %>%
   theme_bw()
 
 # cmps_metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff")
+metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff", scaled = FALSE)
 metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff_scaled", scaled = TRUE)
-metric_plot_helper(CMPS_hamby252_results$cmps.table[[1]], "cmps.diff_scaled", scaled = TRUE)
+metric_plot_helper(CMPS_hamby252_results$cmps.table[[9]], "cmps.diff.med_scaled", scaled = TRUE)
 
 CMPS_hamby252_results$signame
 order(table.cmps.diff$cmps.diff_scaled, decreasing = TRUE)

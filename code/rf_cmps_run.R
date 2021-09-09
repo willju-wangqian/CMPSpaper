@@ -14,6 +14,8 @@ source("code/func_collection.R")
 b252.full <- 
   readRDS("~/Research/CMPSpaper/preconsideration/bullets_hamby252_Sep9.rds")
 
+rf.model <- readRDS("~/Desktop/csafe_rf2.rds")
+
 # generate bullet_id
 bulletid.tb <- b252.full %>% select(scan_id)
 bulletid.tb <- bulletid.tb %>% mutate(
@@ -144,15 +146,15 @@ b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
 
 
 # process of removing outliers
-# tt <- lapply(b252[[CMPS_hamby252_results$signame[[i]]]], function(x) {
-#     x$sig
-#   }) %>% unlist()
-# qtt <- quantile(tt, na.rm = TRUE)
-# multi.iqr <- 3
-# outrange <- c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]), 
-#               qtt[4] + multi.iqr * (qtt[4] - qtt[2]))
+tt <- lapply(b252[[CMPS_hamby252_results$signame[[i]]]], function(x) {
+    x$sig
+  }) %>% unlist()
+qtt <- quantile(tt, na.rm = TRUE)
+multi.iqr <- 3
+outrange <- c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]),
+              qtt[4] + multi.iqr * (qtt[4] - qtt[2]))
 
-outrange <- c(-10000, 10000) # without excluding the outliers
+# outrange <- c(-10000, 10000) # without excluding the outliers
 
 b252 <- b252 %>% mutate(sigs_main = purrr::map(
   .x = .data[[CMPS_hamby252_results$signame[[i]]]],
@@ -197,19 +199,24 @@ system.time({
     # compute the rf_score
     tmp.comp <- tmp.comp %>% 
       mutate(
-        striae = aligned %>% purrr::map(.f = sig_cms_max, span = span),
+        striae = aligned %>% purrr::map(.f = sig_cms_max),
         features = purrr::map2(.x = aligned, .y = striae, 
                                .f = my_extract_feature_all, resolution = 1.5625), 
         legacy_features = purrr::map(striae, 
-                                     extract_features_all_legacy, resolution = 1.5625)) %>% 
-      tidyr::unnest(legacy_features)
+                                     extract_features_all_legacy, resolution = 1.5625))
+      # tidyr::unnest(features) # change: instead of legacy_feature
     
-    tmp.comp$rf_score <- predict(bulletxtrctr::rtrees, newdata = tmp.comp, 
+    # tmp.comp$rf_score <- predict(bulletxtrctr::rtrees, newdata = tmp.comp, 
+    #                             type = "prob")[, 2]
+    tmp.comp$rf_score <- predict(rf.model, 
+                                 newdata = tmp.comp %>% tidyr::unnest(features) %>% mutate(
+                                   abs_lag_mm = abs(lag_mm)
+                                 ),
                                 type = "prob")[, 2]
     
     rf.table <-
       tmp.comp %>% dplyr::select(land1, land2, landidx1, landidx2, 
-                                 rf_score)
+                                 rf_score, features, legacy_features)
     
     tibble(
       bullet1 = b.cb[, cb.idx][1],
@@ -236,11 +243,15 @@ hamby252.rf$rf.table.m <-
 
 # after removing tank-rashed data
 hamby252.rf <- hamby252.rf %>% mutate(
-  metric_list = rf.table.m %>% purrr::map(.f = score_metrics_helper, score = "rf_score") 
-)
+  metric_list_scaled = rf.table.m %>% purrr::map(.f = function(tt) {
+    compute_score_metrics(tt$landidx1, tt$landidx2, tt$rf_score,
+                          out_names = c("rf.diff", "rf.diff.med", 
+                                        "rf.max", "rf.maxbar"))
+  })
+) %>% tidyr::unnest(metric_list_scaled)
 
-hamby252.rf <- bind_cols(hamby252.rf %>% dplyr::select(-metric_list), 
-                           bind_rows(hamby252.rf$metric_list)) 
+# hamby252.rf <- bind_cols(hamby252.rf %>% dplyr::select(-metric_list), 
+#                            bind_rows(hamby252.rf$metric_list)) 
 
 # add type and type_truth
 hamby252.rf$type <- tmp.tibble$type
@@ -250,10 +261,11 @@ hamby252.rf$type_truth <- tmp.tibble$type_truth
 # save result in a list
 CMPS_hamby252_results$rf.table[[i]] <- hamby252.rf
 
-saveRDS(CMPS_hamby252_results, "code/saved_rds/h252_rf_result_25_xoutlier.rds")
+filepath <- "code/saved_rds/h252_rf2_features_rmo.rds"
 
-rf_hamby252_results <- 
-  readRDS("~/Research/CMPSpaper/code/saved_rds/h252_rf_result_75.rds")
+saveRDS(CMPS_hamby252_results, filepath)
+
+rf_hamby252_results <- readRDS(filepath)
 
 #################################################
 rf_hamby252_results$rf.table[[1]] %>% names()
@@ -263,9 +275,9 @@ metric_plot_helper(rf_hamby252_results$rf.table[[1]], "diff", scaled = TRUE,
                    subtitle = "diff plot for rf score",
                    breaks = seq(0,1,0.1), binwidth = 0.05)
 
-metric_plot_helper(rf_hamby252_results$rf.table[[1]], "max", scaled = TRUE,
-                   subtitle = "diff with median plot for rf score",
-                   breaks = seq(0, 1, 0.1), binwidth = 0.05)
+metric_plot_helper(rf_hamby252_results$rf.table[[1]], "maxbar", scaled = TRUE,
+                   subtitle = "max plot for rf score",
+                   breaks = seq(0, 1, 0.1), binwidth = 0.05) 
 
 metric_plot_helper(rf_hamby252_results$rf.table[[1]], "diff.med", scaled = TRUE,
                    subtitle = "diff with median plot for rf score",
@@ -274,7 +286,8 @@ metric_plot_helper(rf_hamby252_results$rf.table[[1]], "diff.med", scaled = TRUE,
 with(rf_hamby252_results$rf.table[[1]], {
   tibble(diff, diff.med, max, maxbar) %>% 
     apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
-})
+}) 
+
 
 
 

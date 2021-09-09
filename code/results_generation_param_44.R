@@ -114,23 +114,24 @@ N <- 9
 CMPS_hamby44_results <- list()
 CMPS_hamby44_results$span1 <- as.list(rep(0.25, N))
 CMPS_hamby44_results$signame <-
-  # list("n5", "n51", "n52", "n531", "n10-62", "n6421", 
-  #      "n10-742", "n10-6421")
-  list("s30", "s45", "s61", "s90", "s122", "s150", "s180", "s210", "s61-ol")
+  list("n5", "n51", "n52", "n531", "n10-62", "n6421",
+       "n10-742", "n10-6421", "n10-86421")
+  # list("s30", "s45", "s61", "s90", "s122", "s150", "s180", "s210")
 CMPS_hamby44_results$npeaks.set <-
-  # list(c(5),
-  #      c(5,1),
-  #      c(5,2),
-  #      c(5,3,1),
-  #      c(10,6,2),
-  #      c(6,4,2,1),
-  #      c(10,7,4,2),
-  #      c(10,6,4,2,1))
-  lapply(1:N, function(t) c(5,3,1))
-CMPS_hamby44_results$seg_length <- 
-  as.list(c(30, 45, 61, 90, 122, 150, 180, 210, 62))
-CMPS_hamby44_results$outlength <- list()
-CMPS_hamby44_results$outlength[[N]] <- c(62, 122, 183)
+  list(c(5),
+       c(5,1),
+       c(5,2),
+       c(5,3,1),
+       c(10,6,2),
+       c(6,4,2,1),
+       c(10,7,4,2),
+       c(10,6,4,2,1),
+       c(10, 8, 6, 4, 2, 1))
+  # lapply(1:N, function(t) c(5,3,1))
+CMPS_hamby44_results$seg_length <- as.list(rep(61, N))
+  # as.list(c(30, 45, 61, 90, 122, 150, 180, 210))
+CMPS_hamby44_results$outlength <- vector(mode = "list", length = N)
+CMPS_hamby44_results$outlength[[N]] <- c(61, 86, 111, 136, 161, 186)
 CMPS_hamby44_results$Tx <- as.list(rep(30, N))
 CMPS_hamby44_results$titlee <- list()
 CMPS_hamby44_results$filename <- list()
@@ -169,20 +170,24 @@ com.title44 <- expression(paste(
 # start of the loop!
 for (i in 1:N) {
   # i <- 1
+  if((i == 1) || (CMPS_hamby44_results$span1[[i]] != CMPS_hamby44_results$span1[[i-1]])){
+    b44[[CMPS_hamby44_results$signame[[i]]]] <- purrr::map2(
+      .x = b44.full$ccdata,
+      .y = b44.full$grooves,
+      .f = function(x, y) {
+        cc_get_signature(
+          ccdata = x,
+          grooves = y,
+          span1 = CMPS_hamby44_results$span1[[i]],
+          span2 = 0.03
+        )
+      })
+  } else {
+    b44[[CMPS_hamby44_results$signame[[i]]]] <- b44[[CMPS_hamby44_results$signame[[i-1]]]]
+  }
+}
   
-  b44[[CMPS_hamby44_results$signame[[i]]]] <- purrr::map2(
-    .x = b44.full$ccdata,
-    .y = b44.full$grooves,
-    .f = function(x, y) {
-      cc_get_signature(
-        ccdata = x,
-        grooves = y,
-        span1 = CMPS_hamby44_results$span1[[i]],
-        span2 = 0.03
-      )
-    }
-  )
-  
+for (i in 1:N) {
   # process of removing outliers
   tt <-
     lapply(b44[[CMPS_hamby44_results$signame[[i]]]], function(x) {
@@ -204,25 +209,24 @@ for (i in 1:N) {
   ))
   
   ## parallel setup
-  cl <- makeCluster(7)
+  # cl <- makeCluster(7)
+  # par.setup <- parLapply(cl, 1:length(cl),
+  #                        function(xx) {
+  #                          library(tidyverse)
+  #                          library(bulletxtrctr)
+  #                          library(x3ptools)
+  #                          library(CMPS)
+  #                        })
+  # clusterExport(cl,
+  #               c("b44", "b.cb", "p",
+  #                 "CMPS_hamby44_results", "i"),
+  #               envir = globalenv())
   
-  par.setup <- parLapply(cl, 1:length(cl),
-                         function(xx) {
-                           library(tidyverse)
-                           library(bulletxtrctr)
-                           library(x3ptools)
-                           library(CMPS)
-                         })
-  
-  clusterExport(cl,
-                c("b44", "b.cb", "p",
-                  "CMPS_hamby44_results", "i"),
-                envir = globalenv())
   
   # start the parallel computing
   system.time({
-    tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-      # cat(" ############# \n", "start of ", cb.idx, "\n")
+    # tmp.44.list <- parLapply(cl, p, function(cb.idx) {
+    tmp.44.list <- mclapply(p, function(cb.idx) {
       
       tmp.lands <-
         c(
@@ -232,6 +236,11 @@ for (i in 1:N) {
       tmp.comp <-
         data.frame(expand.grid(land1 = tmp.lands[1:6], land2 = tmp.lands[7:12]),
                    stringsAsFactors = FALSE)
+      tmp.comp$landidx1 <- tmp.comp$land1 %>% as.character() %>% str_sub(-1, -1) %>% 
+        as.numeric()
+      tmp.comp$landidx2 <- tmp.comp$land2 %>% as.character() %>% str_sub(-1, -1) %>% 
+        as.numeric()
+      
       
       # cat(cb.idx, "- 1; ")
       tmp.comp$cmps <-
@@ -261,23 +270,20 @@ for (i in 1:N) {
           cmps_score = sapply(tmp.comp$cmps, function(x)
             x$CMPS.score),
           cmps_nseg = sapply(tmp.comp$cmps, function(x)
-            x$nseg)
+            x$nseg),
+          cmps_score_scaled = cmps_score / cmps_nseg
         )
       
-      # cat(cb.idx, "- 4;\n")
-      
       cmps.table <-
-        tmp.comp %>% select(land1, land2, cmps_score, cmps_nseg)
-      # cp2 <- tmp.comp %>% select(land1, land2, cmps_score, cmps_nseg)
-      
-      # cat(" end of ", cb.idx, "\n", "############# \n")
+        tmp.comp %>% dplyr::select(land1, land2, landidx1, landidx2, 
+                                   cmps_score, cmps_score_scaled, cmps_nseg)
       
       tibble(
         bullet1 = b.cb[, cb.idx][1],
         bullet2 = b.cb[, cb.idx][2],
         cmps.table = list(cmps.table)
       )
-    })
+    }, mc.cores = detectCores())
   })
   
   # user  system elapsed
@@ -286,40 +292,27 @@ for (i in 1:N) {
   
   hamby44.cmps <- do.call(rbind, tmp.44.list)
   
-  stopCluster(cl)
+  # stopCluster(cl)
   
   hamby44.cmps$cmps.table.m <-
     lapply(hamby44.cmps$cmps.table, function(tt) {
       tt.idx <- tt %>% rowid_to_column %>%
-        filter(land1 %in% idf.scan_id |
+        filter(land1 %in% idf.scan_id | 
                  land2 %in% idf.scan_id) %>% pull(rowid)
       tt[tt.idx, "cmps_score"] <- NA
-      tt$cmps_score_scaled <- tt$cmps_score / tt$cmps_nseg
+      tt[tt.idx, "cmps_score_scaled"] <- NA
       tt
     })
   
   
   # after removing tank-rashed data
   hamby44.cmps <- hamby44.cmps %>% mutate(
-    cmps.diff = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_avgscore_denoise(landidx1, landidx2, t$cmps_score, addNA = TRUE)
-      }
-    ),
-    cmps.diff_scaled = cmps.table.m %>% purrr::map_dbl(
-      .f = function(t) {
-        landidx1 <-
-          t$land1 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        landidx2 <-
-          t$land2 %>% as.character() %>% str_sub(-1, -1) %>% as.numeric()
-        compute_avgscore_denoise(landidx1, landidx2, t$cmps_score_scaled, addNA = TRUE)
-      }
-    )
+    # metric_list = cmps.table.m %>% purrr::map(.f = function(t) {cmps_metrics_helper(t)}) 
+    metric_list = cmps.table.m %>% purrr::map(.f = cmps_metrics_helper) 
   )
+  
+  hamby44.cmps <- bind_cols(hamby44.cmps %>% dplyr::select(-metric_list), 
+                             bind_rows(hamby44.cmps$metric_list)) 
   
   # add groundtruth
   hamby44.cmps$type_truth <- tmp.table.44$type_truth
@@ -329,7 +322,72 @@ for (i in 1:N) {
   CMPS_hamby44_results$cmps.table[[i]] <- hamby44.cmps
   
 }
-saveRDS(CMPS_hamby44_results, "./code/saved_rds/h44-seg_length.rds")
+saveRDS(CMPS_hamby44_results, "./code/saved_rds/h44-npeaks_aug30.rds")
+
+#############################
+# plotting
+table.cmps.diff <- lapply(CMPS_hamby44_results$cmps.table, function(tt) {
+  type_truth <- tt$type_truth
+  # r1 <- compute_var_ratio_anova(tt$cmps.diff, tt$type_truth, MS=FALSE)
+  # r2 <- compute_var_ratio_anova(tt$cmps.diff_scaled, tt$type_truth, MS=FALSE)
+  # c(r1, r2)
+  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
+    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+}) %>% do.call(rbind, .) %>% as.data.frame()
+
+# seg_length
+table.cmps.diff$seg_length <- unlist(CMPS_hamby44_results$seg_length)
+
+table.cmps.diff %>%
+  pivot_longer(cols = c(cmps.diff:cmps.maxbar_scaled),
+               names_to = "score") %>%
+  ggplot(aes(x = seg_length, y = value)) +
+  geom_line(aes(color = score))
+
+table.cmps.diff$seg_length
+
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[5]], "cmps.diff")
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[5]], "cmps.diff_scaled", scaled = TRUE,
+                   breaks = seq(0, 1, 0.1), binwidth = 0.05)
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[3]], "cmps.diff_scaled", scaled = TRUE)
+
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[7]], "cmps.diff.med_scaled", scaled = TRUE)
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[7]], "cmps.diff.med", scaled = FALSE)
+
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[8]], "cmps.max_scaled", scaled = TRUE,
+                   breaks = seq(0, 1, 0.1))
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[8]], "cmps.max", scaled = FALSE)
+
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[8]], "cmps.diff.med_scaled", scaled = TRUE,
+                   breaks = seq(0, 1, 0.1))
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[8]], "cmps.diff.med", scaled = FALSE)
+
+CMPS_hamby44_results$cmps.table[[8]] %>% filter(cmps.diff.med == 1, type_truth == "KM") %>% pull(cmps.table) %>% 
+  first() %>% 
+  ggplot() +
+  geom_tile(aes(x = landidx1, y=landidx2, fill = cmps_score)) + 
+  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange")
+
+
+########
+# npeak
+table.cmps.diff$npeak <- unlist(CMPS_hamby44_results$signame)
+table.cmps.diff %>% 
+  mutate(
+    npeak = factor(
+      npeak,
+      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
+  ) %>% 
+  pivot_longer(cols = c(cmps.diff:cmps.maxbar_scaled),
+               names_to = "score") %>% 
+  ggplot(aes(x=npeak, y=value)) +
+  geom_bar(aes(fill = score),position = "dodge", stat = "identity") + 
+  ylab("variance ratio") +
+  coord_flip() + 
+  theme_bw()
+
+metric_plot_helper(CMPS_hamby44_results$cmps.table[[7]], 
+                   "cmps.diff", scaled = F)
 
 
 
