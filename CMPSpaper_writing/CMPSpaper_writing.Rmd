@@ -1185,9 +1185,23 @@ p.result1_44
 
 For both Hamby set 252 and 44, we investigated the effects of different sets of parameters. More specifically, we fixed the parameter `npeaks.set` that controls the number of peaks at each segment level and modified the parameter `seg_length` that controls the length of a basis segment. Then we fixed `seg_length` and examined different values of `npeaks.set`. The sum of squares ratios are used to compare among different CMPS metrics and different sets of parameters. 
 
-default parameters can be beaten?
+cmps.max is not the best metric to measure similarity 
+the one we prefer
 cmps.diff, cmps.maxbar and their scaled version are good? we suggest cmps.diff_scaled since it's more comparable and summarizes more information?
-Note that the goal of these comparisons is not to determine the optimal set of parameters for the CMPS algorithm, but to show a general procedure that can be used for  
+
+parameters need cross-validation
+choice of parameters depends on resolution ( scanning process ) and the data set
+determining the source is a harder task for Hamby 44 than for Hamby 252 
+default parameters can be beaten?
+
+Note that the goal of these comparisons is not to determine the optimal set of parameters for the CMPS algorithm, but to show a general procedure that can be used for 
+a larger database that is representative
+procedure that could be used to reach that point
+
+**Comparing with Random Forest**
+
+Introduce the work , cite the paper 
+CSAFE trained 
 
 ```{r}
 # CMPS_hamby44_results_seg$cmps.table[[3]] %>% 
