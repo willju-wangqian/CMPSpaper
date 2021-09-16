@@ -41,7 +41,7 @@ preamble: |
 bibliography: CMPSpaper-writing.bib
 output: rticles::rjournal_article
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
   markdown: 
     wrap: sentence
 ---
@@ -56,13 +56,13 @@ editor_options:
 A comparison to results from bulletxtrctr's random forest.}
 \hh{The random forest is spitting out results on a [0-1] interval - so we might need to compare to the adjusted measure. That comarison should go into a separate section just before the discussion. Like - comparison to other existing methods ... special request from Alicia :)}
 ```
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
 library(tidyverse)
 library(bulletxtrctr)
-library(knitr)
 library(kableExtra)
 library(patchwork)
+library(ggpubr)
 
 source("../code/func_collection.R")
 
@@ -802,52 +802,6 @@ for(i in 1:N){
 
 CMPS_hamby252_results_seg <- CMPS_hamby252_results
 
-# generate plots
-# for (i in 1:3) {
-#   hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
-#   
-#   hamby252.plot.list <- list()
-#   titlee <- CMPS_hamby252_results$titlee[[i]]
-#   
-#   hamby252.plot.list[[1]] <- hamby252.cmps %>% ggplot() +
-#     geom_histogram(aes(x = cmps.max.m,
-#                        fill = as.factor(type_truth)), binwidth = 1) +
-#     labs(
-#       fill = "Comparison Type",
-#       x = expression(CMPS[max]),
-#       # title = expression(paste("Hamby252 - ", CMPS[max], " Distribution")),
-#       subtitle = titlee
-#     ) +
-#     scale_x_continuous(breaks = seq(0, 27, 1)) +
-#     theme_bw() +
-#     theme(panel.grid.minor = element_blank()) +
-#     font("x.text", size = 6) +
-#     scale_fill_manual(values=c("darkorange", "darkgrey"))
-#     
-#   hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
-#     geom_histogram(aes(x = cmps.maxbar.m,
-#                        fill = as.factor(type_truth)), binwidth = 1) +
-#     labs(
-#       x = expression(bar(CMPS)[max]),
-#       fill = "Comparison Type",
-#       # title = expression(paste(
-#       #   "Hamby252 - ", bar(CMPS)[max], " Distribution"
-#       # )),
-#       subtitle = titlee
-#     ) +
-#     scale_x_continuous(breaks = seq(0, 24, 1)) +
-#     theme_bw() +
-#     theme(panel.grid.minor = element_blank()) +
-#     scale_fill_manual(values=c("darkorange", "darkgrey"))
-#   
-#   plot <- ggarrange(plotlist = hamby252.plot.list,
-#                     nrow = 1,
-#                     ncol = 2,
-#                     common.legend = TRUE, legend = "bottom")
-#   plot <- annotate_figure(plot, 
-#                           top = text_grob(com.title252))
-#   CMPS_hamby252_results$plot[[i]] <- plot
-# }
 
 ```
 
@@ -1089,6 +1043,79 @@ for(i in 1:N){
 CMPS_hamby44_results_npeak <- CMPS_hamby44_results
 ```
 
+```{r rf-data-load, echo=FALSE}
+rf.results <- list()
+rf.results[[1]] <- read.csv(file = "./data/hamby252/hamby252_rf_results.csv")
+rf.results[[2]] <- read.csv(file = "./data/hamby44/hamby44_rf_results.csv")
+
+rf.tt <- lapply(rf.results, function(rf_result) {
+  with(rf_result, {
+    tibble(rf.diff, rf.max, rf.maxbar) %>% 
+      apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
+  })
+}) %>% do.call(rbind, .) %>% as_tibble()
+
+colnames(rf.tt) <- c("cmps.diff", "cmps.max", "cmps.maxbar")
+
+rf.tt$study <- c("Hamby 252", "Hamby 44")
+rf.tt <- rf.tt %>% pivot_longer(
+  cols = c("cmps.diff", "cmps.max", "cmps.maxbar"),
+  names_to = "Metric"
+)
+
+rf.tt$npeak <- "RandomForest"
+
+```
+
+
+```{r ss-original-cmps, echo=FALSE}
+result.container <- list()
+
+result.container$npeak <- c("5*", "5-3-1*", "5*", "5-3-1*")
+result.container$Metric <- c("cmps.max", "cmps.max", "cmps.maxbar", "cmps.maxbar")
+result.container$study <- "Hamby 252"
+
+dd.list <- list()
+
+dd.list[[1]] <- tibble(
+  score = c(9:13, 16:24),
+  freq = c(132, 282, 115, 19, 1, 1, 3,2,4,8,12,7,7,2),
+  type = c(rep("KNM", 5), rep("KM", 9))
+)
+
+dd.list[[2]] <- tibble(
+  score = c(1:5, 14:23),
+  freq = c(7,343,168,24,7,1,1,2,3,6,7,8,8,7,3),
+  type = c(rep("KNM", 5), rep("KM", 10))
+)
+
+dd.list[[3]] <- tibble(
+  score = c(6:9, 13:19),
+  freq = c(2,210,307,30,6,3,9,9,11,7,1),
+  type = c(rep("KNM", 4), rep("KM", 7))
+)
+
+dd.list[[4]] <- tibble(
+  score = c(0:2, 8:17),
+  freq = c(36, 508, 5, 1,3,4,2,11,3,9,8,4,1),
+  type = c(rep("KNM", 3), rep("KM", 10))
+)
+
+result.container$dd.list <- dd.list
+
+result.container <- result.container %>% as_tibble() %>% 
+  mutate(
+    dd.table = purrr::map(dd.list, function(dd) {
+      tibble(score = rep(dd$score, dd$freq),
+             type_truth = rep(dd$type, dd$freq))
+    }),
+    value = purrr::map_dbl(dd.table, function(dd) {
+      compute_var_ratio_anova(dd$score, dd$type_truth, MS = FALSE)
+    })
+  ) 
+```
+
+
 As presented in the work of @cmps, researchers applied the CMPS method to scans of one of the Hamby sets.
 While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time.
 In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44.
@@ -1176,6 +1203,7 @@ cols_2 <- c("#A45287","#D4AC6A", "#4C688B", "#ABC864")
 # #####  Generated by Paletton.com (c) 2002-2014
 ```
 
+
 ```{r plot_computation, echo=FALSE, fig.width=8, fig.height = 8, out.width='\\linewidth'}
 # 252 - seg
 table.252.cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) {
@@ -1195,23 +1223,12 @@ table.252.cmps_seg.long <- table.252.cmps_seg.long %>%
   mutate(study = "Hamby 252")
 
 
-# p.seg_252_plot <- table.252.cmps_seg.long %>%
-#   ggplot(aes(x = seg_length, y = value)) +
-#   geom_line(aes(color = Metric)) + 
-#   scale_x_continuous(breaks = table.252.cmps_seg$seg_length) +
-#   theme_bw() +
-#   ggtitle("A Temp Title") +
-#   ylab("Sum of Squares Ratio") + 
-#   xlab("seg_length")
-
-labels <- expression(CMPS[diff], {CMPS^symbol("*")} [diff], CMPS[max], bar(CMPS)[max])
+labels <- expression(bar(CMPS)[diff], {bar(CMPS)^symbol("*")}[diff], CMPS[max], bar(CMPS)[max])
 
 p.seg_252_plot <- table.252.cmps_seg.long %>%
   ggplot(aes(x = seg_length +3*as.numeric(factor(Metric))-9)) +
   geom_segment(aes(xend =  seg_length +3*as.numeric(factor(Metric))-9,
                y = value, yend = 0, colour = Metric)) + 
-#  geom_bar(aes(weight =  value, fill = Metric), 
-#           position=position_dodge(width = 0.6), width=.1) +
   geom_point(aes(y =  value, color = Metric), 
              alpha = 0.8,
              position=position_dodge(width = 0.5), size = 3.5) +
@@ -1224,32 +1241,6 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
   xlab("seg_length") +
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
-
-
-
-# 252 - npeak
-table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
-  type_truth <- tt$type_truth
-  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
-}) %>% do.call(rbind, .) %>% as.data.frame()
-
-table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks.set %>% 
-  purrr::map(.f = paste, collapse = "-")
-
-p.npeak_252_plot <- table.252.cmps_npeak %>% 
-  mutate(
-    npeak = factor(
-      npeak,
-      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
-  ) %>% 
-  pivot_longer(cols = c(cmps.diff:cmps.maxbar_scaled),
-               names_to = "Metric") %>% 
-  ggplot(aes(x=npeak, y=value)) +
-  geom_bar(aes(fill = Metric),position = "dodge", stat = "identity") + 
-  ylab("Sum of Squares Ratio") +
-  coord_flip() + 
-  theme_bw()
 
 # 44 - seg
 table.44.cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
@@ -1265,16 +1256,6 @@ table.44.cmps_seg.long <- table.44.cmps_seg %>%
                         cmps.max, cmps.maxbar),
                names_to = "Metric")
 
-# p.seg_44_plot <- table.44.cmps_seg.long %>%
-#   ggplot(aes(x = seg_length, y = value)) +
-#   geom_line(aes(color = Metric)) + 
-#   scale_x_continuous(breaks = table.44.cmps_seg$seg_length) +
-#   theme_bw() +
-#   ggtitle("A Temp Title") +
-#   ylab("Sum of Squares Ratio") + 
-#   xlab("seg_length")
-
-
 table.44.cmps_seg.long <- table.44.cmps_seg.long %>% mutate(
   study = "Hamby 44"
 )
@@ -1282,50 +1263,120 @@ table.44.cmps_seg.long <- table.44.cmps_seg.long %>% mutate(
 table.cmps_seg.long <- bind_rows(table.44.cmps_seg.long,
                                  table.252.cmps_seg.long)
 
+breaks_fun <- function(x) {
+  if(x[2] < 220) {
+    c(25,  50,  75, 100, 125, 150, 175, 200)
+  } else {
+    c(30, 45,  61,  90, 122, 150, 180, 210)
+  }
+}
+
 p.seg_plot <- table.cmps_seg.long %>%
   ggplot(aes(x = seg_length+3*as.numeric(factor(Metric))-9)) +
-#  geom_bar(aes(weight =  value, fill = Metric), 
-#           position=position_dodge(width = 0.6), width=.1) +
   geom_segment(aes(xend = seg_length+3*as.numeric(factor(Metric))-9, 
                    y = value, yend= 0, color=Metric),
                position=position_dodge(width = 0.6)) +
   geom_point(aes(y =  value, color = Metric), 
              alpha = 0.8,
              position=position_dodge(width = 0.5), size = 3.5) +
-  scale_x_continuous(breaks = table.44.cmps_seg$seg_length, 
+  facet_grid(.~study, scales = "free_x") +
+  scale_x_continuous(breaks = breaks_fun, 
                      minor_breaks = NULL) +
   theme_bw() +
   theme(legend.position = "bottom") +
   ylab("Sums of Squares Ratio") + 
   xlab("Segment length") +
   scale_colour_manual(values=cols_2, labels = labels) +
-  scale_fill_manual(values=cols_1, labels = labels) + 
-  facet_grid(.~study)
+  scale_fill_manual(values=cols_1, labels = labels) 
 
-# 44 - npeak
+
+# npeak - 252
+table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
+  type_truth <- tt$type_truth
+  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
+    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+}) %>% do.call(rbind, .) %>% as.data.frame()
+
+table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks.set %>% 
+  purrr::map(.f = paste, collapse = "-") %>% sapply(as.character)
+
+table.252.cmps_npeak.longer <- table.252.cmps_npeak %>% as_tibble() %>% 
+  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>% 
+  mutate(
+    npeak = factor(
+      npeak,
+      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
+  ) %>% 
+  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
+               names_to = "Metric") 
+table.252.cmps_npeak.longer$study <- "Hamby 252"
+
+# npeak - 44
 table.44.cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
     apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
-
 table.44.cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks.set %>% 
-  purrr::map(.f = paste, collapse = "-")
+  purrr::map(.f = paste, collapse = "-") %>% sapply(as.character)
 
-p.npeak_44_plot <- table.44.cmps_npeak %>% 
+table.44.cmps_npeak.longer <- table.44.cmps_npeak %>% as_tibble() %>% 
+  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>% 
   mutate(
     npeak = factor(
       npeak,
       levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
   ) %>% 
-  pivot_longer(cols = c(cmps.diff:cmps.maxbar_scaled),
-               names_to = "Metric") %>% 
-  ggplot(aes(x=npeak, y=value)) +
-  geom_bar(aes(fill = Metric),position = "dodge", stat = "identity") + 
-  ylab("Sum of Squares Ratio") +
-  coord_flip() + 
-  theme_bw()
+  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
+               names_to = "Metric") 
+table.44.cmps_npeak.longer$study <- "Hamby 44"
+
+selected_var <- c("npeak", "Metric", "study", "value")
+
+table.cmps_neapk.long <- bind_rows(
+  table.252.cmps_npeak.longer %>% select(all_of(selected_var)),
+  table.44.cmps_npeak.longer %>% select(all_of(selected_var)),
+  rf.tt %>% select(all_of(selected_var)),
+  result.container %>% select(all_of(selected_var))
+)
+
+order.level <- table.cmps_neapk.long %>% 
+  filter(Metric == "cmps.maxbar", study == "Hamby 252") %>%
+  {.$npeak[order(.$value, decreasing = FALSE)]}
+
+table.cmps_neapk.long <- table.cmps_neapk.long %>% mutate(
+  npeak = factor(npeak, levels = order.level)
+)
+
+npeak_convert <- with(table.cmps_neapk.long, {
+  tt <- tibble(npeak = levels(npeak))
+  tt$xstart <- seq.int(from = 0, by = 20, length.out = length(tt$npeak))
+  tt
+})
+
+table.cmps_neapk.long <- table.cmps_neapk.long %>% left_join(
+  npeak_convert,
+  by = "npeak"
+)
+
+p.npeak_plot <- table.cmps_neapk.long %>%
+  ggplot(aes(x = xstart + 3*as.numeric(factor(Metric))-9)) +
+  geom_segment(aes(xend = xstart + 3*as.numeric(factor(Metric))-9, 
+                   y = value, yend= 0, color=Metric),
+               position=position_dodge(width = 0.6)) +
+  geom_point(aes(y =  value, color = Metric), 
+             alpha = 0.8,
+             position=position_dodge(width = 0.5), size = 3.5) +
+  facet_grid(.~study) +
+  scale_x_continuous(breaks = npeak_convert$xstart, labels = npeak_convert$npeak ) +
+  coord_flip() +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  ylab("Sums of Squares Ratio") + 
+  xlab("npeak") +
+  scale_colour_manual(values=cols_2, labels = labels) +
+  scale_fill_manual(values=cols_1, labels = labels) 
 ```
 
 <!-- this is figure 2 -->
@@ -1336,9 +1387,11 @@ p.npeak_44_plot <- table.44.cmps_npeak %>%
 # CMPS_hamby252_results$plot[[2]]
 
 p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max", 
-                         subtitle = "npeak: 5-3-1, seg_length: 50")
+                         subtitle = "npeak: 5-3-1, seg_length: 50") +
+  xlab(labels[3])
 p2 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
-                         subtitle = "npeak: 5-3-1, seg_length: 50")
+                         subtitle = "npeak: 5-3-1, seg_length: 50") +
+  xlab(labels[4])
 p.result1_252 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
 p.result1_252 <- annotate_figure(p.result1_252, top = text_grob(com.title252))
@@ -1372,9 +1425,11 @@ This might suggest that we could enlarge the separation in terms of the sum of s
 # CMPS_hamby252_results$plot[[2]]
 
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
-                         subtitle = "npeak: 5-3-1, seg_length: 61")
+                         subtitle = "npeak: 5-3-1, seg_length: 61") +
+  xlab(labels[3])
 p2 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
-                         subtitle = "npeak: 5-3-1, seg_length: 61")
+                         subtitle = "npeak: 5-3-1, seg_length: 61") +
+  xlab(labels[4])
 p.result1_44 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
 p.result1_44 <- annotate_figure(p.result1_44, top = text_grob(com.title44))
@@ -1383,61 +1438,60 @@ p.result1_44
 
 **Comparing CMPS metrics and Parameters**
 
-For both Hamby set 252 and 44, we investigated the effects of different sets of parameters.
-More specifically, we fixed the parameter `npeaks.set` that controls the number of peaks at each segment level and modified the parameter `seg_length` that controls the length of a basis segment.
-Then we fixed `seg_length` and examined different values of `npeaks.set`.
-The sum of squares ratios are used to compare among different CMPS metrics and different sets of parameters.
-
-<<<<<<< HEAD
-cmps.max is not the best metric to measure similarity 
-the one we prefer
-cmps.diff, cmps.maxbar and their scaled version are good? we suggest cmps.diff_scaled since it's more comparable and summarizes more information?
-
-parameters need cross-validation
-choice of parameters depends on resolution ( scanning process ) and the data set
-determining the source is a harder task for Hamby 44 than for Hamby 252 
-default parameters can be beaten?
-
-Note that the goal of these comparisons is not to determine the optimal set of parameters for the CMPS algorithm, but to show a general procedure that can be used for 
-a larger database that is representative
-procedure that could be used to reach that point
-
-**Comparing with Random Forest**
-
-Introduce the work , cite the paper 
-CSAFE trained 
-=======
-default parameters can be beaten?
-cmps.diff, cmps.maxbar and their scaled version are good?
-we suggest cmps.diff_scaled since it's more comparable and summarizes more information?
-Note that the goal of these comparisons is not to determine the optimal set of parameters for the CMPS algorithm, but to show a general procedure that can be used for
->>>>>>> 89c744bac300c7d879c25f593d9608305e4ff5ca
-
-```{r}
-# CMPS_hamby44_results_seg$cmps.table[[3]] %>% 
-#   metric_plot_helper("cmps.max")
-# 
-# CMPS_hamby252_results_seg$cmps.table[[2]] %>% 
-#   metric_plot_helper("cmps.max")
-```
-
-```{r seg_252_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
+```{r param_seg_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
 p.seg_plot 
 ```
 
-```{r npeak_252_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
-p.npeak_252_plot
+```{r param_npeak_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
+p.npeak_plot
 ```
 
-<!--
-```{r seg_44_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
-#p.seg_44_plot
-```
--->
 
-```{r npeak_44_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3}
-p.npeak_44_plot
-```
+\wj{new added the following}
+
+For both Hamby set 252 and 44, we investigated the effects of different sets of parameters.
+More specifically, we fixed the parameter `npeaks.set` that controls the number of peaks at each segment level to be `npeaks.set = c(5,3,1)` and modified the parameter `seg_length` that controls the length of a basis segment. 
+As shown in \autoref{fig:param_seg_plot}, the default values of `seg_length` that we used for Hamby 252 and Hamby 44 (50 for Hamby 252 and 61 for Hamby 44, which represent 78.125 \textmu m and 78.69 \textmu m, respectively) result in high values of the sum of squares ratio, no matter which CMPS metrics we are using, when `npeaks.set = c(5,3,1)`. 
+However, better choices also exist.
+For example, \autoref{fig:param_seg_plot} suggests that basis segment length of 75 might be a better choice than the default value for Hamby 252; basis segment length of 122 result in a higher value of sum of squares ratio for Hamby 44.
+
+Additionally, we fixed `seg_length` to be the default values and examined different choices of `npeaks.set`.
+As shown in \autoref{fig:param_npeak_plot}, `npeaks.set = c(5,3,1)`, the default value of `npeaks.set` leads to promising results in terms of the sum of squares ratio; however, other choices of `npeaks.set` could result in higher value of the sum of squares ratio.
+
+As for comparing different CMPS metrics, the results might suggest that using $\mathrm{CMPS_{max}}$ produces the least amount of separation, compared with other CMPS metrics.
+They might also suggest that $\mathrm{\overline{CMPS}_{diff}}$ and $\mathrm{\overline{CMPS^*}_{diff}}$, the two metrics we proposed above, can lead to equally good or even better results as $\mathrm{\overline{CMPS}_{max}}$ can lead to. 
+Since $\mathrm{\overline{CMPS^*}_{diff}}$ relies on the scaled CMPS scores that is more comparable to other similarity scores and summarizes the out-of-phase background CMPS scores, we might choose $\mathrm{\overline{CMPS^*}_{diff}}$ over other CMPS metrics. 
+
+What we can also observe in \autoref{fig:param_seg_plot} and \autoref{fig:param_npeak_plot} is that the values of the sum of squares ratio for Hamby 44 is lower than those for Hamby 252. 
+This might be because determining the source is a harder task for Hamby 44 than for Hamby 252, but also suggests that the choice of parameters also depends on the resolution or the scanning process of the data set. 
+The same set of parameters might work for one data set, but not work for another. 
+
+The purpose of the results shown in \autoref{fig:param_seg_plot} and \autoref{fig:param_npeak_plot} is not to determine the "best" parameters for the CMPS algorithm, but to show that the sum of squares ratio can be used as an evaluation measure to compare different parameters, metrics, or scans. 
+A pipeline that maximizes the sum of squares ratio might help researchers determine the set of parameters that work best for their data. 
+But a large database that is representative is what we really need in order to fully understand and cross-validate the parameters of the CMPS algorithm.
+
+**Comparing with the Original Results and the Random Forest model**
+
+@cmps presents the histograms of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for `npeaks.set = 5` and `npeaks.set = c(5,3,1)` with Hamby 252.
+We computed the sum of squares ratios according to those histograms and included the results in \autoref{fig:param_npeak_plot} as well.
+They are marked by an asterisk at the top right corner in \autoref{fig:param_npeak_plot}.
+The sum of squares ratios we obtained for `npeaks.set = 5` and `npeaks.set = c(5,3,1)` is slightly higher than those obtained from the histograms of @cmps. 
+\wj{One interesting observation is that cmps.max works pretty well for 531 in nist's paper... do we need to include this?XXX}
+Since the researchers of @cmps did not use $\mathrm{\overline{CMPS}_{diff}}$ or $\mathrm{\overline{CMPS^*}_{diff}}$, and they did not apply the CMPS algorithm to the Hamby set 44, we were not able to compare those results.
+
+In \autoref{fig:param_npeak_plot}, we also included the sum of squares ratios computed from the random forest scores for different metrics. 
+A random forest model can be used for both classification and regression. 
+It is an ensemble learning method that takes advantage of multiple predictive features.
+The random forest model we used here was presented in XXX and trained at the Center for Statistics and Applications in Forensic Evidence (CSAFE).
+Similarly to the CMPS algorithm, this random forest model produces a random forest score that lies between the interval $(0, 1)$ for each land-by-land comparison.
+So the random forest scores are more comparable to the scaled CMPS scores.
+We applied the logic of $\mathrm{{CMPS}_{max}}$, $\mathrm{\overline{CMPS}_{max}}$, and $\mathrm{\overline{CMPS}_{diff}}$ to the random forest scores and obtained results of the random forest model for different metrics. 
+As shown in \autoref{fig:param_npeak_plot}, the random forest model does not achieve the sum of squares ratio as high as those achieved by the top CMPS algorithms for Hamby 252, but it does achieve better results for Hamby 44.
+This might suggest researchers to include the CMPS score as an additional feature in the random forest model training. 
+
+
+Introduce the work , cite the paper 
+
 
 <!-- \autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while holding other parameters fixed. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that this results in an increased separation between KM comparisons and KNM comparisons. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters. -->
 
