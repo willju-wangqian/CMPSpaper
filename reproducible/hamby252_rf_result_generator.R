@@ -147,8 +147,8 @@ b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
 
 # process of removing outliers
 tt <- lapply(b252[[CMPS_hamby252_results$signame[[i]]]], function(x) {
-    x$sig
-  }) %>% unlist()
+  x$sig
+}) %>% unlist()
 qtt <- quantile(tt, na.rm = TRUE)
 multi.iqr <- 3
 outrange <- c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]),
@@ -204,7 +204,7 @@ system.time({
                                .f = my_extract_feature_all, resolution = 1.5625), 
         legacy_features = purrr::map(striae, 
                                      extract_features_all_legacy, resolution = 1.5625))
-      # tidyr::unnest(features) # change: instead of legacy_feature
+    # tidyr::unnest(features) # change: instead of legacy_feature
     
     # tmp.comp$rf_score <- predict(bulletxtrctr::rtrees, newdata = tmp.comp, 
     #                             type = "prob")[, 2]
@@ -212,7 +212,7 @@ system.time({
                                  newdata = tmp.comp %>% tidyr::unnest(features) %>% mutate(
                                    abs_lag_mm = abs(lag_mm)
                                  ),
-                                type = "prob")[, 2]
+                                 type = "prob")[, 2]
     
     rf.table <-
       tmp.comp %>% dplyr::select(land1, land2, landidx1, landidx2, 
@@ -250,52 +250,15 @@ hamby252.rf <- hamby252.rf %>% mutate(
   })
 ) %>% tidyr::unnest(metric_list_scaled)
 
-# hamby252.rf <- bind_cols(hamby252.rf %>% dplyr::select(-metric_list), 
-#                            bind_rows(hamby252.rf$metric_list)) 
-
 # add type and type_truth
 hamby252.rf$type <- tmp.tibble$type
 hamby252.rf$type_truth <- tmp.tibble$type_truth
 
-###################################
-# save result in a list
-CMPS_hamby252_results$rf.table[[i]] <- hamby252.rf
+hamby252.csv <- hamby252.rf %>% select(-rf.table, -rf.table.m)
 
-filepath <- "code/saved_rds/h252_rf2_features_rmo.rds"
-
-# saveRDS(CMPS_hamby252_results, filepath)
-
-rf_hamby252_results <- readRDS(filepath)
-
-###################################
-# save result as csv 
-rf_hamby252_results.csv <- rf_hamby252_results$rf.table[[1]] %>% select(-rf.table, -rf.table.m)
-
-
-#################################################
-rf_hamby252_results$rf.table[[1]] %>% names()
-
-# generate plots
-metric_plot_helper(rf_hamby252_results$rf.table[[1]], "diff", scaled = TRUE,
-                   subtitle = "diff plot for rf score",
-                   breaks = seq(0,1,0.1), binwidth = 0.05)
-
-metric_plot_helper(rf_hamby252_results$rf.table[[1]], "maxbar", scaled = TRUE,
-                   subtitle = "max plot for rf score",
-                   breaks = seq(0, 1, 0.1), binwidth = 0.05) 
-
-metric_plot_helper(rf_hamby252_results$rf.table[[1]], "diff.med", scaled = TRUE,
-                   subtitle = "diff with median plot for rf score",
-                   breaks = seq(0, 1, 0.1), binwidth = 0.05)
-
-with(rf_hamby252_results$rf.table[[1]], {
-  tibble(diff, diff.med, max, maxbar) %>% 
-    apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
-}) 
-
-
-
-
-
-
+data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/hamby252/"
+write.csv(
+  hamby252.csv %>% as.data.frame(),
+  file = paste(data_path, "hamby252_rf_results", ".csv", sep = "")
+)
 

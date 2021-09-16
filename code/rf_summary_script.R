@@ -11,6 +11,8 @@ df.rf <- lapply(rf44.container, function(rf_result) {
   })
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
+rf44.container[[1]]$rf.table[[1]] %>% metric_plot_helper("rf.diff.med", scaled = TRUE)
+
 df.rf$rf <- c("features", "legacy_feature")
 df.rf$span3 <- c("default", "default")
 
