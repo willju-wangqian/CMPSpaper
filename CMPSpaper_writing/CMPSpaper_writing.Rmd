@@ -1063,7 +1063,7 @@ rf.tt <- rf.tt %>% pivot_longer(
   names_to = "Metric"
 )
 
-rf.tt$npeak <- "RF score (Hare et al)"
+rf.tt$npeak <- "RF score* (Hare et al)"
 
 ```
 
@@ -1239,7 +1239,7 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
   theme(legend.position="none") +
   ggtitle("Results for Hamby 252") +
   ylab("Sum of Squares Ratio") + 
-  xlab("seg_length") +
+  xlab("Segment Length") +
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
 
@@ -1375,7 +1375,7 @@ p.npeak_plot <- table.cmps_neapk.long %>%
   theme_bw() +
   theme(legend.position = "bottom") +
   ylab("Sums of Squares Ratio") + 
-  xlab("npeaks.set") + 
+  xlab("Number of Peaks") +
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
 ```
@@ -1443,7 +1443,8 @@ p.result1_44
 p.seg_plot 
 ```
 
-```{r param_npeak_plot, echo=FALSE, out.width="400px", fig.cap="Comparison of results from the CMPS algorithm based on different number of peaks identified at each segment level (parameter \\texttt{npeaks.set}). ", fig.height=3, warning = FALSE}
+
+```{r param_npeak_plot, echo=FALSE, out.width="400px", fig.cap="Comparison of CMPS results based on different strategies of number of peak selections. \\hh{5-3-1 should be next to 5-3-1*}. Starred results compare CMPS performance with results published in the literature. ", fig.height=3, warning = FALSE}
 p.npeak_plot
 ```
 
@@ -1453,17 +1454,16 @@ More specifically, we investigated the separation achieved using the CMPS implem
 \autoref{fig:param_seg_plot} shows that the default values of `seg_length`  for Hamby 252 and Hamby 44 (50 for Hamby 252 and 61 for Hamby 44, which represent 78.125 \textmu m and 78.69 \textmu m, respectively) result in high values of the sum of squares ratio, no matter which CMPS metrics are used for an evaluation. 
 However, we also see, that for Hamby set 252 a basis segment length of 75 is a better choice than the default segment length; a basis segment length of 122 results in a higher value of sum of squares ratio for Hamby 44.
 
-\hh{edits up to here}
-Additionally, we fixed `seg_length` to be the default values and examined different choices of `npeaks.set`.
-As shown in \autoref{fig:param_npeak_plot}, `npeaks.set = c(5,3,1)`, the default value of `npeaks.set` leads to promising results in terms of the sum of squares ratio; however, other choices of `npeaks.set` could result in higher value of the sum of squares ratio.
+\autoref{fig:param_npeak_plot} shows results of the CMPS algorithm using different stategies for identifying peaks in the correlation structure between signatures. Basis segment length is fixed to the default level for this evaluation. 
+As can be seen in \autoref{fig:param_npeak_plot}, the default value of `npeaks.set` (`npeaks.set = c(5,3,1)`) leads to promising results in terms of the sum of squares ratio; however, other choices of `npeaks.set` match and  exceed this sum of squares ratio value.
 
-As for comparing different CMPS metrics, the results might suggest that using $\mathrm{CMPS_{max}}$ produces the least amount of separation, compared with other CMPS metrics.
-They might also suggest that $\mathrm{\overline{CMPS}_{diff}}$ and $\mathrm{\overline{CMPS^*}_{diff}}$, the two metrics we proposed above, can lead to equally good or even better results as $\mathrm{\overline{CMPS}_{max}}$ can lead to. 
-Since $\mathrm{\overline{CMPS^*}_{diff}}$ relies on the scaled CMPS scores that is more comparable to other similarity scores and summarizes the out-of-phase background CMPS scores, we might choose $\mathrm{\overline{CMPS^*}_{diff}}$ over other CMPS metrics. 
+As seen before, the results suggest that the $\mathrm{CMPS_{max}}$ metric produces the least amount of separation compared with the other three CMPS metrics.
+They also suggest that the two newly proposed metrics, $\mathrm{\overline{CMPS}_{diff}}$ and $\mathrm{\overline{CMPS^*}_{diff}}$,  lead to equally good or even better results as $\mathrm{\overline{CMPS}_{max}}$. 
+Because $\mathrm{\overline{CMPS^*}_{diff}}$ relies on a scaled version of CMPS scores it is more comparable to other similarity scores and summarizes the out-of-phase background CMPS scores, making it superior to the other CMPS metrics. 
 
 What we can also observe in \autoref{fig:param_seg_plot} and \autoref{fig:param_npeak_plot} is that the values of the sum of squares ratio for Hamby 44 is lower than those for Hamby 252. 
 This might be because determining the source is a harder task for Hamby 44 than for Hamby 252, but also suggests that the choice of parameters also depends on the resolution or the scanning process of the data set. 
-The same set of parameters might work for one data set, but not work for another. 
+The same set of parameters might work for one data set, but not work equally well for another. 
 
 The purpose of the results shown in \autoref{fig:param_seg_plot} and \autoref{fig:param_npeak_plot} is not to determine the "best" parameters for the CMPS algorithm, but to show that the sum of squares ratio can be used as an evaluation measure to compare different parameters, metrics, or scans. 
 A pipeline that maximizes the sum of squares ratio might help researchers determine the set of parameters that work best for their data. 
@@ -1471,43 +1471,40 @@ But a large database that is representative is what we really need in order to f
 
 **Comparing with the Original Results and the Random Forest model**
 
-@cmps presents the histograms of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for `npeaks.set = 5` and `npeaks.set = c(5,3,1)` with Hamby 252.
-We computed the sum of squares ratios according to those histograms and included the results in \autoref{fig:param_npeak_plot} as well.
+@cmps present histograms of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for `npeaks.set = 5` and `npeaks.set = c(5,3,1)` with (presumably) Hamby 252.
+The values in these histograms allow us to calculate the sum of squares ratios and include the results in \autoref{fig:param_npeak_plot} as well.
 They are marked by an asterisk at the top right corner in \autoref{fig:param_npeak_plot}.
 The sum of squares ratios we obtained for `npeaks.set = 5` and `npeaks.set = c(5,3,1)` is slightly higher than those obtained from the histograms of @cmps. 
-\wj{One interesting observation is that cmps.max works pretty well for 531 in nist's paper... do we need to include this?XXX}
+\wj{One interesting observation is that cmps.max works pretty well for 531 in nist's paper... do we need to include this?XXX} \hh{no need}
 Since the researchers of @cmps did not use $\mathrm{\overline{CMPS}_{diff}}$ or $\mathrm{\overline{CMPS^*}_{diff}}$, and they did not apply the CMPS algorithm to the Hamby set 44, we were not able to compare those results.
 
-In \autoref{fig:param_npeak_plot}, we also included the sum of squares ratios computed from the random forest scores for different metrics. 
-A random forest model can be used for both classification and regression. 
-It is an ensemble learning method that takes advantage of multiple predictive features.
-The random forest model we used here was presented in XXX and trained at the Center for Statistics and Applications in Forensic Evidence (CSAFE).
-Similarly to the CMPS algorithm, this random forest model produces a random forest score that lies between the interval $(0, 1)$ for each land-by-land comparison.
-So the random forest scores are more comparable to the scaled CMPS scores.
+In \autoref{fig:param_npeak_plot}, we also included the sum of squares ratios computed from the random forest scores [@aoas] for different metrics. 
+<!--A random forest model can be used for both classification and regression. 
+It is an ensemble learning method that takes advantage of multiple predictive features.-->
+The random forest model presented in @aoas was trained at the Center for Statistics and Applications in Forensic Evidence (CSAFE) and is publicly available in the R package `bulletxtrctr` [@bulletxtrctr].
+Similarly to the CMPS algorithm, this random forest model produces a  score to quantify the similarity of a land-by-land comparison.
+The RF scores lie in an interval of [0,1] making them most comparable to the scaled CMPS scores.
 We applied the logic of $\mathrm{{CMPS}_{max}}$, $\mathrm{\overline{CMPS}_{max}}$, and $\mathrm{\overline{CMPS}_{diff}}$ to the random forest scores and obtained results of the random forest model for different metrics. 
 As shown in \autoref{fig:param_npeak_plot}, the random forest model does not achieve the sum of squares ratio as high as those achieved by the top CMPS algorithms for Hamby 252, but it does achieve better results for Hamby 44.
-This might suggest researchers to include the CMPS score as an additional feature in the random forest model training. 
+This might suggest that an inclusion of the CMPS score as an additional feature in the random forest model training might be beneficial for an overall separation to determine source. 
 
-
-Introduce the work , cite the paper 
-
-
-The codes generating those results can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
+The code generating all results of this manuscript can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
 
 ## Conclusion
 
-In this paper we presented the CMPS package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and applied it to two datasets in Hamby study [@hamby] to show its potential for further research.
+In this paper we present the CMPS package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
-We introduced the basic logic of the CMPS algorithm and how it is implemented in the CMPS package.
-We also showcased the functionality of the CMPS package with a small dataset example that is included in the package.
-In the CMPS package we also implemented some graphing tools for users to visualize results generated by our functions and to have a better understanding of both the algorithm and the results.
+We introduce the basic logic of the CMPS algorithm and lay out its implementation in the CMPS package.
+We also showcase the functionality of the CMPS package with a small dataset example that is included in the package.
+In the CMPS package we  implement some graphing tools for users to visualize results and to gain a better understanding of both the algorithm and the results.
 
-Additionally, we applied the CMPS package to two datasets in Hamby study (Hamby set 252 and Hamby set 44), and the results we obtained were promising since we were able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known-match (KM) comparisons and known-nonmatch (KNM) comparisons.
-However, the results of Hamby set 44 suggested that the CMPS method is sensitive to the choice of parameters in the algorithm, such as the length of basis segments and the number of peaks detected at each segment level.
+Additionally, we apply the CMPS package to two datasets in Hamby study (Hamby set 252 and Hamby set 44). The results obtained are promising:  we were both able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known-match (KM) comparisons and known-nonmatch (KNM) comparisons in another bullet study.
+However, the results of Hamby set 44 suggest that the CMPS method is sensitive to the choice of parameters in the algorithm, such as the length of basis segments and the number of peaks detected at each segment level.
 This indicates that further research is needed to provide a comprehensive cross-validation on parameters used the algorithm.
-Moreover, we might want to compare the two versions of the CMPS algorithm in the future as well.
 
-The CMPS package as an open-source implementation introduces the CMPS algorithm to the `R` community and allows people to use it for their own projects.
+The CMPS package provides an open-source implementation and introduces the CMPS algorithm to the `R` community. 
+
+\hh{XXX Which 'It' are you referring to?}
 It would also facilitate future studies on parameter cross-validations, method comparisons, and the development of statistical methods for modeling KM and KNM CMPS score distributions, which can potentially be used to estimate error rates or define an identification criterion.
 
 <!-- ### About this format and the R Journal requirements -->
