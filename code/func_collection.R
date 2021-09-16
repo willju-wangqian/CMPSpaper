@@ -62,7 +62,6 @@ get_all_phases <- function(land1, land2, score, addNA = FALSE)
   return(scores.list)
 }
 
-
 ## the function re-written from compute_average_scores
 compute_avgscore_denoise <- function (land1, land2, score, FUNC = mean, addNA = FALSE, na.rm = TRUE) 
 {
