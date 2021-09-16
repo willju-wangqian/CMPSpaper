@@ -1071,7 +1071,8 @@ rf.tt$npeak <- "RF score (Hare et al)"
 ```{r ss-original-cmps, echo=FALSE}
 result.container <- list()
 
-result.container$npeak <- c("5*", "5-3-1*", "5* (Chen et al)", "5-3-1* (Chen et al)")
+result.container$npeak <- 
+  c("5* (Chen et al)", "5-3-1* (Chen et al)", "5* (Chen et al)", "5-3-1* (Chen et al)")
 result.container$Metric <- c("cmps.max", "cmps.max", "cmps.maxbar", "cmps.maxbar")
 result.container$study <- "Hamby 252"
 
@@ -1374,23 +1375,23 @@ p.npeak_plot <- table.cmps_neapk.long %>%
   theme_bw() +
   theme(legend.position = "bottom") +
   ylab("Sums of Squares Ratio") + 
-  xlab("npeak") +
+  xlab("npeaks.set") + 
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
 ```
 
 <!-- this is figure 2 -->
 
-```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; removed outliers; seg\\_length = 50, Tx = 25, npeaks.set = c(5,3,1) ", fig.height=3}
+```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 # CMPS_hamby252_results$plot[[2]]
 
 p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max", 
-                         subtitle = "npeak: 5-3-1, seg_length: 50") +
+                         subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
   xlab(labels[3])
 p2 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
-                         subtitle = "npeak: 5-3-1, seg_length: 50") +
+                         subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
   xlab(labels[4])
 p.result1_252 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
@@ -1419,16 +1420,16 @@ As shown in \autoref{fig:result1_44}, again, we are able to see a clear separati
 For this specific set of parameters, the sum of squares ratios are 8.87 and 10.64 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively.
 This might suggest that we could enlarge the separation in terms of the sum of squares ratio by using other CMPS metrics and other sets of parameters.
 
-```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1) ", fig.height=3}
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 # CMPS_hamby252_results$plot[[2]]
 
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
-                         subtitle = "npeak: 5-3-1, seg_length: 61") +
+                         subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
   xlab(labels[3])
 p2 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
-                         subtitle = "npeak: 5-3-1, seg_length: 61") +
+                         subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
   xlab(labels[4])
 p.result1_44 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
@@ -1442,7 +1443,7 @@ p.result1_44
 p.seg_plot 
 ```
 
-```{r param_npeak_plot, echo=FALSE, out.width="400px", fig.cap="Some caption", fig.height=3, warning = FALSE}
+```{r param_npeak_plot, echo=FALSE, out.width="400px", fig.cap="Comparison of results from the CMPS algorithm based on different number of peaks identified at each segment level (parameter \\texttt{npeaks.set}). ", fig.height=3, warning = FALSE}
 p.npeak_plot
 ```
 
@@ -1490,52 +1491,6 @@ This might suggest researchers to include the CMPS score as an additional featur
 
 Introduce the work , cite the paper 
 
-
-<!-- \autoref{fig:result2_44} shows another Hamby set 44 results, but we changed the value of `npeaks.set` while holding other parameters fixed. In this result, `npeaks.set` is `c(10,6,1)` instead of `c(5,3,1)`. We can see that this results in an increased separation between KM comparisons and KNM comparisons. This shows that the parameters used in the CMPS algorithm could potentially affect the CMPS results, and an open-source implementation of the algorithm will facilitate efforts of cross-validating these parameters. -->
-
-<!-- this is figure 4 -->
-
-```{r result2_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(10,6,1), span1=0.25 ", fig.height=3}
-# [5] "span1=0.25, span2=0.03, rm_outliers, c(10,6,1)"
-# knitr::include_graphics("img/hamby44_c1_v1.png", dpi = 100)
-# CMPS_hamby44_results$plot[[2]]
-```
-
-<!-- For the third result of Hamby 44, we changed a parameter used in the data-processing procedure. `span1=0.25` is used for the previous results. Here, we change the span of 0.75, which captures a more global pattern in the bullet signatures. -->
-
-<!-- <!-- For the results above we used `span1=0.25` in the function `cc_get_signature` when computing the  = ; however, in this example we used `span1=0.75` and changed the characteristic of those  = . -->
-
-<!-- As we can see in \autoref{fig:result3_44}, changing some characteristics of bullet signatures will also change the final CMPS results.  -->
-
-<!-- \autoref{tab:table1} presents some summary statistics of the Hamby 44 results above. These summary statistics are used to show the separation between the KM and KNM groups in the distribution of both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$. As shown in \autoref{tab:table1}, some parameter settings are better than others in terms of the separation between the two distributions. However, we are not suggesting any set of parameters to users since further research is needed to provide a comprehensive cross-validation on these parameters, which can be facilitated by an open-source implementation of the CMPS algorithm. -->
-
-<!-- this is figure 5 -->
-
-```{r result3_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; removed outliers; seg\\_length = 61, Tx = 30, npeaks.set = c(5,3,1), span1=0.75", fig.height=3}
-# [4] "span1=0.75, span2=0.03, rm_outliers"  
-# knitr::include_graphics("img/hamby44_c2_v1.png", dpi = 100)
-# CMPS_hamby44_results$plot[[3]]
-```
-
-```{r table1, echo=FALSE, warning=FALSE}
-# rtt <- readRDS("summary_table.rds")
-# colnames(rtt) <- 
-rtt <- data.frame(parameters = c("span1=0.25, (5, 3, 1)", "span1=0.25, (10, 6, 1)", "span1=0.75, (5, 3, 1)"),
-                  p1 = c(7,9,6),
-                  p2 = c(10, 13, 11),
-                  p3 = c(3.6, 4.833, 3.167),
-                  p4 = c(6.667, 9.167, 6.6))
-colnames(rtt) <- c("Parameters",
-                   "$\\mathrm{CMPS_{max}}$ KNM's max",
-                   "$\\mathrm{CMPS_{max}}$ KM's min",
-                   "$\\mathrm{\\overline{CMPS}_{max}}$ KNM's max",
-                   "$\\mathrm{\\overline{CMPS}_{max}}$ KM's min")
-
-# knitr::kable(rtt, "latex", booktabs = TRUE, escape = FALSE,
-#              caption = "min and max of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ showing the separation between KNM and KM",
-#              row.names = FALSE, digits = 4) %>% 
-#   column_spec(2:5, width = "2cm")
-```
 
 The codes generating those results can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
 
