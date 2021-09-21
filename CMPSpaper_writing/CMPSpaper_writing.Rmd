@@ -1361,7 +1361,7 @@ p.npeak_plot <- table.cmps_neapk.long %>%
   scale_x_continuous(breaks = npeak_convert$xstart, labels = npeak_convert$npeak ) +
   theme_bw() +
   theme(legend.position = "bottom") +
-  guides(shape = FALSE) + 
+  guides(shape = "none") + 
   scale_shape_manual(values = c(16, 1)) +
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
@@ -1407,7 +1407,7 @@ As shown in \autoref{fig:result1_44}, again, we are able to see a clear separati
 For this specific set of parameters, the sum of squares ratios are 8.87 and 10.64 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively.
 This might suggest that we could enlarge the separation in terms of the sum of squares ratio by using other CMPS metrics and other sets of parameters.
 
-```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3}
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3, warning=FALSE}
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
   xlab(labels[3])
