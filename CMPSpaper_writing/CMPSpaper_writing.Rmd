@@ -156,7 +156,7 @@ In this paper we present an open-source implementation of the algorithm of the C
 @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations.
 Although @cmps conceptually described the CMPS algorithm in their paper, the authors did not release an implementation of their method.
 Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
-Our implementation is made available as part of the `R` package `CMPS` on GitHub at \url{https://github.com/willju-wangqian/CMPS}.
+Our implementation is made available as part of the `R` package `cmpsR` on GitHub at \url{https://github.com/willju-wangqian/CMPS}.
 
 According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms" [@fbiucr], and firearm examination could play an important role in all these cases.
 <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} --> <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide --> 
@@ -171,7 +171,7 @@ Note that this is not an exhaustive list of these efforts.
 The notion of bullet signatures is one of the results of these efforts.
 Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section.
 Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field.
-In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, and present results of applying our implementation to real data.
+In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, \wj{propose new metrics based on the CMPS score and a principled evaluation framework for algorithmic results comparison, } and present results of applying our implementation to real data.
 
 ## Background
 
@@ -245,7 +245,7 @@ Thus, in this paper we present an open-source implementation of the CMPS algorit
 # install.packages("devtools") 
 # devtools::install_github("willju-wangqian/CMPS")
 
-library(CMPS)
+library(cmpsR)
 data(bullets)
 
 sig1 <- bullets$sigs[[2]]$sig
@@ -262,7 +262,7 @@ We also implemented graphing tools for users to better understand these results 
 
 The section "Implementation" will go through the algorithm and show how to use the "CMPS" package.
 A further example that illustrates the main points are also included.
-The section "Results" presents the results of evaluating the CMPS package using Hamby set 252 and Hamby set 44.
+The section "Results" presents the results of evaluating the `cmpsR` package using Hamby set 252 and Hamby set 44.
 And the last section covers some final discussion and conclusions.
 
 ## Implementation
@@ -297,7 +297,7 @@ Conceptually, the CMPS algorithm consists of three main steps:
     In case of ties the middle position is taken as the congruent registration position.
     Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS).
     The total number of CMPS is the CMPS score of the comparison.
-    `get_CMPS(input.ccp, Tx = 25)` is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (cmps).
+    `get_CMPS(input.ccp, Tx = 25)` is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (CMPS).
 
 Note that there are several parameters in the CMPS algorithm that are left to the users to decide, such as the length of basis segments `seg_length` in step 1, the number of peaks `npeaks.set` identified on each level in step 2, and the length of the tolerance zone `Tx` in both step 2 and 3.
 In our implementation of the CMPS algorithm we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters.
@@ -348,7 +348,7 @@ In the remainder of the paper we showcase the use of the CMPS functionality on s
 
 **Installation**
 
-The CMPS package is not publicly available from CRAN yet, and its development version is available from Github and can be installed by
+The `cmpsR` package is not publicly available from CRAN yet, and its development version is available from Github and can be installed by
 
 ```{r, eval=FALSE}
 # install.packages("remotes") 
@@ -357,14 +357,14 @@ remotes::install_github("willju-wangqian/CMPS")
 
 **An Example**
 
-The `CMPS` package contains a simple example to illustrate the basic usage of the package.
+The `cmpsR` package contains a simple example to illustrate the basic usage of the package.
 The data in this example are twelve bullet signatures obtained from two bullets in Hamby set 252 [@hamby].
 The procedure for generating signatures from high-resolution 3D topographic scans of bullet lands used here follows the methodology described in @aoas (as discussed above).
 The two bullets under consideration are known to have been fired from the same gun barrel, so for the 36 pairwise land-by-land comparisons, six comparisons are from same-source pairs (known matches) while thirty are from different-source pairs (known non-matches).
 To access the example data, we use
 
 ```{r, eval=TRUE}
-library(CMPS)
+library(cmpsR)
 data(bullets)
 ```
 
@@ -1477,17 +1477,22 @@ The code generating all results of this manuscript can be found on Github at \ur
 
 ## Conclusion
 
-In this paper we present the CMPS package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
+In this paper we present the `cmpsR` package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
-We introduce the basic logic of the CMPS algorithm and lay out its implementation in the CMPS package.
-We also showcase the functionality of the CMPS package with a small dataset example that is included in the package.
-In the CMPS package we  implement some graphing tools for users to visualize results and to gain a better understanding of both the algorithm and the results.
+We introduce the basic logic of the CMPS algorithm and lay out its implementation in the `cmpsR` package.
+We also showcase the functionality of the `cmpsR` package with a small dataset example that is included in the package.
+In the `cmpsR` package we implement some graphing tools for users to visualize results and to gain a better understanding of both the algorithm and the results.
 
-Additionally, we apply the CMPS package to two datasets in Hamby study (Hamby set 252 and Hamby set 44). The results obtained are promising:  we were both able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known-match (KM) comparisons and known-nonmatch (KNM) comparisons in another bullet study.
-However, the results of Hamby set 44 suggest that the CMPS method is sensitive to the choice of parameters in the algorithm, such as the length of basis segments and the number of peaks detected at each segment level.
-This indicates that further research is needed to provide a comprehensive cross-validation on parameters used the algorithm.
+\wj{Additionally, we propose new metrics based on the CMPS scores and compare the new metrics with the existing metrics. 
+We also introduce a principled evaluation framework of algorithmic results based on a measure called the sum of squares ratio. 
+We showcase the implementation with two datasets in Hamby study (Hamby set 252 and Hamby set 44) and compare the CMPS algorithm using different sets of parameters and different metrics, following the evaluation framework based on the sum of squares ratio. }
+<!-- Additionally, we apply the `cmpsR` package to two datasets in Hamby study (Hamby set 252 and Hamby set 44).  -->
+The results obtained are promising:  we were both able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known match (KM) comparisons and known non-match (KNM) comparisons in another bullet study.
+\wj{However, the comparisons among different sets of parameters suggest that the optimal choice of the parameters varies for different datasets. 
+And further research can follow the proposed evaluation framework to have a comprehensive cross-validation on parameters used the algorithm.
+Furthermore, we compared our implemented CMPS algorithm with the random forest model proposed by @aoas and suggest adding the CMPS score as an additional feature in the random forest model.}
 
-The CMPS package provides an open-source implementation and introduces the CMPS algorithm to the `R` community. 
+The `cmpsR` package provides an open-source implementation and introduces the CMPS algorithm to the `R` community. 
 
 Open-source implementations not only allow a peer-review but also facilitate further research, such as parameter cross-validations, method comparisons, and the development of statistical methods for modeling KM and KNM CMPS score distributions, which can then be used for error-rate estimations and fair applications that were called for by the PCAST [@pcast] report.
 
