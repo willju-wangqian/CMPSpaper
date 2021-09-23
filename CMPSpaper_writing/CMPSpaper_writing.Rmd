@@ -1212,7 +1212,7 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
   scale_x_continuous(breaks = table.252.cmps_seg$seg_length, 
                      minor_breaks = NULL) +
   theme_bw() +
-  theme(legend.position="none") +
+  # theme(legend.position="none") +
   ggtitle("Results for Hamby 252") +
   ylab("Sum of Squares Ratio") + 
   xlab("Segment Length") +
@@ -1249,8 +1249,12 @@ breaks_fun <- function(x) {
 }
 
 p.seg_plot <- table.cmps_seg.long %>%
-  ggplot(aes(x = seg_length+3*as.numeric(factor(Metric))-9)) +
-  geom_segment(aes(xend = seg_length+3*as.numeric(factor(Metric))-9, 
+  mutate(
+    Metric = factor(Metric,
+                    levels = c("cmps.max", "cmps.diff", "cmps.diff_scaled", "cmps.maxbar"))
+  ) %>% 
+  ggplot(aes(x = seg_length+3*as.numeric((Metric))-9)) +
+  geom_segment(aes(xend = seg_length+3*as.numeric((Metric))-9, 
                    y = value, yend= 0, color=Metric),
                position=position_dodge(width = 0.6)) +
   geom_point(aes(y =  value, color = Metric), 
@@ -1265,7 +1269,6 @@ p.seg_plot <- table.cmps_seg.long %>%
   xlab("Segment length") +
   scale_colour_manual(values=cols_2, labels = labels) +
   scale_fill_manual(values=cols_1, labels = labels) 
-
 
 # npeak - 252
 table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
