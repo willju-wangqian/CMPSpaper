@@ -303,23 +303,23 @@ get_ccf2 <- function (x, y, min.overlap = round(0.1 * max(length(x), length(y)))
 }
   
 # aligned <- tmp.comp$aligned[[1]]$lands
-my_extract_feature_lag <- function(aligned)
-{
-  assert_that(dim(aligned)[2] > 2, msg = "aligned must have at least 3 columns")
-  for (i in 2:dim(aligned)[2]) {
-    assert_that(is.numeric(aligned[, i]), msg = sprintf("Column %d (%s) is not numeric", 
-                                                        i, names(aligned)[i]))
-  }
-  lags <- sapply(aligned[, -1], function(x) {
-    if (!is.na(x[1])) 
-      return(0)
-    diffs <- diff(is.na(x))
-    which(diffs == -1)
-  })
-  if (length(lags) == 2) 
-    return(diff(lags))
-  lags
-}
+# extract_feature_lag <- function(aligned)
+# {
+#   assert_that(dim(aligned)[2] > 2, msg = "aligned must have at least 3 columns")
+#   for (i in 2:dim(aligned)[2]) {
+#     assert_that(is.numeric(aligned[, i]), msg = sprintf("Column %d (%s) is not numeric", 
+#                                                         i, names(aligned)[i]))
+#   }
+#   lags <- sapply(aligned[, -1], function(x) {
+#     if (!is.na(x[1])) 
+#       return(0)
+#     diffs <- diff(is.na(x))
+#     which(diffs == -1)
+#   })
+#   if (length(lags) == 2) 
+#     return(diff(lags))
+#   lags
+# }
 
 my_extract_feature_all <- function (aligned, striae, resolution, tmpfile = NULL, ...) 
 {
