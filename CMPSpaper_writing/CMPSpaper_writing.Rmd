@@ -1479,7 +1479,7 @@ The code generating all results of this manuscript can be found on Github at \ur
 
 \hh{XXX Will, the conclusion needs to be a bit more than just a summary of what we did in the paper - think of it as a summary plus either the limitations of our approach, or next steps that should be done but goes beyond this paper.}
 
-In this paper we present the `cmpsR` package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
+In this paper we present the `cmpsR` package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets from the Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
 We introduce the basic logic of the CMPS algorithm and lay out its implementation in the `cmpsR` package.
 We also showcase the functionality of the `cmpsR` package with a small dataset example that is included in the package.
