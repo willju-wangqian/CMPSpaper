@@ -156,14 +156,14 @@ In this paper we present an open-source implementation of the algorithm of the C
 @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations.
 Although @cmps conceptually described the CMPS algorithm in their paper, the authors did not release an implementation of their method.
 Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
-Our implementation is made available as part of the `R` package `cmpsR` on GitHub at \url{https://github.com/willju-wangqian/CMPS}.
+Our implementation is made available as part of the `R` package `cmpsR` on GitHub at \url{https://github.com/willju-wangqian/cmpsR}.
 
-According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms" [@fbiucr], and firearm examination could play an important role in all these cases.
+According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "More than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms" [@fbiucr], and firearm examination could play an important role in all these cases. \hh{XXX the new data for 2020 came out on Sep 27 - homicides are up by close to 30%. We might want to mention that.}
 <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} --> <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide --> 
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm.
 Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel.
 Assessing the similarity between two bullets is based on a comparison of striation marks acquired during the firing process as bullets are propelled through the barrel.
-Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope.
+Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope [@afte].
 This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].
 
 A report published by @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field [@nistdb, @brundage, @hamby, @Hamby:2019, @song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940; @cmps].
@@ -171,7 +171,7 @@ Note that this is not an exhaustive list of these efforts.
 The notion of bullet signatures is one of the results of these efforts.
 Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section.
 Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field.
-In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, \wj{propose new metrics based on the CMPS score and a principled evaluation framework for algorithmic results comparison, } and present results of applying our implementation to real data.
+In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, propose new metrics based on the CMPS score and a principled evaluation framework for algorithmic results comparison,  and present results of applying our implementation to real data.
 
 ## Background
 
@@ -179,7 +179,7 @@ In the following sections we will: review the background of bullet signature com
 <!-- ### Hamby Data Set -->
 
 The datasets we worked with come from the James Hamby Consecutively Rifled Ruger Barrel Study [@brundage; @hamby; @Hamby:2019], in particular, Hamby set 252 and Hamby set 44.
-For each Hamby set, a total of 35 bullets is fired from ten consecutively manufactured Ruger P-85 pistol barrels.
+For each Hamby set, a total of 35 bullets is fired from (the same) ten consecutively manufactured Ruger P-85 pistol barrels.
 Two bullets are fired from each barrel, making up a set of 20 reference bullets.
 An additional 15 bullets are fired from these ten barrels in a fashion unknown to the study participant.
 The aim of the Hamby Study was to have firearms examiners identify which barrel each of the 15 questioned bullets was fired from.
@@ -215,7 +215,7 @@ However, to avoid confusion, we distinguish the notion of bullet signatures from
 Bullet profiles are shown in panels (b), (c), and (d) of \autoref{fig:process}, while \autoref{fig:process}(f) shows the corresponding bullet signature.
 Identifying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures.
 To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny], `bulletinspectR` to identify and correct those errors.
-An example of the extraction process with corresponding code and parameter settings can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible} Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
+An example of the extraction process with corresponding code and parameter settings can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}. Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
 
 ```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
 knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
@@ -232,14 +232,14 @@ Most algorithms for comparing striation marks are based on the digitized signatu
 The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm.
 The algorithm's main idea is to take a set of consecutive and non-overlapping basis segments from the comparison and for each segment find the "best" registration position on the reference (the other bullet signature) with respect to their cross-correlation values.
 From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score.
-Note that researchers in @cmps refers the origin of basis segments as the reference, but in this paper we refer it as the comparison.
+Note that researchers in @cmps refers to the origin of basis segments as the reference, but in this paper we refer to it as the comparison.
 High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair.
 Low scores between pairs of signatures are attributed to different source pairs.
-However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not mentioned in @cmps and depends on the underlying structure of the data and the choice of parameters.
-Further research is needed to understand how to determine the threshold.
+However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not provided in @cmps, instead the threshold depends on the underlying structure of the data and the choice of parameters. \hh{XXX  In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on a wished-for outcome. }
+Further research is needed to understand how to determine optimal threshold settings.
 The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair.
 Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm.
-Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package CMPS available from Github \url{https://github.com/willju-wangqian/CMPS} With our implementation, one can compute the CMPS score of a comparison using the following code:
+Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package cmpsR available from Github \url{https://github.com/willju-wangqian/cmpsR}. This publicly available implementation calculates the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
 # install.packages("devtools") 
@@ -260,10 +260,10 @@ In this example, the comparison between `sig1` and `sig2`, two signatures coming
 
 We also implemented graphing tools for users to better understand these results as well as the algorithm itself.
 
-The section "Implementation" will go through the algorithm and show how to use the "CMPS" package.
+The section "Implementation" will go through the algorithm and show how to use the \pkg{cmpsR} package. 
 A further example that illustrates the main points are also included.
-The section "Results" presents the results of evaluating the `cmpsR` package using Hamby set 252 and Hamby set 44.
-And the last section covers some final discussion and conclusions.
+The section "Results" presents the results of evaluating the `cmpsR` package using Hamby set 252 and Hamby set 44. The results from Hamby set 252 are used to verify that our implementation is, at least qualitatively, comparable to the algorithm described in @nist. Results from Hamby 44 show the need for a further investigation of the parameter choices even in the case of bullets fired from the same barrels. \hh{We suggest a sum of square ratio ...}
+The last section covers some final discussion and conclusions.
 
 ## Implementation
 
