@@ -1477,6 +1477,8 @@ The code generating all results of this manuscript can be found on Github at \ur
 
 ## Conclusion
 
+\hh{XXX Will, the conclusion needs to be a bit more than just a summary of what we did in the paper - think of it as a summary plus either the limitations of our approach, or next steps that should be done but goes beyond this paper.}
+
 In this paper we present the `cmpsR` package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
 We introduce the basic logic of the CMPS algorithm and lay out its implementation in the `cmpsR` package.
@@ -1503,9 +1505,9 @@ Dear Professor Di Cook,
 
 In our submission An Open-Source Implementation of the CMPS Algorithm for Assessing Similarity of Bullets to the R Journal, we introduce the R package cmpsR, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm first described by Chen et al (2019). The CMPS algorithm is used for objective comparison of striated tool marks, and in our case, we apply the cmpsR implementation to bullet signatures extracted from 3D scans of bullet land engravings. The usage of the cmpsR implementation is discussed in our paper, but it is not our main focus: instead, we focus on the challenges of reproducing, evaluating, and making comparisons of the algorithmic results.
 
-We are highlighting the need for a principled evaluation framework in order to compare algorithmic results generated from various parameter settings and different models. Our discussion of this framework demonstrates the importance of an open-source implementation in effectively conducting further research. 
+We are highlighting the need for a principled evaluation framework in order to compare algorithmic results generated from various parameter settings and different models. Our discussion of this framework demonstrates the importance of an open-source implementation to effectively conduct further research. 
 
-In this paper, we proposed new metrics based on CMPS scores to assure that the results of the CMPS algorithm are comparable to other existing methods; we developed a new method to quantify the effects of an algorithm on the bullet data, suggesting a principled evaluation framework; we make the cmpsR package open-source and all code and intermediate data used in the paper available to the public, acknowledging the components needed for computational reproducibility. As a result, we think the paper extends well beyond the cmpsR package vignette, providing useful methodologies to anyone interested in assessments and comparisons of algorithmic results.
+In this paper, we proposed new metrics based on CMPS scores to assure that the results of the CMPS algorithm are comparable to other existing methods; we developed a new method to quantify the effects of an algorithm on the bullet data, suggesting a principled evaluation framework; we make the cmpsR package open-source and all code and intermediate data used in the paper available to the public, acknowledging the components needed for computational reproducibility. As a result, we think the paper extends well beyond the cmpsR package vignette, providing useful methodology to anyone interested in assessments and comparisons of algorithmic results.
 
 Thank you for your consideration,
 
