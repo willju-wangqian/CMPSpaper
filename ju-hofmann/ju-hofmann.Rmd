@@ -38,7 +38,7 @@ abstract: >
 preamble: |
   % Any extra LaTeX you need in the preamble
   
-bibliography: CMPSpaper-writing.bib
+bibliography: ju-hofmann.bib
 output: rticles::rjournal_article
 editor_options: 
   chunk_output_type: console
@@ -118,7 +118,7 @@ codefigChunkHook <- function(x, options) {
     paste("\\vspace{1em}
 \\end{minipage}
 \\begin{minipage}{.59\\textwidth}",
-    paste0("\\includegraphics[width=\\textwidth]{CMPSpaper_writing_files/figure-latex/",
+    paste0("\\includegraphics[width=\\textwidth]{ju-hofmann_files/figure-latex/",
                  options[["label"]], "-1.pdf}
 \\end{minipage}
 \\end{adjustbox}"),
@@ -219,11 +219,12 @@ To allow for a human-in-the middle inspection and intervention we have provided 
 An example of the extraction process with corresponding code and parameter settings can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}. Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
 
 ```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
-knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
+# knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
+knitr::include_graphics("ju-hofmann_files/figure-latex/barrel_bullet_ps.png", dpi = 100)
 ```
 
 ```{r process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) front view of a scanned land engraved area (LEA). The selected crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
-knitr::include_graphics("img/figure1_v2.PNG", dpi = 100)
+knitr::include_graphics("ju-hofmann_files/figure-latex/figure1_v2.png", dpi = 100)
 ```
 
 **Conceptual idea of CMPS**
@@ -1503,21 +1504,6 @@ The database built and maintained by the National Institute of Standards and Tec
 What we are aiming for is an open system that is able to collect open results, compare multiple algorithms using multiple datasets, and evaluate algorithmic variation and accuracy. 
 The evaluation metric we proposed in this paper can be used to compare different algorithms or even different datasets and is a snippet of this open system. 
 But the core of this open system is the open science culture and contributions of the community.}
-
-
-## Cover Letter
-
-Dear Professor Di Cook,
-
-In our submission An Open-Source Implementation of the CMPS Algorithm for Assessing Similarity of Bullets to the R Journal, we introduce the R package cmpsR, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm first described by Chen et al (2019). The CMPS algorithm is used for objective comparison of striated tool marks, and in our case, we apply the cmpsR implementation to bullet signatures extracted from 3D scans of bullet land engravings. The usage of the cmpsR implementation is discussed in our paper, but it is not our main focus: instead, we focus on the challenges of reproducing, evaluating, and making comparisons of the algorithmic results.
-
-We are highlighting the need for a principled evaluation framework in order to compare algorithmic results generated from various parameter settings and different models. Our discussion of this framework demonstrates the importance of an open-source implementation to effectively conduct further research. 
-
-In this paper, we proposed new metrics based on CMPS scores to assure that the results of the CMPS algorithm are comparable to other existing methods; we developed a new method to quantify the effects of an algorithm on the bullet data, suggesting a principled evaluation framework; we make the cmpsR package open-source and all code and intermediate data used in the paper available to the public, acknowledging the components needed for computational reproducibility. As a result, we think the paper extends well beyond the cmpsR package vignette, providing useful methodology to anyone interested in assessments and comparisons of algorithmic results.
-
-Thank you for your consideration,
-
-Wangqian Ju and Heike Hofmann
 
 
 <!-- ### About this format and the R Journal requirements -->

@@ -1,0 +1,20 @@
+---
+title: "cover_letter"
+author: "xxx"
+date: "10/13/2021"
+output: html_document
+---
+
+## Cover Letter
+
+Dear Professor Di Cook,
+
+In our submission An Open-Source Implementation of the CMPS Algorithm for Assessing Similarity of Bullets to the R Journal, we introduce the R package cmpsR, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm first described by Chen et al (2019). The CMPS algorithm is used for objective comparison of striated tool marks, and in our case, we apply the cmpsR implementation to bullet signatures extracted from 3D scans of bullet land engravings. The usage of the cmpsR implementation is discussed in our paper, but it is not our main focus: instead, we focus on the challenges of reproducing, evaluating, and making comparisons of the algorithmic results.
+
+We are highlighting the need for a principled evaluation framework in order to compare algorithmic results generated from various parameter settings and different models. Our discussion of this framework demonstrates the importance of an open-source implementation to effectively conduct further research. 
+
+In this paper, we proposed new metrics based on CMPS scores to assure that the results of the CMPS algorithm are comparable to other existing methods; we developed a new method to quantify the effects of an algorithm on the bullet data, suggesting a principled evaluation framework; we make the cmpsR package open-source and all code and intermediate data used in the paper available to the public, acknowledging the components needed for computational reproducibility. As a result, we think the paper extends well beyond the cmpsR package vignette, providing useful methodology to anyone interested in assessments and comparisons of algorithmic results.
+
+Thank you for your consideration,
+
+Wangqian Ju and Heike Hofmann

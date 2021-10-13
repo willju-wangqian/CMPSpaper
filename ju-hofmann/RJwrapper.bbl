@@ -1,0 +1,145 @@
+\begin{thebibliography}{18}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{AFTE Criteria for Identification Committee}(1992)]{afte}
+{AFTE Criteria for Identification Committee}.
+\newblock Theory of identification, range striae comparison reports and
+  modified glossary definitions.
+\newblock \emph{AFTE Journal}, 24\penalty0 (3):\penalty0 336--340, 1992.
+
+\bibitem[Brundage(1998)]{brundage}
+D.~Brundage.
+\newblock {The Identification of Consecutively Rifled Gun Barrels}.
+\newblock \emph{AFTE Journal}, 30\penalty0 (3):\penalty0 438--444, 1998.
+
+\bibitem[Chang et~al.(2021)Chang, Cheng, Allaire, Sievert, Schloerke, Xie,
+  Allen, McPherson, Dipert, and Borges]{shiny}
+W.~Chang, J.~Cheng, J.~Allaire, C.~Sievert, B.~Schloerke, Y.~Xie, J.~Allen,
+  J.~McPherson, A.~Dipert, and B.~Borges.
+\newblock \emph{{shiny: Web Application Framework for R}}, 2021.
+\newblock URL \url{https://CRAN.R-project.org/package=shiny}.
+\newblock R package version 1.6.0.
+
+\bibitem[Chen et~al.(2019)Chen, Chu, Soons, Thompson, Song, and Zhao]{cmps}
+Z.~Chen, W.~Chu, J.~A. Soons, R.~M. Thompson, J.~Song, and X.~Zhao.
+\newblock {Fired bullet signature correlation using the Congruent Matching
+  Profile Segments (CMPS) method}.
+\newblock \emph{Forensic Science International}, 305:\penalty0 Article 109964,
+  (10 pages), 2019.
+\newblock ISSN 0379-0738.
+\newblock \doi{\url{https://doi.org/10.1016/j.forsciint.2019.109964}}.
+\newblock URL
+  \url{https://www.sciencedirect.com/science/article/pii/S0379073819303767}.
+
+\bibitem[Chumbley et~al.(2010)Chumbley, Morris, Kreiser, Fisher, Craft, Genalo,
+  Davis, Faden, and Kidd]{ChumbleyL_Scott2010VoTM}
+L.~S. Chumbley, M.~D. Morris, M.~J. Kreiser, C.~Fisher, J.~Craft, L.~J. Genalo,
+  S.~Davis, D.~Faden, and J.~Kidd.
+\newblock Validation of tool mark comparisons obtained using a quantitative,
+  comparative, statistical algorithm: Validation of tool mark comparisons.
+\newblock \emph{Journal of forensic sciences}, 55\penalty0 (4):\penalty0
+  953--961, 2010.
+\newblock ISSN 0022-1198.
+\newblock \doi{https://doi.org/10.1111/j.1556-4029.2010.01424.x}.
+
+\bibitem[Cleveland et~al.(1991)Cleveland, Grosse, and Shyu]{loess}
+W.~S. Cleveland, E.~Grosse, and W.~M. Shyu.
+\newblock Local regression models.
+\newblock In J.~M. Chambers and T.~J. Hastie, editors, \emph{Statistical Models
+  in S}, chapter~8, pages 309--376. Chapman and Hall/CRC, Boca Raton, Florida,
+  1991.
+
+\bibitem[{Committee on Identifying the Needs of the Forensic Sciences of the
+  National Research Council}(2009)]{nrc}
+{Committee on Identifying the Needs of the Forensic Sciences of the National
+  Research Council}.
+\newblock {Strengthening Forensic Science in the United States: A Path
+  Forward}.
+\newblock \url{https://www.ncjrs.gov/pdffiles1/nij/grants/228091.pdf}, 2009.
+
+\bibitem[Hamby et~al.(2009)Hamby, Brundage, and Thorpe]{hamby}
+J.~E. Hamby, D.~J. Brundage, and J.~W. Thorpe.
+\newblock {The Identification of Bullets Fired from 10 Consecutively Rifled 9mm
+  Ruger Pistol Barrels: A Research Project Involving 507 Participants from 20
+  Countries}.
+\newblock \emph{AFTE Journal}, 41\penalty0 (2):\penalty0 99--110, 2009.
+
+\bibitem[Hamby et~al.(2019)Hamby, Brundage, Petraco, and Thorpe]{Hamby:2019}
+J.~E. Hamby, D.~J. Brundage, N.~D.~K. Petraco, and J.~W. Thorpe.
+\newblock A {Worldwide} {Study} of {Bullets} {Fired} {From} 10 {Consecutively}
+  {Rifled} {9MM} {RUGER} {Pistol} {Barrels}—{Analysis} of {Examiner} {Error}
+  {Rate}.
+\newblock \emph{Journal of Forensic Sciences}, 64\penalty0 (2):\penalty0
+  551--557, 2019.
+\newblock ISSN 1556-4029.
+\newblock \doi{10.1111/1556-4029.13916}.
+
+\bibitem[Hare et~al.(2017)Hare, Hofmann, and Carriquiry]{aoas}
+E.~Hare, H.~Hofmann, and A.~Carriquiry.
+\newblock Automatic matching of bullet land impressions.
+\newblock \emph{Ann. Appl. Stat.}, 11\penalty0 (4):\penalty0 2332--2356, 12
+  2017.
+\newblock \doi{10.1214/17-AOAS1080}.
+
+\bibitem[Hofmann et~al.(2019)Hofmann, Vanderplas, and Krishnan]{bulletxtrctr}
+H.~Hofmann, S.~Vanderplas, and G.~Krishnan.
+\newblock \emph{bulletxtrctr: Automatic Matching of Bullet Striae}, 2019.
+\newblock URL \url{https://heike.github.io/bulletxtrctr/}.
+\newblock R package version 0.2.0.
+
+\bibitem[Hofmann et~al.(2020)Hofmann, Vanderplas, Krishnan, and Hare]{x3ptools}
+H.~Hofmann, S.~Vanderplas, G.~Krishnan, and E.~Hare.
+\newblock \emph{{x3ptools: Tools for Working with 3D Surface Measurements}},
+  2020.
+\newblock URL \url{https://github.com/heike/x3ptools}.
+\newblock {R package version 0.0.3}.
+
+\bibitem[Krishnan and Hofmann(2019)]{pmid30444940}
+G.~Krishnan and H.~Hofmann.
+\newblock {{A}dapting the {C}humbley {S}core to {M}atch {S}triae on {L}and
+  {E}ngraved {A}reas ({L}{E}{A}s) of {B}ullets}.
+\newblock \emph{J Forensic Sci}, 64\penalty0 (3):\penalty0 728--740, May 2019.
+
+\bibitem[{President's Council of Advisors on Science and
+  Technology}(2016)]{pcast}
+{President's Council of Advisors on Science and Technology}.
+\newblock Report on forensic science in criminal courts: Ensuring scientific
+  validity of feature-comparison methods.
+\newblock
+  \url{https://obamawhitehouse.archives.gov/sites/default/files/microsites/ostp/PCAST/pcast_forensic_science_report_final.pdf},
+  2016.
+
+\bibitem[{R Core Team}(2012)]{R}
+{R Core Team}.
+\newblock \emph{R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria, 2012.
+\newblock URL \url{http://www.R-project.org/}.
+\newblock {ISBN} 3-900051-07-0.
+
+\bibitem[Song et~al.(2005)Song, Ma, Whitenton, and Vorburger]{song2005}
+J.~Song, L.~Ma, E.~Whitenton, and T.~Vorburger.
+\newblock 2d and 3d surface texture comparisons using autocorrelation
+  functions.
+\newblock In \emph{Measurement Technology and Intelligent Instruments VI},
+  volume 295 of \emph{Key Engineering Materials}, pages 437--440. Trans Tech
+  Publications Ltd, 8 2005.
+\newblock \doi{10.4028/www.scientific.net/KEM.295-296.437}.
+
+\bibitem[{United States Department of Justice, Federal Bureau of
+  Investigation.}()]{fbiucr}
+{United States Department of Justice, Federal Bureau of Investigation.}
+\newblock {Crime in the United States, 2019}.
+\newblock URL
+  \url{https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/tables/expanded-homicide-data-table-8.xls}.
+\newblock {Expanded Homicide Data Table 8}.
+
+\bibitem[Zheng(2016)]{nistdb}
+X.~A. Zheng.
+\newblock {NIST Ballistics Toolmark Research Database (NBTRB)}, 2016.
+\newblock URL \url{https://tsapps.nist.gov/NRBTD}.
+
+\end{thebibliography}
