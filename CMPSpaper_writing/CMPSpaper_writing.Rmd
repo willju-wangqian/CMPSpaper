@@ -190,7 +190,7 @@ Firearms examiners use striation marks on land engraved areas (LEAs) for their v
 For algorithmic purposes, 3D topographical images of land engraved areas were obtained and stored in x3p format (XML 3-D Surface Profile).
 The x3p format provides a standard way of exchanging 2D and 3D profile data.
 It conforms to the ISO5436-2 standard [<http://sourceforge.net/p/open-gps/mwiki/X3p/>] adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science.
-Hamby set 252 were scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel.
+Hamby set 252 was scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel.
 Hamby set 44 was scanned at the Roy J Carver High-Resolution microscopy lab at Iowa State.
 These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu m per pixel.
 Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
@@ -198,8 +198,7 @@ Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistic
 **Extracting signatures from LEA scans**
 <!-- ### Extracting signatures from LEA scans -->
 
-The automated framework used in this paper was proposed by @aoas.
-In order to obtain bullet signatures from the x3p files of bullet land engravings, we use the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr].
+The automated framework for extracting signatures from x3p files used in this paper was proposed by @aoas and is implemented in the `R` packages `x3ptools` [@x3ptools] and `bulletxtrctr` [@bulletxtrctr].
 `x3ptools` is a package to read, write, and generally, process x3p files.
 The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.
 
