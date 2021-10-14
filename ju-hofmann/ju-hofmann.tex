@@ -35,7 +35,7 @@ In this paper we present an open-source implementation of the algorithm
 of the Congruent Matching Profile Segments (CMPS) method. \citet{cmps}
 developed the CMPS method for ``objective comparison of striated tool
 marks'' and demonstrated its use in some examples of comparing bullet
-signature correlations. Although \citet{cmps} conceptually described the
+signature correlations. Although \citet{cmps} conceptually describe the
 CMPS algorithm in their paper, the authors did not release an
 implementation of their method. Thus, our effort here is to introduce
 the CMPS method to the \texttt{R} \citep{R} community and provide an
@@ -61,9 +61,9 @@ propelled through the barrel. Current state of art sees firearms
 examiners make an assessment of similarity based on a visual comparison,
 generally, using a comparison microscope \citep{afte}. This practice has
 been criticized for its lack of objectivity and the associated problem
-in calculating an error rate \citep{pcast}.
+of determining valid error rates \citep{pcast}.
 
-A report published by \citet{nrc} states that ``{[}m{]}uch forensic
+A report published by the \citet{nrc} states that ``{[}m{]}uch forensic
 evidence-including, for example, bite marks and firearm and toolmark
 identification---is introduced in criminal trials without any meaningful
 scientific validation, determination of error rates, or reliability
@@ -71,6 +71,7 @@ testing to explain the limits of the discipline.'' To overcome those
 criticisms and concerns, researchers have been making an effort to build
 databases and develop frameworks and algorithms that bring an objective
 and quantitative assessment into the field
+\hh{XXX could you summarize the main contribution of each of these papers in at most a sentence?}
 \citetext{\citealp[\citet{brundage}, \citet{hamby}, \citet{Hamby:2019},
 \citet{song2005}, \citet{ChumbleyL_Scott2010VoTM}, \citet{aoas},
 \citet{pmid30444940}]{nistdb}; \citealp{cmps}}. Note that this is not an
@@ -113,25 +114,25 @@ profile data. It conforms to the ISO5436-2 standard
 {[}\url{http://sourceforge.net/p/open-gps/mwiki/X3p/}{]} adopted by the
 OpenFMC (Open Forensic Metrology Consortium), a group of firearm
 forensics researchers who contributes to the establishment of best
-practices of using metrology in forensic science. Hamby set 252 were
+practices of using metrology in forensic science. Hamby set 252 was
 scanned using a NanoFocus lens at 20x magnification with the scan
 resolution being 1.5625 \textmu m \(\times\) 1.5625 \textmu m per pixel.
 Hamby set 44 was scanned at the Roy J Carver High-Resolution microscopy
 lab at Iowa State. These scans were acquired with a Sensofar Confocal
 Light Microscope at 20x magnification for a nominal resolution of 0.645
 \textmu m \(\times\) 0.645 \textmu m per pixel. Both Hamby set 252 and
-Hamby set 44 are publicly available on the NIST Ballistics Database
+Hamby set 44 are publicly available from the NIST Ballistics Database
 Project \citep{nistdb}.
 
 \textbf{Extracting signatures from LEA scans}
 
-The automated framework used in this paper was proposed by \citet{aoas}.
-In order to obtain bullet signatures from the x3p files of bullet land
-engravings, we use the \texttt{R} packages \pkg{x3ptools}
-\citep{x3ptools} and \pkg{bulletxtrctr} \citep{bulletxtrctr}.
-\pkg{x3ptools} is a package to read, write, and generally, process x3p
-files. The \pkg{bulletxtrctr} package implements a pipeline for
-extracting and comparing signatures from scans of land-engraved areas.
+The automated framework for extracting signatures from x3p files used in
+this paper was proposed by \citet{aoas} and is implemented in the
+\texttt{R} packages \pkg{x3ptools} \citep{x3ptools} and
+\pkg{bulletxtrctr} \citep{bulletxtrctr}. \pkg{x3ptools} is a package to
+read, write, and generally, process x3p files. The \pkg{bulletxtrctr}
+package implements a pipeline for extracting and comparing signatures
+from scans of land-engraved areas.
 
 \autoref{fig:process} gives an overview of all of the steps in the
 process from scan to signatures. \autoref{fig:process}(a) shows a
@@ -142,11 +143,11 @@ land-engraved area (LEA) with well expressed striation marks. The first
 step of obtaining the bullet signature is to extract a cross-section at
 a fixed height along the land engraving.
 
-The white horizontal line in \autoref{fig:process}(a) indicates which
-cross-section was identified by the algorithm to represent the LEA;
-\autoref{fig:process}(b) shows the corresponding cross-sectional view.
-Groove engraved areas are removed from the analysis as indicated by the
-vertical blue lines in \autoref{fig:process}(c) and
+The thin white horizontal line in \autoref{fig:process}(a) indicates
+which cross-section was identified by the algorithm to represent the
+LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional
+view. Groove engraved areas are removed from the analysis as indicated
+by the vertical blue lines in \autoref{fig:process}(c) and
 \autoref{fig:process}(d)). A non-parametric LOESS smooth \citep{loess}
 is fitted to capture the bullet curvature (\autoref{fig:process}(e))
 and, finally, the \textbf{bullet signature} (\autoref{fig:process}(f))
@@ -186,7 +187,7 @@ made available publicly.
 
 }
 
-\caption[A framework of obtaining a bullet signature]{A framework of obtaining a bullet signature. (a) front view of a scanned land engraved area (LEA). The selected crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained}\label{fig:process}
+\caption[A framework of obtaining a bullet signature]{A framework of obtaining a bullet signature. (a) rendering from the 3d topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained}\label{fig:process}
 \end{figure}
 \end{Schunk}
 
@@ -204,23 +205,23 @@ position on the reference (the other bullet signature) with respect to
 their cross-correlation values. From a comparison of these registration
 positions, a \textbf{congruent registration position} is identified, and
 the number of basis segments taking the congruent registration position
-is the CMPS score. Note that researchers in \citet{cmps} refers to the
+is the CMPS score. Note that researchers in \citet{cmps} refer to the
 origin of basis segments as the reference, but in this paper we refer to
-it as the comparison. High CMPS scores are achieved between more similar
-signatures and are therefore indicative of a same-source pair. Low
-scores between pairs of signatures are attributed to different source
-pairs. However, a specific threshold of the CMPS score to distinguish
-between same-source and different-source comparisons is not provided in
-\citet{cmps}, instead the threshold depends on the underlying structure
-of the data and the choice of parameters.
-\hh{XXX  In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on a wished-for outcome. }
-Further research is needed to understand how to determine optimal
-threshold settings. The CMPS algorithm can assist firearm examiners with
-drawing a conclusion about the source of a comparison pair.
-Unfortunately, \citet{cmps} did not release any code or specific
-parameter settings for their implementation of the CMPS algorithm. Thus,
-in this paper we present an open-source implementation of the CMPS
-algorithm in the R package \pkg{cmpsR} available from Github
+it as the comparison signature. High CMPS scores are achieved between
+more similar signatures and are therefore indicative of a same-source
+pair. Low scores between pairs of signatures are attributed to different
+source pairs. However, a specific threshold of the CMPS score to
+distinguish between same-source and different-source comparisons is not
+provided in \citet{cmps}, instead the threshold depends on the
+underlying structure of the data and the choice of parameters. In a
+legal setting this variability is problematic because it allows for
+situations in which experts could choose parameters based on whether
+they are witnesses for the defense or the prosecution. Further research
+is needed to understand how to determine optimal threshold settings. The
+CMPS algorithm can assist firearm examiners with drawing a conclusion
+about the source of a comparison pair. Thus, in this paper we present an
+open-source implementation of the CMPS algorithm in the R package
+\pkg{cmpsR} available from Github
 \url{https://github.com/willju-wangqian/cmpsR}. This publicly available
 implementation calculates the CMPS score of a comparison using the
 following code:
@@ -253,15 +254,17 @@ results as well as the algorithm itself.
 
 The section ``Implementation'' will go through the algorithm and show
 how to use the \pkg{cmpsR} package. A further example that illustrates
-the main points is also included. The section ``Results'' presents the
-results of evaluating the \pkg{cmpsR} package using Hamby set 252 and
-Hamby set 44. The results from Hamby set 252 are used to verify that our
-implementation is, at least qualitatively, comparable to the algorithm
-described in \citet{cmps}. Results from Hamby 44 show the need for a
-further investigation of the parameter choices even in the case of
-bullets fired from the same barrels.
-\wj{We suggest new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.}
-The last section covers some final discussion and conclusions.
+the main points is also included. In the section on 'Evaluation metrics"
+we introduce new CMPS metrics that summarize land-level CMPS scores and
+a sum of squares ratio that can be used to evaluate algorithmic results.
+The section ``Results'' presents the results of evaluating the
+\pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results
+from Hamby set 252 are used to verify that our implementation is, at
+least qualitatively, comparable to the algorithm described in
+\citet{cmps}. Results from Hamby 44 show the need for a further
+investigation of the parameter choices even in the case of bullets fired
+from the same barrels. The last section covers some final discussion and
+conclusions.
 
 \hypertarget{implementation}{%
 \subsection{Implementation}\label{implementation}}
@@ -873,7 +876,7 @@ CMPS score (\(k^* = 1\)), we have
 
 }
 
-\caption[CMPS scores of all 36 pairwise bullet signature comparisons for two bullets]{CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted}\label{fig:tiles}
+\caption{CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. \hh{Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 2 in equation XXX}}\label{fig:tiles}
 \end{figure}
 \end{Schunk}
 
@@ -1269,9 +1272,9 @@ Department of Statistics\\%
 Center for Statistics and Applications in Forensic Evidence\\ Iowa State
 University\\ 2438 Osborn Dr\\ Ames, IA 50011\\
 %
-\url{https://github.com/willju-wangqian}%
-\\\textit{ORCiD: \href{https://orcid.org/0000-0002-9977-377X}{0000-0002-9977-377X}}%
-\\\href{mailto:wju@iastate.edu}{\nolinkurl{wju@iastate.edu}}
+\url{https://github.com/willju-wangqian}\\%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-9977-377X}{0000-0002-9977-377X}}\\%
+\href{mailto:wju@iastate.edu}{\nolinkurl{wju@iastate.edu}}%
 }
 
 \address{%
@@ -1280,7 +1283,7 @@ Department of Statistics\\%
 Center for Statistics and Applications in Forensic Evidence\\ Iowa State
 University\\ 2438 Osborn Dr\\ Ames, IA 50011\\
 %
-\url{https://github.com/heike}%
-\\\textit{ORCiD: \href{https://orcid.org/0000-0002-9079-593X}{0000-0002-9079-593X}}%
-\\\href{mailto:hofmann@iastate.edu}{\nolinkurl{hofmann@iastate.edu}}
+\url{https://github.com/heike}\\%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-9079-593X}{0000-0002-9079-593X}}\\%
+\href{mailto:hofmann@iastate.edu}{\nolinkurl{hofmann@iastate.edu}}%
 }

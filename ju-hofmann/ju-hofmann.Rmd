@@ -156,7 +156,7 @@ codefig = list(codefig = TRUE, fig.show = "hide",
 
 In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method.
 @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations.
-Although @cmps conceptually described the CMPS algorithm in their paper, the authors did not release an implementation of their method.
+Although @cmps conceptually describe the CMPS algorithm in their paper, the authors did not release an implementation of their method.
 Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
 Our implementation is made available as part of the `R` package \pkg{cmpsR} on GitHub at \url{https://github.com/willju-wangqian/cmpsR}.
 
@@ -166,9 +166,9 @@ An important task of firearm examination is to answer the question of whether tw
 Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel.
 Assessing the similarity between two bullets is based on a comparison of striation marks acquired during the firing process as bullets are propelled through the barrel.
 Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope [@afte].
-This practice has been criticized for its lack of objectivity and the associated problem in calculating an error rate [@pcast].
+This practice has been criticized for its lack of objectivity and the associated problem of determining valid error rates [@pcast].
 
-A report published by @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field [@nistdb, @brundage, @hamby, @Hamby:2019, @song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940; @cmps].
+A report published by the @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field \hh{XXX could you summarize the main contribution of each of these papers in at most a sentence?} [@nistdb, @brundage, @hamby, @Hamby:2019, @song2005, @ChumbleyL_Scott2010VoTM, @aoas, @pmid30444940; @cmps].
 Note that this is not an exhaustive list of these efforts.
 The notion of bullet signatures is one of the results of these efforts.
 Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section.
@@ -194,7 +194,7 @@ It conforms to the ISO5436-2 standard [<http://sourceforge.net/p/open-gps/mwiki/
 Hamby set 252 was scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel.
 Hamby set 44 was scanned at the Roy J Carver High-Resolution microscopy lab at Iowa State.
 These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu m per pixel.
-Both Hamby set 252 and Hamby set 44 are publicly available on the NIST Ballistics Database Project [@nistdb].
+Both Hamby set 252 and Hamby set 44 are publicly available from the NIST Ballistics Database Project [@nistdb].
 
 **Extracting signatures from LEA scans**
 <!-- ### Extracting signatures from LEA scans -->
@@ -208,7 +208,7 @@ The \pkg{bulletxtrctr} package implements a pipeline for extracting and comparin
 The raised portion of the surface on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs), the middle area shows a land-engraved area (LEA) with well expressed striation marks.
 The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land engraving.
 
-The white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view.
+The thin white horizontal line in \autoref{fig:process}(a) indicates which cross-section was identified by the algorithm to represent the LEA; \autoref{fig:process}(b) shows the corresponding cross-sectional view.
 Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in \autoref{fig:process}(c) and \autoref{fig:process}(d)).
 A non-parametric LOESS smooth [@loess] is fitted to capture the bullet curvature (\autoref{fig:process}(e)) and, finally, the **bullet signature** (\autoref{fig:process}(f)) is obtained as residuals of the cross-section and the fitted smooth.
 Note, that in @cmps bullet signatures are referred to as bullet profiles.
@@ -223,7 +223,7 @@ An example of the extraction process with corresponding code and parameter setti
 knitr::include_graphics("ju-hofmann_files/figure-latex/barrel_bullet_ps.png", dpi = 100)
 ```
 
-```{r process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) front view of a scanned land engraved area (LEA). The selected crosscut location is indicated by the white line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
+```{r process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) rendering from the 3d topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
 knitr::include_graphics("ju-hofmann_files/figure-latex/figure1_v2.png", dpi = 100)
 ```
 
@@ -234,13 +234,13 @@ Most algorithms for comparing striation marks are based on the digitized signatu
 The congruent matching profile segments (CMPS) algorithm, developed by @cmps for "objective comparison of striated tool marks", is one such algorithm.
 The algorithm's main idea is to take a set of consecutive and non-overlapping basis segments from the comparison and for each segment find the "best" registration position on the reference (the other bullet signature) with respect to their cross-correlation values.
 From a comparison of these registration positions, a **congruent registration position** is identified, and the number of basis segments taking the congruent registration position is the CMPS score.
-Note that researchers in @cmps refers to the origin of basis segments as the reference, but in this paper we refer to it as the comparison.
+Note that researchers in @cmps refer to the origin of basis segments as the reference, but in this paper we refer to it as the comparison signature.
 High CMPS scores are achieved between more similar signatures and are therefore indicative of a same-source pair.
 Low scores between pairs of signatures are attributed to different source pairs.
-However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not provided in @cmps, instead the threshold depends on the underlying structure of the data and the choice of parameters. \hh{XXX  In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on a wished-for outcome. }
+However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not provided in @cmps, instead the threshold depends on the underlying structure of the data and the choice of parameters.   In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on whether they are witnesses for the defense or the prosecution. 
 Further research is needed to understand how to determine optimal threshold settings.
 The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair.
-Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm.
+<!--Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm.-->
 Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from Github \url{https://github.com/willju-wangqian/cmpsR}. This publicly available implementation calculates the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
@@ -264,7 +264,8 @@ We also implemented graphing tools for users to better understand these results 
 
 The section "Implementation" will go through the algorithm and show how to use the \pkg{cmpsR} package. 
 A further example that illustrates the main points is also included.
-The section "Results" presents the results of evaluating the \pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results from Hamby set 252 are used to verify that our implementation is, at least qualitatively, comparable to the algorithm described in @cmps. Results from Hamby 44 show the need for a further investigation of the parameter choices even in the case of bullets fired from the same barrels. \wj{We suggest new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.}
+In the section on 'Evaluation metrics" we introduce new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.
+The section "Results" presents the results of evaluating the \pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results from Hamby set 252 are used to verify that our implementation is, at least qualitatively, comparable to the algorithm described in @cmps. Results from Hamby 44 show the need for a further investigation of the parameter choices even in the case of bullets fired from the same barrels. 
 <!-- \hh{We suggest a sum of square ratio ...} -->
 The last section covers some final discussion and conclusions.
 
@@ -596,7 +597,7 @@ $$
 \end{aligned}
 $$
 
-```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted", out.width=".7\\textwidth", fig.align="center"}
+```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. \\hh{Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 2 in equation XXX}", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
@@ -1097,7 +1098,7 @@ result.container <- result.container %>% as_tibble() %>%
 
 
 As presented in the work of @cmps, researchers applied the CMPS method to scans of one of the Hamby sets.
-While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time.
+While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time. \hh{XXX Let's take out this statement once we hear back from NIST}
 In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44.
 For the purpose of reproducibility, we present how we obtained bullet signatures from the Hamby set data and include code in the appendix: for both Hamby 252 and Hamby 44, we started with scans in the form of x3p files in the database.
 Following the framework proposed by @aoas, we used the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures.
@@ -1480,7 +1481,8 @@ The code generating all results of this manuscript can be found on Github at \ur
 
 ## Conclusion
 
-\hh{XXX Will, the conclusion needs to be a bit more than just a summary of what we did in the paper - think of it as a summary plus either the limitations of our approach, or next steps that should be done but goes beyond this paper.}
+\hh{XXX Additional line for the conclusion: Hamby sets 44 and 252 were taken with different resolution scanning devices. The bullets for Hamby 44 and Hamby 252 are fired from the same ten consecutively rifled P-85 Ruger barrels. The difference in parameter settings is therefore quite surprising. As next steps we need validation studies - trying out the CMPS algorithm on firearms and ammunition combinations that are different to test the limits of the algorithm. XXX shoutout to Susan's paper? - will look up the reference }
+
 
 In this paper we present the \pkg{cmpsR} package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
