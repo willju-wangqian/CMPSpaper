@@ -1383,10 +1383,11 @@ p.npeak_plot <- table.cmps_neapk.long %>%
 
 p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max", 
                          subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
-  xlab(labels[3])
+  xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
   xlab(labels[4])
+
 p.result1_252 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
 p.result1_252 <- annotate_figure(p.result1_252, top = text_grob(com.title252))
@@ -1417,7 +1418,7 @@ This might suggest that we could enlarge the separation in terms of the sum of s
 ```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3, warning=FALSE}
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
-  xlab(labels[3])
+  xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
   xlab(labels[4])
@@ -1506,6 +1507,41 @@ The database built and maintained by the National Institute of Standards and Tec
 What we are aiming for is an open system that is able to collect open results, compare multiple algorithms using multiple datasets, and evaluate algorithmic variation and accuracy. 
 The evaluation metric we proposed in this paper can be used to compare different algorithms or even different datasets and is a snippet of this open system. 
 But the core of this open system is the open science culture and contributions of the community.}
+
+
+<!-- ```{r plot_thisisus} -->
+<!-- rf.252.plot <- metric_plot_helper(rf.results[[1]], "rf.diff", scaled = TRUE, -->
+<!--                                   subtitle = "random forest scores with metric diff") + -->
+<!--   xlab(expression(RF[diff])) + -->
+<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+<!-- cmps.252.plot <- metric_plot_helper(CMPS_hamby252_results_npeak$cmps.table[[8]], "cmps.diff_scaled",  -->
+<!--                                     scaled = TRUE, subtitle = "CMPS, 10-8-6-4-2-1, 50") + -->
+<!--   xlab(labels[3]) + -->
+<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+
+<!-- rf.44.plot <- metric_plot_helper(rf.results[[2]], "rf.diff", scaled = TRUE, -->
+<!--                                   subtitle = "random forest scores with metric diff") + -->
+<!--   xlab(expression(RF[diff])) + -->
+<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+<!-- cmps.44.plot <- metric_plot_helper(CMPS_hamby44_results_npeak$cmps.table[[6]], "cmps.diff_scaled",  -->
+<!--                                     scaled = TRUE, subtitle = "CMPS, 10-7-4-2, 61") + -->
+<!--   xlab(labels[3]) + -->
+<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+
+<!-- p.thisisus252 <- ggarrange(plotlist = list(cmps.252.plot, rf.252.plot), nrow = 1, ncol = 2, -->
+<!--                common.legend = TRUE, legend = "bottom") -->
+<!-- p.thisisus252 <-  -->
+<!--   annotate_figure(p.thisisus252,  -->
+<!--                   top = text_grob("Hamby 252 - Random Forest and CMPS")) -->
+
+
+<!-- p.thisisus44 <- ggarrange(plotlist = list(cmps.44.plot, rf.44.plot), nrow = 1, ncol = 2, -->
+<!--                common.legend = TRUE, legend = "bottom") -->
+<!-- p.thisisus44 <-  -->
+<!--   annotate_figure(p.thisisus44,  -->
+<!--                   top = text_grob("Hamby 44 - Random Forest and CMPS")) -->
+
+<!-- ``` -->
 
 
 <!-- ### About this format and the R Journal requirements -->
