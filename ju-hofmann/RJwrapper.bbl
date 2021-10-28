@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -136,6 +136,16 @@ J.~Song, L.~Ma, E.~Whitenton, and T.~Vorburger.
 \newblock URL
   \url{https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/tables/expanded-homicide-data-table-8.xls}.
 \newblock {Expanded Homicide Data Table 8}.
+
+\bibitem[Vanderplas et~al.(2020)Vanderplas, Nally, Klep, Cadevall, and
+  Hofmann]{vanderplas}
+S.~Vanderplas, M.~Nally, T.~Klep, C.~Cadevall, and H.~Hofmann.
+\newblock Comparison of three similarity scores for bullet lea matching.
+\newblock \emph{Forensic Science International}, 308:\penalty0 110167, 2020.
+\newblock ISSN 0379-0738.
+\newblock \doi{https://doi.org/10.1016/j.forsciint.2020.110167}.
+\newblock URL
+  \url{https://www.sciencedirect.com/science/article/pii/S0379073820300293}.
 
 \bibitem[Zheng(2016)]{nistdb}
 X.~A. Zheng.

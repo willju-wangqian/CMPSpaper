@@ -943,10 +943,11 @@ p.npeak_plot <- table.cmps_neapk.long %>%
 
 p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max", 
                          subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
-  xlab(labels[3])
+  xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
   xlab(labels[4])
+
 p.result1_252 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
                common.legend = TRUE, legend = "bottom")
 p.result1_252 <- annotate_figure(p.result1_252, top = text_grob(com.title252))
@@ -966,7 +967,7 @@ p.result1_252
 ## ----result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3, warning=FALSE----
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
-  xlab(labels[3])
+  xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
                          subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
   xlab(labels[4])

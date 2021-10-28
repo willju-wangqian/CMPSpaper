@@ -164,7 +164,7 @@ Our implementation is made available as part of the `R` package \pkg{cmpsR} on G
 <!-- \hh{XXX the new data for 2020 came out on Sep 27 - homicides are up by close to 30%. We might want to mention that.} -->
 <!-- https://s3-us-gov-west-1.amazonaws.com/cg-d4b776d0-d898-4153-90c8-8336f86bdfec/CIUS/downloads/2020/expanded-homicide-2020.zip -->
 <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} --> <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide --> 
-\wj{According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 76 percent (76.7) of the homicides for which the FBI received weapons data in 2020 involved the use of firearms", and the number of cases that involved the use of firearms in 2020 increased by close to 30 percent (29.3) compared to that in 2019 [@fbiucr]. Firearm examination could play an important role in all these cases. }
+According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 76 percent (76.7) of the homicides for which the FBI received weapons data in 2020 \hh{is this really 2020 or should it be 2019?}involved the use of firearms", and the number of cases that involved the use of firearms in 2020 increased by close to 30 percent (29.3) compared to that in 2019 [@fbiucr]. Firearm examination could play an important role in all these cases. 
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm.
 Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel.
 Assessing the similarity between two bullets is based on a comparison of striation marks acquired during the firing process as bullets are propelled through the barrel.
@@ -173,11 +173,11 @@ This practice has been criticized for its lack of objectivity and the associated
 
 <!-- \hh{XXX could you summarize the main contribution of each of these papers in at most a sentence?} -->
 A report published by the @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field.
-\wj{The database} of @nistdb and data sets of @brundage, @hamby, @Hamby:2019 provide great open data resources for research. Algorithms that can be validated and tested and generate quantitative results are developed for 2D and 3D surface texture [@song2005], tool marks [@ChumbleyL_Scott2010VoTM], and striae on Land Engraved Areas (LEAs) of bullets [@aoas, @pmid30444940, @cmps]. 
-Note that this is not an exhaustive list of these efforts.
-\wj{The notion of bullet signatures is one of the results of these efforts, and we will use it to explain the CMPS algorithm and showcase} the \pkg{cmpsR} implementation.
+The database of @nistdb with digital 3d topographic scans from various studies by @brundage, @hamby, @Hamby:2019 and others, provides a great resource for researchers. Algorithms that can be validated and tested and generate quantitative results are developed for 2D and 3D surface texture [@song2005], tool marks [@ChumbleyL_Scott2010VoTM], and striae on Land Engraved Areas (LEAs) of bullets [@aoas, @pmid30444940, @cmps]. 
+<!--Note that this is not an exhaustive list of these efforts.-->
+The notion of bullet signatures is one of the results of these efforts, and we will use it to explain the CMPS algorithm and showcase the \pkg{cmpsR} implementation.
 Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section.
-Since bullet signatures can numerically describe the striation marks on the bullet and can be understood by algorithms, they played an important role in bringing objectivity into the field.
+Bullet signatures capture striation marks on the bullet in a numeric format and therefore serve as the foundation for algorithms. These scans played an important role in bringing objectivity into the field.
 In the following sections we will: review the background of bullet signature comparisons, discuss how we followed the idea described by @cmps for the implementation of the CMPS algorithm, propose new metrics based on the CMPS score and a principled evaluation framework for algorithmic results comparison,  and present results of applying our implementation to real data.
 
 ## Background
@@ -710,7 +710,7 @@ If we impose the normality and independence assumptions on the random effects $e
 If we want to compare different data sets, stating that a certain setup can achieve better separation on one data set than another, we can scale the sum of squares ratio $V$ and obtain the F-statistic and obtain the corresponding p-value as an index for comparison.
 
 Using the sum of squares ratio $V$ as an evaluation metric, we are able to construct a pipeline that aims to find the optimal parameter values for the CMPS algorithm by maximizing the sum of squares ratio.
-\wj{Note that other measures of an algorithm, such as the accuracy and the AUC (Area Under the Curve), are also important and useful. But when algorithms achieve 100 percent accuracy and AUC of value 1, we need another measure like the sum of squares ratio to further distinguish the performance of algorithms.} In the following section, we will use the sum of squares ratio to compare the CMPS metrics introduced earlier and investigate effects of different parameter settings.
+Note that other measures of an algorithm, such as the accuracy and the AUC (Area Under the Curve), are also important and useful. But when algorithms achieve 100 percent accuracy and AUC value of 1, we need other measures such as the sum of squares ratio to further distinguish the performance of algorithms. In the following section, we will use the sum of squares ratio to compare the CMPS metrics introduced earlier and investigate effects of different parameter settings.
 
 ## Results
 
@@ -1487,35 +1487,32 @@ The code generating all results of this manuscript can be found on Github at \ur
 
 ## Conclusion
 
-\hh{XXX Additional line for the conclusion: Hamby sets 44 and 252 were taken with different resolution scanning devices. The bullets for Hamby 44 and Hamby 252 are fired from the same ten consecutively rifled P-85 Ruger barrels. The difference in parameter settings is therefore quite surprising. As next steps we need validation studies - trying out the CMPS algorithm on firearms and ammunition combinations that are different to test the limits of the algorithm. XXX shoutout to Susan's paper? - will look up the reference }
-
-
 In this paper we present the \pkg{cmpsR} package, an open-source implementation of the Congruent Matching Profile Segments (CMPS) algorithm [@cmps], and apply it to two datasets in Hamby study [@hamby] to show its potential for further research.
 The CMPS algorithm was proposed by NIST in 2019 and was made for objective tool marks comparisons.
 We introduce the basic logic of the CMPS algorithm and lay out its implementation in the \pkg{cmpsR} package.
 We also showcase the functionality of the \pkg{cmpsR} package with a small dataset example that is included in the package.
 In the \pkg{cmpsR} package we implement some graphing tools for users to visualize results and to gain a better understanding of both the algorithm and the results.
 
-\wj{Additionally, we propose new metrics based on the CMPS scores and compare the new metrics with the existing metrics. 
+Additionally, we propose two new metrics based on the CMPS scores and compare the new metrics with the existing metrics. 
 We also introduce a principled evaluation framework of algorithmic results using  a measure based on the sum of squares ratio. 
-We showcase the implementation with two datasets in Hamby study (Hamby set 252 and Hamby set 44) and compare the CMPS algorithm using different sets of parameters and different metrics, following the evaluation framework based on the sum of squares ratio. }
+We showcase the implementation with two datasets in Hamby study (Hamby set 252 and Hamby set 44) and compare the CMPS algorithm using different sets of parameters and different metrics, following the evaluation framework based on the sum of squares ratio. 
 <!-- Additionally, we apply the \pkg{cmpsR} package to two datasets in Hamby study (Hamby set 252 and Hamby set 44).  -->
 The results obtained are promising:  we were both able to reproduce the results in @cmps qualitatively and achieve a clear separation between the known match (KM) comparisons and known non-match (KNM) comparisons in another bullet study.
-\wj{However, the comparisons among different sets of parameters suggest that the optimal choice for parameter settings vary between different datasets.} 
+However, the comparisons among different sets of parameters suggest that the optimal choice for parameter settings vary between different datasets.
 
-\wj{Note that Hamby sets 44 and 252 were taken with different resolution scanning devices. The bullets for Hamby 44 and Hamby 252 are fired from the same ten consecutively rifled P-85 Ruger barrels. The difference in parameter settings is therefore quite surprising. As next steps we need validation studies - trying out the CMPS algorithm on firearms and ammunition combinations that are different to test the limits of the algorithm. The evaluation framework we proposed based on the sum of squares ratio will facilitate such studies and other validation of the algorithm.}
+Note, that the main difference between Hamby sets 44 and 252 is that they were taken with different resolution scanning devices. The bullets for Hamby 44 and Hamby 252 are fired from the same ten consecutively rifled P-85 Ruger barrels. The difference in parameter settings for optimal differentiation between same-source comparisons and different-source comparisons is therefore quite surprising. As next steps we need validation studies, similar to @vanderplas - trying out the CMPS algorithm on firearms and ammunition combinations that are different to test the limits of the algorithm. The evaluation framework we proposed based on the sum of squares ratio will facilitate such studies and other validation of the algorithm.
 
-\wj{Comparisons of the R implementation of the CMPS algorithm with the random forest model proposed by @aoas  suggest that adding the CMPS score as an additional feature in the random forest model might add further separation between known match (KM) comparisons and known non-match (KNM) comparisons.}
+Comparisons of the R implementation of the CMPS algorithm with the random forest model proposed by @aoas  suggest that adding the CMPS score as an additional feature in the random forest model might add further separation between known match (KM) comparisons and known non-match (KNM) comparisons.
 
 
-\wj{The open-source implementation of the CMPS algorithm provided by the \pkg{cmpsR} package is just one step towards in the framework of open science. Open science is particularly important to fields like forensic science where transparency and accuracy are critical to fair justice. 
+The open-source implementation of the CMPS algorithm provided by the \pkg{cmpsR} package is just one step towards in the framework of open science. Open science is particularly important to fields like forensic science where transparency and accuracy are critical to fair justice. 
 Open-source implementations not only allow a peer-review but also facilitate further research, such as parameter cross-validations, method comparisons, and the development of statistical methods for modeling KM and KNM CMPS score distributions, which can then be used for error-rate estimations and fair applications that were called for by the PCAST [@pcast] report.
 However, having open-source implementations is not enough for open science. 
 In order to actually build the world of open science, many other efforts, such as open evaluation, open access publication, open educational resources, etc., are still needed. 
 The database built and maintained by the National Institute of Standards and Technology is a good example of open data. 
 What we are aiming for is an open system that is able to collect open results, compare multiple algorithms using multiple datasets, and evaluate algorithmic variation and accuracy. 
 The evaluation metric we proposed in this paper can be used to compare different algorithms or even different datasets and is a snippet of this open system. 
-But the core of this open system is the open science culture and contributions of the community.}
+But the core of this open system is the open science culture and contributions of the community.
 
 
 <!-- ```{r plot_thisisus} -->
