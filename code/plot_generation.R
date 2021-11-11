@@ -1,4 +1,4 @@
-library(CMPS)
+library(cmpsR)
 library(tidyverse)
 library(bulletxtrctr)
 library(x3ptools)
@@ -30,7 +30,8 @@ comparisons <- comparisons %>%
 comparisons <- comparisons %>% 
   mutate(
     cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
-    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg)
+    cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg),
+    cmps_scaled = cmps_score / cmps_nseg
   )
 
 # dframe <- comparisons %>% select(land1, land2, cmps_score)
@@ -52,8 +53,17 @@ comparisons <- comparisons %>%
     bulletA = gsub("(\\d)-\\d", "\\1", land1),
     landA = gsub("\\d-(\\d)", "\\1", land1),
     bulletB = gsub("(\\d)-\\d", "\\1", land2),
-    landB = gsub("\\d-(\\d)", "\\1", land2)
+    landB = gsub("\\d-(\\d)", "\\1", land2),
+    
   )
+
+comparisons <- comparisons %>% mutate(
+  landA = paste0("L", landA),
+  landB = paste0("L", landB),
+  landB = factor(landB, levels = paste0("L", c(2:6,1))),
+  bulletA = paste0("Bullet ", bulletA),
+  bulletB = paste0("Bullet ", bulletB)
+)
 
 comparisons %>%   
   group_by(bulletA, bulletB) %>% tidyr::nest() %>%
@@ -66,11 +76,11 @@ comparisons %>%
 
 dframe <- comparisons %>% select(-aligned, -cmps)
 
-dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_score)) + geom_tile() + 
-  scale_fill_gradient2(low = "gray80", high = "darkorange", midpoint = 6) + 
+dframe %>% ggplot(aes(x = landB, y = landA, fill = cmps_scaled)) + geom_tile() + 
+  scale_fill_gradient2(low = "gray80", high = "darkorange", midpoint = 0.4) + 
   facet_grid(bulletA ~ bulletB, labeller = "label_both") + xlab("Land B") + 
   ylab("Land A") + theme(aspect.ratio = 1) +
-  geom_text(aes(label=cmps_score)) +
+  geom_text(aes(label=round(cmps_scaled, 2))) +
   theme_bw()
 
 

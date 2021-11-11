@@ -160,20 +160,18 @@ Although @cmps conceptually describe the CMPS algorithm in their paper, the auth
 Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
 Our implementation is made available as part of the `R` package \pkg{cmpsR} on GitHub at \url{https://github.com/willju-wangqian/cmpsR}.
 
-<!-- According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 73 percent (73.7) of the homicides for which the FBI received weapons data in 2019 involved the use of firearms" [@fbiucr], and firearm examination could play an important role in all these cases.  -->
-<!-- \hh{XXX the new data for 2020 came out on Sep 27 - homicides are up by close to 30%. We might want to mention that.} -->
 <!-- https://s3-us-gov-west-1.amazonaws.com/cg-d4b776d0-d898-4153-90c8-8336f86bdfec/CIUS/downloads/2020/expanded-homicide-2020.zip -->
 <!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} --> <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide --> 
-According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 76 percent (76.7) of the homicides for which the FBI received weapons data in 2020 involved the use of firearms".  [@fbiucr] At the same time, the number of homicides jumped between 2019 and 2020 by more than \hh{XXX} percent (\hh{XXX}). This increase is unprecedented  and highlights the important role that  firearm examination plays in all these cases. 
+According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 76 percent (76.7) of the homicides for which the FBI received weapons data in 2020 involved the use of firearms" [@fbiucr]. At the same time, the number of murder victims jumped between 2019 and 2020 by more than 23 percent (23.4) to 17754 [@fbiucr20]. This increase is unprecedented  and highlights the important role that  firearm examination plays in all these cases. 
+<!-- homicides in 2019: 14391; in 2020: 17754 -->
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm.
 Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel.
 Assessing the similarity between two bullets is based on a comparison of striation marks acquired during the firing process as bullets are propelled through the barrel.
 Current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope [@afte].
 This practice has been criticized for its lack of objectivity and the associated problem of determining valid error rates [@pcast].
 
-<!-- \hh{XXX could you summarize the main contribution of each of these papers in at most a sentence?} -->
 A report published by the @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field.
-The database of @nistdb with digital 3d topographic scans from various studies by @brundage, @hamby, @Hamby:2019 and others, provides a great resource for researchers. Algorithms that can be validated and tested and generate quantitative results are developed for 2D and 3D surface texture [@song2005], tool marks [@ChumbleyL_Scott2010VoTM], and striae on Land Engraved Areas (LEAs) of bullets [@aoas, @pmid30444940, @cmps]. 
+The database of @nistdb with digital 3D topographic scans from various studies by @brundage, @hamby, @Hamby:2019 and others, provides a great resource for researchers. Algorithms that can be validated and tested and generate quantitative results are developed for 2D and 3D surface texture [@song2005], tool marks [@ChumbleyL_Scott2010VoTM], and striae on Land Engraved Areas (LEAs) of bullets [@aoas, @pmid30444940, @cmps]. 
 <!--Note that this is not an exhaustive list of these efforts.-->
 The notion of bullet signatures is one of the results of these efforts, and we will use it to explain the CMPS algorithm and showcase the \pkg{cmpsR} implementation.
 Bullet signatures can be extracted from bullet land engraved areas (LEAs), typically one for each land engraved area, and how those bullet signatures are extracted from scans will be discussed in the Background section.
@@ -209,7 +207,7 @@ The automated framework for extracting signatures from x3p files used in this pa
 The \pkg{bulletxtrctr} package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.
 
 \autoref{fig:process} gives an overview of all of the steps in the process from scan to signatures.
-\autoref{fig:process}(a) shows a rendering of a 3d scan of a bullet land engraved area.
+\autoref{fig:process}(a) shows a rendering of a 3D scan of a bullet land engraved area.
 The raised portion of the surface on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs), the middle area shows a land-engraved area (LEA) with well expressed striation marks.
 The first step of obtaining the bullet signature is to extract a cross-section at a fixed height along the land engraving.
 
@@ -228,7 +226,7 @@ An example of the extraction process with corresponding code and parameter setti
 knitr::include_graphics("ju-hofmann_files/figure-latex/barrel_bullet_ps.png", dpi = 100)
 ```
 
-```{r process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) rendering from the 3d topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
+```{r process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) rendering from the 3D topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"}
 knitr::include_graphics("ju-hofmann_files/figure-latex/figure1_v2.png", dpi = 100)
 ```
 
@@ -246,11 +244,10 @@ However, a specific threshold of the CMPS score to distinguish between same-sour
 Further research is needed to understand how to determine optimal threshold settings.
 The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair.
 <!--Unfortunately, @cmps did not release any code or specific parameter settings for their implementation of the CMPS algorithm.-->
-Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from Github \url{https://github.com/willju-wangqian/cmpsR}. This publicly available implementation calculates the CMPS score of a comparison using the following code:
+Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from both CRAN and Github \url{https://github.com/willju-wangqian/cmpsR}. This publicly available implementation calculates the CMPS score of a comparison using the following code:
 
 ```{r, eval=FALSE}
-# install.packages("devtools") 
-# devtools::install_github("willju-wangqian/CMPS")
+# install.packages("cmpsR") 
 
 library(cmpsR)
 data(bullets)
@@ -271,7 +268,6 @@ The section "Implementation" will go through the algorithm and show how to use t
 A further example that illustrates the main points is also included.
 In the section on 'Evaluation metrics" we introduce new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.
 The section "Results" presents the results of evaluating the \pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results from Hamby set 252 are used to verify that our implementation is, at least qualitatively, comparable to the algorithm described in @cmps. Results from Hamby 44 show the need for a further investigation of the parameter choices even in the case of bullets fired from the same barrels. 
-<!-- \hh{We suggest a sum of square ratio ...} -->
 The last section covers some final discussion and conclusions.
 
 ## Implementation
@@ -357,7 +353,13 @@ In the remainder of the paper we showcase the use of the \pkg{cmpsR} functionali
 
 **Installation**
 
-The \pkg{cmpsR} package is not publicly available from CRAN yet, and its development version is available from Github and can be installed by
+The \pkg{cmpsR} package is publicly available from CRAN and can be installed by
+
+```{r, eval=FALSE}
+install.packages("cmpsR") 
+```
+
+Moreover, its development version is also available from Github and can be installed by
 
 ```{r, eval=FALSE}
 # install.packages("remotes") 
@@ -565,7 +567,15 @@ $\mathrm{CMPS_{max}}$ is the highest CMPS score obtained among all land-level co
 
 In general, we assume each bullet has $n$ land engravings (in our case $n=6$).
 Let $c_{ij}$ denote the CMPS score of a comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$.
-Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and $\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; j = (i + k) - n \cdot \mathbbm{1}_{i + k > n} \}$, where $\mathbbm{1}_A$ denotes an indicator function.
+Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and 
+
+```{=tex}
+\begin{align}
+\mathcal{P}_k = \{ (i,j): i = 1, \dots, n ; \; j = (i + k) \;\mathrm{mod}\; n \}
+\end{align}
+```
+
+, where `mod` denotes the modulo operation.
 For example, $\mathcal{P}_1 = \{ (1,2), (2,3), (3,4), (4,5), (5,6), (6,1) \}$ when $n = 6$.
 Let $k^*$ denote the index of the highest phase.
 
@@ -602,7 +612,7 @@ $$
 \end{aligned}
 $$
 
-```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. \\hh{Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 2 in equation XXX}", out.width=".7\\textwidth", fig.align="center"}
+```{r tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 1 in equation (1).", out.width=".7\\textwidth", fig.align="center"}
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
@@ -1103,7 +1113,7 @@ result.container <- result.container %>% as_tibble() %>%
 
 
 As presented in the work of @cmps, researchers applied the CMPS method to scans of one of the Hamby sets.
-While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time. \hh{XXX Let's take out this statement once we hear back from NIST}
+While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time. (We have asked the authors of @cmps, and we are still waiting for the replies.)
 In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44.
 For the purpose of reproducibility, we present how we obtained bullet signatures from the Hamby set data and include code in the appendix: for both Hamby 252 and Hamby 44, we started with scans in the form of x3p files in the database.
 Following the framework proposed by @aoas, we used the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures.
