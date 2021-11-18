@@ -1,3 +1,10 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
 We thank you for the amazingly speedy review of our submission, and the time and efforts you have invested in the review. 
 
 ## Code
