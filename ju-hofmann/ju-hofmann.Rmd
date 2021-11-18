@@ -55,13 +55,10 @@ editor_options:
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
-library(tidyverse)
-library(bulletxtrctr)
 library(kableExtra)
+library(tidyverse)
 library(patchwork)
 library(ggpubr)
-
-# source("../code/func_collection.R")
 
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -73,6 +70,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
 )
+
 ```
 
 ```{r setup_knitr, echo=FALSE}
@@ -152,18 +150,90 @@ codefig = list(codefig = TRUE, fig.show = "hide",
                tidy.opts = list(width.cutoff = partWidth)))
 ```
 
+```{r func, echo=FALSE}
+bootstrap_k <- function(scores, k, K, value) {
+  res <- replicate(K, {
+    mean(sample(scores, size = k, replace = TRUE), na.rm = TRUE)
+  })
+  sum(res >= value) / K
+}
+
+compute_average_scores <- function(land1, land2, score, addNA = FALSE) {
+  if (!is.numeric(land1)) land1 <- readr::parse_number(as.character(land1))
+  if (!is.numeric(land2)) land2 <- readr::parse_number(as.character(land2))
+  # assert_that(is.numeric(land1), is.numeric(land2), is.numeric(score))
+
+  maxland <- max(land1, land2)
+  fullframe <- data.frame(expand.grid(land1 = 1:maxland, land2 = 1:maxland))
+  bcompare <- data.frame(land1, land2, score)
+
+  fullframe <- fullframe %>% left_join(bcompare, by = c("land1", "land2"))
+
+  fullframe <- fullframe %>% mutate(
+    land1 = factor(land1, levels = 1:maxland),
+    land2 = factor(land2, levels = 1:maxland)
+  )
+  # get averages, just in case
+  matrix <- xtabs(score ~ land1 + land2,
+    data = fullframe, addNA = addNA
+  ) / xtabs(~land1 + land2, data = fullframe, addNA = addNA)
+
+  matrix <- cbind(matrix, matrix)
+
+  scores <- 1:maxland %>% sapply(FUN = function(i) {
+    if (i == 1) {
+      mean(diag(matrix), na.rm = TRUE)
+    } else {
+      i <- i - 1
+      mean(diag(matrix[, -(1:i)]), na.rm = TRUE)
+    }
+  })
+  scores
+}
+
+bullet_to_land_predict <- function(land1, land2, scores, difference, alpha = 0.05, addNA = FALSE) {
+  if (!is.numeric(land1)) land1 <- readr::parse_number(as.character(land1))
+  if (!is.numeric(land2)) land2 <- readr::parse_number(as.character(land2))
+  avgs <- compute_average_scores(land2, land1, scores, addNA)
+
+  p <- max(c(land1, land2))
+  boot <- bootstrap_k(scores, p, 1000, max(avgs)) < alpha
+  if (!is.numeric(boot)) {
+    boot <- bootstrap_k(scores, p, 1000, max(avgs)) < alpha
+    #     print("boot is not numeric")
+    #      browser()
+  }
+
+  getdiff <- diff(sort(-avgs))[1]
+  if (!is.numeric(getdiff)) print("getdiff is not numeric") # browser()
+  if (getdiff > difference & boot) {
+    # pick the maximum to determine the phase
+    idx <- which.max(avgs)
+    dd <- data.frame(
+      land1,
+      land2
+    ) %>%
+      mutate_if(function(.) !is.numeric(.), parse_number)
+    dd$diff <- (dd$land1 - dd$land2) %% p + 1
+
+
+    return(dd$diff == idx)
+  } else {
+    return(rep(FALSE, length = length(land1)))
+  }
+}
+```
+
+
 ## Introduction
 
 In this paper we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method.
 @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations.
 Although @cmps conceptually describe the CMPS algorithm in their paper, the authors did not release an implementation of their method.
 Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
-<!-- Our implementation is made available as part of the `R` package \pkg{cmpsR} on GitHub at \url{https://github.com/willju-wangqian/cmpsR}. -->
-\wj{change}
 Our implementation is made available as part of the `R` package \pkg{cmpsR} on CRAN.
 
-<!-- https://s3-us-gov-west-1.amazonaws.com/cg-d4b776d0-d898-4153-90c8-8336f86bdfec/CIUS/downloads/2020/expanded-homicide-2020.zip -->
-<!-- Firearm examination has  played an important role in  convictions [@fbiucr] in the United States criminal justice system. \hh{Do we have a number or a percentage of cases where firearm examination has played a role? or maybe gun violence? XXX} --> <!-- https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/expanded-homicide --> 
+
 According to the Uniform Crime Reporting Program of FBI (Federal Bureau of Investigation), "more than 76 percent (76.7) of the homicides for which the FBI received weapons data in 2020 involved the use of firearms" [@fbiucr]. At the same time, the number of murder victims jumped between 2019 and 2020 by more than 23 percent (23.4) to 17754 [@fbiucr20]. This increase is unprecedented  and highlights the important role that  firearm examination plays in all these cases. 
 <!-- homicides in 2019: 14391; in 2020: 17754 -->
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm.
@@ -195,7 +265,7 @@ During the firing process, grooves and lands are engraved on a bullet.
 Firearms examiners use striation marks on land engraved areas (LEAs) for their visual comparison.
 For algorithmic purposes, 3D topographical images of land engraved areas were obtained and stored in x3p format (XML 3-D Surface Profile).
 The x3p format provides a standard way of exchanging 2D and 3D profile data.
-It conforms to the ISO5436-2 standard [<http://sourceforge.net/p/open-gps/mwiki/X3p/>] adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science.
+It conforms to [the ISO5436-2 standard](http://sourceforge.net/p/open-gps/mwiki/X3p/) adopted by the OpenFMC (Open Forensic Metrology Consortium), a group of firearm forensics researchers who contributes to the establishment of best practices of using metrology in forensic science.
 Hamby set 252 was scanned using a NanoFocus lens at 20x magnification with the scan resolution being 1.5625 \textmu m $\times$ 1.5625 \textmu m per pixel.
 Hamby set 44 was scanned at the Roy J Carver High-Resolution microscopy lab at Iowa State.
 These scans were acquired with a Sensofar Confocal Light Microscope at 20x magnification for a nominal resolution of 0.645 \textmu m $\times$ 0.645 \textmu m per pixel.
@@ -221,8 +291,7 @@ However, to avoid confusion, we distinguish the notion of bullet signatures from
 Bullet profiles are shown in panels (b), (c), and (d) of \autoref{fig:process}, while \autoref{fig:process}(f) shows the corresponding bullet signature.
 Identifying the groove engraved areas correctly is fundamental for a correct down-stream analysis of the signatures.
 To allow for a human-in-the middle inspection and intervention we have provided an interactive web-application, implemented as `R` Shiny App [@shiny], \pkg{bulletinspectR} to identify and correct those errors.
-An example of the extraction process with corresponding code and parameter settings can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}. Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
-\wj{can be found in the supplementary materials of this paper? }
+An example of the extraction process with corresponding code and parameter settings can be found in the "Supplementary materials". Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
 
 ```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
 # knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
@@ -246,8 +315,7 @@ Low scores between pairs of signatures are attributed to different source pairs.
 However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not provided in @cmps, instead the threshold depends on the underlying structure of the data and the choice of parameters.   In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on whether they are witnesses for the defense or the prosecution. 
 Further research is needed to understand how to determine optimal threshold settings.
 The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair.
-Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from both CRAN and Github \url{https://github.com/willju-wangqian/cmpsR}. This publicly available implementation calculates the CMPS score of a comparison using the following code:
-\wj{ignore github?}
+Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from both CRAN and Github. This publicly available implementation calculates the CMPS score of a comparison using the following code:
 
 
 ```{r, eval=FALSE}
@@ -346,12 +414,6 @@ The function \code{extract\_feature\_cmps} allows for the following input from u
 
 -   \code{outlength} specifies the segment length of a basis segment at each level under the multi-segment lengths strategy.
     By default \code{outlength} is set to \code{NULL}, indicating that a basis segment should double its segment length at the next level and conforming to the description in @cmps .
-
-<!--For more details, please check the documentation of `extract_feature_cmps` or use `?extract_feature_cmps`.-->
-
-<!-- [examples https://journal.r-project.org/archive/2019/RJ-2019-044/RJ-2019-044.pdf] -->
-
-<!-- [https://journal.r-project.org/archive/2019/RJ-2019-002/RJ-2019-002.pdf] -->
 
 In the remainder of the paper we showcase the use of the \pkg{cmpsR} functionality on some examples and present the results of applying it to two datasets.
 
@@ -743,327 +805,6 @@ com.title252 <- expression(paste(
   "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
 ))
 ```
-
-
-<!-- ```{r hamby252-data-seg, eval=TRUE, echo=FALSE} -->
-<!-- # for hamby 252 -->
-<!-- N <- 8 # the number of different sets of parameters -->
-<!-- CMPS_hamby252_results <- list() # a container for everything -->
-
-<!-- #### setup span1 -->
-<!-- CMPS_hamby252_results$span1 <- as.list(rep(0.25, N)) -->
-
-<!-- #### setup signature name -->
-<!-- CMPS_hamby252_results$signame <- as.list(rep("sigs25", N)) -->
-<!--   # list("sigs75", "sigs25", "sigs25_1062", "sigs15") -->
-
-<!-- #### setup npeaks.set -->
-<!-- CMPS_hamby252_results$npeaks.set <- lapply(1:N, function(t) c(5,3,1)) -->
-
-<!-- #### setup seg_length -->
-<!-- CMPS_hamby252_results$seg_length <- as.list(c(25, 50, 75, 100, 125, 150, 175, 200)) -->
-
-<!-- #### setup Tx -->
-<!-- CMPS_hamby252_results$Tx <- as.list(rep(25, N)) -->
-
-<!-- #### setup outlength -->
-<!-- CMPS_hamby252_results$outlength <- vector(mode = "list", length = N) -->
-
-<!-- #### create a plot title and a file name for each set of parameters -->
-<!-- CMPS_hamby252_results$titlee <- list() -->
-<!-- CMPS_hamby252_results$filename <- list() -->
-<!-- for (i in 1:N) { -->
-<!--   CMPS_hamby252_results$titlee[[i]] <- -->
-<!--     paste0( -->
-<!--       "npeaks.set=c(", -->
-<!--       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","), -->
-<!--       ")", -->
-<!--       ", len=", -->
-<!--       CMPS_hamby252_results$seg_length[[i]], -->
-<!--       ", Tx=", -->
-<!--       CMPS_hamby252_results$Tx[[i]], -->
-<!--       ", \nspan1=", -->
-<!--       CMPS_hamby252_results$span1[[i]], -->
-<!--       ", span2=0.03" -->
-<!--     ) -->
-<!--   CMPS_hamby252_results$filename[[i]] <-  -->
-<!--     paste( -->
-<!--       "hamby252_segment", -->
-<!--       CMPS_hamby252_results$span1[[i]]*100, -->
-<!--       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"), -->
-<!--       CMPS_hamby252_results$seg_length[[i]], -->
-<!--       CMPS_hamby252_results$Tx[[i]], -->
-<!--       sep = "_" -->
-<!--     ) -->
-<!-- } -->
-
-<!-- #### container for the cmps results and corresponding plots -->
-<!-- CMPS_hamby252_results$cmps.table <- list() -->
-<!-- CMPS_hamby252_results$plot <- list() -->
-
-<!-- #### a global title for Hamby252 plots -->
-<!-- com.title252 <- expression(paste( -->
-<!--   "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution" -->
-<!-- )) -->
-
-<!-- for(i in 1:N){ -->
-<!--   CMPS_hamby252_results$cmps.table[[i]] <-  -->
-<!--   read.csv(file = paste("./data/hamby252/",  -->
-<!--                         CMPS_hamby252_results$filename[[i]],  -->
-<!--                         ".csv", -->
-<!--                         sep = "")) -->
-<!-- } -->
-
-<!-- CMPS_hamby252_results_seg <- CMPS_hamby252_results -->
-
-
-<!-- ``` -->
-
-<!-- ```{r hamby252-data-npeak, eval=TRUE, echo=FALSE} -->
-<!-- N <- 8 # the number of different sets of parameters -->
-<!-- CMPS_hamby252_results <- list() # a container for everything -->
-
-<!-- #### setup span1 -->
-<!-- CMPS_hamby252_results$span1 <- as.list(rep(0.25, N)) -->
-
-<!-- #### setup signature name -->
-<!-- CMPS_hamby252_results$signame <- as.list(rep("sigs25", N)) -->
-<!-- # list("sigs75", "sigs25", "sigs25_1062", "sigs15") -->
-
-<!-- #### setup npeaks.set -->
-<!-- CMPS_hamby252_results$npeaks.set <-  -->
-<!--   list(c(5), -->
-<!--        c(5,2), -->
-<!--        c(5,3,1), -->
-<!--        c(10,6,2), -->
-<!--        c(6,4,2,1), -->
-<!--        c(10,7,4,2), -->
-<!--        c(10,6,4,2,1), -->
-<!--        c(10,8,6,4,2,1)) -->
-
-<!-- #### setup seg_length -->
-<!-- CMPS_hamby252_results$seg_length <-  -->
-<!--   # as.list(c(25, 50, 75, 100, 125, 150, 175, 200)) -->
-<!--   as.list(rep(50, N)) -->
-
-<!-- #### setup Tx -->
-<!-- CMPS_hamby252_results$Tx <- as.list(rep(25, N)) -->
-
-<!-- #### setup outlength -->
-<!-- CMPS_hamby252_results$outlength <- vector(mode = "list", length = N) -->
-<!-- CMPS_hamby252_results$outlength[[7]] <- c(60, 90, 120, 150, 180) -->
-<!-- CMPS_hamby252_results$outlength[[8]] <- c(50,75,100,125,150,200) -->
-
-<!-- #### create a plot title and a file name for each set of parameters -->
-<!-- CMPS_hamby252_results$titlee <- list() -->
-<!-- CMPS_hamby252_results$filename <- list() -->
-<!-- for (i in 1:N) { -->
-<!--   CMPS_hamby252_results$titlee[[i]] <- -->
-<!--     paste0( -->
-<!--       "npeaks.set=c(", -->
-<!--       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","), -->
-<!--       ")", -->
-<!--       ", len=", -->
-<!--       CMPS_hamby252_results$seg_length[[i]], -->
-<!--       ", Tx=", -->
-<!--       CMPS_hamby252_results$Tx[[i]], -->
-<!--       ", \nspan1=", -->
-<!--       CMPS_hamby252_results$span1[[i]], -->
-<!--       ", span2=0.03" -->
-<!--     ) -->
-<!--   CMPS_hamby252_results$filename[[i]] <-  -->
-<!--     paste( -->
-<!--       "hamby252_npeak", -->
-<!--       CMPS_hamby252_results$span1[[i]]*100, -->
-<!--       paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"), -->
-<!--       CMPS_hamby252_results$seg_length[[i]], -->
-<!--       CMPS_hamby252_results$Tx[[i]], -->
-<!--       sep = "_" -->
-<!--     ) -->
-<!-- } -->
-
-<!-- #### container for the cmps results and corresponding plots -->
-<!-- CMPS_hamby252_results$cmps.table <- list() -->
-<!-- CMPS_hamby252_results$plot <- list() -->
-
-<!-- #### a global title for Hamby252 plots -->
-<!-- com.title252 <- expression(paste( -->
-<!--   "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution" -->
-<!-- )) -->
-
-<!-- for(i in 1:N){ -->
-<!--   CMPS_hamby252_results$cmps.table[[i]] <-  -->
-<!--   read.csv(file = paste("./data/hamby252/",  -->
-<!--                         CMPS_hamby252_results$filename[[i]],  -->
-<!--                         ".csv", -->
-<!--                         sep = "")) -->
-<!-- } -->
-
-<!-- CMPS_hamby252_results_npeak <- CMPS_hamby252_results -->
-
-<!-- ``` -->
-
-<!-- ```{r hamby44-data-seg, eval=TRUE, echo=FALSE} -->
-<!-- N <- 8 # the number of different sets of parameters -->
-<!-- CMPS_hamby44_results <- list() # a container for everything -->
-
-<!-- #### setup span1 -->
-<!-- CMPS_hamby44_results$span1 <- as.list(rep(0.25, N)) -->
-
-<!-- #### setup signature name -->
-<!-- CMPS_hamby44_results$signame <- -->
-<!--   as.list(rep("sigs25_531", N)) -->
-
-<!-- #### setup neapks.set -->
-<!-- CMPS_hamby44_results$npeaks.set <- -->
-<!--   lapply(1:N, function(t) c(5,3,1)) -->
-
-<!-- #### setup seg_length -->
-<!-- CMPS_hamby44_results$seg_length <- as.list(c(30, 45, 61, 90, 122, 150, 180, 210)) -->
-
-<!-- #### setup outlength -->
-<!-- CMPS_hamby44_results$outlength <- vector(mode = "list", length = N) -->
-
-<!-- #### setup Tx -->
-<!-- CMPS_hamby44_results$Tx <- as.list(rep(30, N)) -->
-
-<!-- #### create a plot title and a file name for each set of parameters -->
-<!-- CMPS_hamby44_results$titlee <- list() -->
-<!-- CMPS_hamby44_results$filename <- list() -->
-<!-- for (i in 1:N) { -->
-<!--   CMPS_hamby44_results$titlee[[i]] <- -->
-<!--     paste0( -->
-<!--       "npeaks.set=c(", -->
-<!--       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","), -->
-<!--       ")", -->
-<!--       ", len=", -->
-<!--       CMPS_hamby44_results$seg_length[[i]], -->
-<!--       ", Tx=", -->
-<!--       CMPS_hamby44_results$Tx[[i]], -->
-<!--       ", \nspan1=", -->
-<!--       CMPS_hamby44_results$span1[[i]], -->
-<!--       ", span2=0.03" -->
-<!--     ) -->
-<!--   CMPS_hamby44_results$filename[[i]] <-  -->
-<!--     paste( -->
-<!--       "hamby44_segment", -->
-<!--       CMPS_hamby44_results$span1[[i]]*100, -->
-<!--       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"), -->
-<!--       CMPS_hamby44_results$seg_length[[i]], -->
-<!--       CMPS_hamby44_results$Tx[[i]], -->
-<!--       sep = "_" -->
-<!--     ) -->
-<!-- } -->
-
-<!-- #### container for the cmps results and corresponding plots -->
-<!-- CMPS_hamby44_results$cmps.table <- list() -->
-<!-- CMPS_hamby44_results$plot <- list() -->
-
-<!-- #### a global title for Hamby44 plots -->
-<!-- com.title44 <- expression(paste( -->
-<!--   "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution" -->
-<!-- )) -->
-
-<!-- for(i in 1:N){ -->
-<!--   CMPS_hamby44_results$cmps.table[[i]] <-  -->
-<!--   read.csv(file = paste("./data/hamby44/",  -->
-<!--                         CMPS_hamby44_results$filename[[i]],  -->
-<!--                         ".csv", -->
-<!--                         sep = "")) -->
-<!-- } -->
-
-<!-- CMPS_hamby44_results_seg <- CMPS_hamby44_results -->
-
-<!-- ``` -->
-
-<!-- ```{r hamby44-data-npeak, eval=TRUE, echo=FALSE} -->
-<!-- N <- 8 # the number of different sets of parameters -->
-<!-- CMPS_hamby44_results <- list() # a container for everything -->
-
-<!-- #### setup span1 -->
-<!-- CMPS_hamby44_results$span1 <- as.list(rep(0.25, N)) -->
-
-<!-- #### setup signature name -->
-<!-- CMPS_hamby44_results$signame <- -->
-<!--   as.list(rep("sigs25_531", N)) -->
-
-<!-- #### setup neapks.set -->
-<!-- CMPS_hamby44_results$npeaks.set <- -->
-<!--   list(c(5), -->
-<!--        c(5,2), -->
-<!--        c(5,3,1), -->
-<!--        c(10,6,2), -->
-<!--        c(6,4,2,1), -->
-<!--        c(10,7,4,2), -->
-<!--        c(10,6,4,2,1), -->
-<!--        c(10,8,6,4,2,1)) -->
-
-<!-- #### setup seg_length -->
-<!-- CMPS_hamby44_results$seg_length <- as.list(rep(61, N)) -->
-
-<!-- #### setup outlength -->
-<!-- CMPS_hamby44_results$outlength <- vector(mode = "list", length = N) -->
-<!-- CMPS_hamby44_results$outlength[[7]] <- c(61, 91, 121, 151, 181) -->
-<!-- CMPS_hamby44_results$outlength[[8]] <- c(61, 91, 121, 151, 181, 211) -->
-
-<!-- #### setup Tx -->
-<!-- CMPS_hamby44_results$Tx <- as.list(rep(30, N)) -->
-
-<!-- #### create a plot title and a file name for each set of parameters -->
-<!-- CMPS_hamby44_results$titlee <- list() -->
-<!-- CMPS_hamby44_results$filename <- list() -->
-<!-- for (i in 1:N) { -->
-<!--   CMPS_hamby44_results$titlee[[i]] <- -->
-<!--     paste0( -->
-<!--       "npeaks.set=c(", -->
-<!--       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","), -->
-<!--       ")", -->
-<!--       ", len=", -->
-<!--       CMPS_hamby44_results$seg_length[[i]], -->
-<!--       ", Tx=", -->
-<!--       CMPS_hamby44_results$Tx[[i]], -->
-<!--       ", \nspan1=", -->
-<!--       CMPS_hamby44_results$span1[[i]], -->
-<!--       ", span2=0.03" -->
-<!--     ) -->
-<!--   CMPS_hamby44_results$filename[[i]] <-  -->
-<!--     paste( -->
-<!--       "hamby44_npeak", -->
-<!--       CMPS_hamby44_results$span1[[i]]*100, -->
-<!--       paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"), -->
-<!--       CMPS_hamby44_results$seg_length[[i]], -->
-<!--       CMPS_hamby44_results$Tx[[i]], -->
-<!--       sep = "_" -->
-<!--     ) -->
-<!-- } -->
-
-<!-- #### container for the cmps results and corresponding plots -->
-<!-- CMPS_hamby44_results$cmps.table <- list() -->
-<!-- CMPS_hamby44_results$plot <- list() -->
-
-<!-- #### a global title for Hamby44 plots -->
-<!-- com.title44 <- expression(paste( -->
-<!--   "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution" -->
-<!-- )) -->
-
-<!-- for(i in 1:N){ -->
-<!--   CMPS_hamby44_results$cmps.table[[i]] <-  -->
-<!--   read.csv(file = paste("./data/hamby44/",  -->
-<!--                         CMPS_hamby44_results$filename[[i]],  -->
-<!--                         ".csv", -->
-<!--                         sep = "")) -->
-<!-- } -->
-
-<!-- CMPS_hamby44_results_npeak <- CMPS_hamby44_results -->
-
-<!-- ``` -->
-
-<!-- ```{r rf-data-load, echo=FALSE} -->
-<!-- rf.results <- list() -->
-<!-- rf.results[[1]] <- read.csv(file = "./data/hamby252/hamby252_rf_results.csv") -->
-<!-- rf.results[[2]] <- read.csv(file = "./data/hamby44/hamby44_rf_results.csv") -->
-<!-- ``` -->
-
 
 
 ```{r rf-data-process, echo=FALSE}
@@ -1519,8 +1260,7 @@ We applied the logic of $\mathrm{{CMPS}_{max}}$, $\mathrm{\overline{CMPS}_{max}}
 As shown in \autoref{fig:param_npeak_plot}, the random forest model does not achieve the sum of squares ratio as high as those achieved by the top CMPS algorithms for Hamby 252, but it does achieve better results for Hamby 44.
 This might suggest that an inclusion of the CMPS score as an additional feature in the random forest model training might be beneficial for an overall separation to determine source. 
 
-The code generating all results of this manuscript can be found on Github at \url{https://github.com/willju-wangqian/CMPSpaper/tree/main/reproducible}
-\wj{in the supplementary materials?}
+For details about the implementation, examples and results, please refer to the "Supplementary materials".
 
 ## Conclusion
 
@@ -1556,7 +1296,7 @@ But the core of this open system is the open science culture and contributions o
 
 The zip file "supplementary-files.zip" contains R scripts for reproducing all aspects of this paper.
 
-**Data**
+**Data not included in "supplementary-files.zip"**
 
 The processed data of Hamby set 252 and Hamby set 44 are stored in two `.rds` files:
 
@@ -1577,40 +1317,14 @@ Please check out the folder structure of [the `reproducible` folder](https://git
 -   `rds_generator.R`: this R script takes the generated `.csv` files and produce `CMPSpaper_results.rds`. `CMPSpaper_results.rds` is identical to `data/CMPSpaper_results.rds` and is used generate figures and other results presented in the paper.
 -   `func_collection.R`: this R script contains some helper functions used by other R scripts.
 
+**Data included in "supplementary-files.zip"**
 
-<!-- ```{r plot_thisisus} -->
-<!-- rf.252.plot <- metric_plot_helper(rf.results[[1]], "rf.diff", scaled = TRUE, -->
-<!--                                   subtitle = "random forest scores with metric diff") + -->
-<!--   xlab(expression(RF[diff])) + -->
-<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
-<!-- cmps.252.plot <- metric_plot_helper(CMPS_hamby252_results_npeak$cmps.table[[8]], "cmps.diff_scaled",  -->
-<!--                                     scaled = TRUE, subtitle = "CMPS, 10-8-6-4-2-1, 50") + -->
-<!--   xlab(labels[3]) + -->
-<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+-   `data-csv`: this folder contains `.csv` files we generated using R scripts `hamby*_result_generator.R` 
+-   `CMPSpaper_results.rds`: this is the `.rds` file we generated using R script `rds_generator.R`
 
-<!-- rf.44.plot <- metric_plot_helper(rf.results[[2]], "rf.diff", scaled = TRUE, -->
-<!--                                   subtitle = "random forest scores with metric diff") + -->
-<!--   xlab(expression(RF[diff])) + -->
-<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
-<!-- cmps.44.plot <- metric_plot_helper(CMPS_hamby44_results_npeak$cmps.table[[6]], "cmps.diff_scaled",  -->
-<!--                                     scaled = TRUE, subtitle = "CMPS, 10-7-4-2, 61") + -->
-<!--   xlab(labels[3]) + -->
-<!--   scale_x_continuous(breaks = seq(0, 1, by = 0.1)) -->
+These data can be used as reference or example results of the reproducible codes
 
-<!-- p.thisisus252 <- ggarrange(plotlist = list(cmps.252.plot, rf.252.plot), nrow = 1, ncol = 2, -->
-<!--                common.legend = TRUE, legend = "bottom") -->
-<!-- p.thisisus252 <-  -->
-<!--   annotate_figure(p.thisisus252,  -->
-<!--                   top = text_grob("Hamby 252 - Random Forest and CMPS")) -->
-
-
-<!-- p.thisisus44 <- ggarrange(plotlist = list(cmps.44.plot, rf.44.plot), nrow = 1, ncol = 2, -->
-<!--                common.legend = TRUE, legend = "bottom") -->
-<!-- p.thisisus44 <-  -->
-<!--   annotate_figure(p.thisisus44,  -->
-<!--                   top = text_grob("Hamby 44 - Random Forest and CMPS")) -->
-
-<!-- ``` -->
+-   `csafe_rf2.rds`: this `.rds` file contains the random forest model used in this paper
 
 
 <!-- ### About this format and the R Journal requirements -->

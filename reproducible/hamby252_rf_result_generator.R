@@ -9,7 +9,10 @@
 
 ## Load the required packages
 library(tidyverse)
-library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
+if(!require(bulletxtrctr)) {
+  devtools::install_github("heike/bulletxtrctr")
+  library(bulletxtrctr)
+}
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
@@ -25,10 +28,7 @@ data_path <- "./data-csv/hamby252/"
 b252 <- read_rds("./bullet_signatures_etc/BulletSignatures252.rds")
 b252$sig_rf <- b252$sigs25
 
-####
-# Note: if this random forest is not published yet by the time of reproduction, 
-# please contact the author of the paper
-rf.model <- readRDS("~/Desktop/csafe_rf2.rds")
+rf.model <- readRDS("./csafe_rf2.rds")
 
 # generate bullet_id
 bulletid.tb <- b252 %>% select(scan_id)

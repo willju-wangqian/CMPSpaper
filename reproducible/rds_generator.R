@@ -1,7 +1,6 @@
 ###############################
-# Note: Please set the working 
-# directory so that "./data-csv/"
-# is available
+# Note: read reproducible-readme.md first before reproducing the results
+# Please set the working directory properly so that ./data-csv/" is available
 ###############################
 
 ###############################

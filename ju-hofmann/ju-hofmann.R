@@ -1,144 +1,129 @@
-## ----setup, echo=FALSE, message=FALSE, warning=FALSE------
+## ----setup, echo=FALSE, message=FALSE, warning=FALSE---------
 library(knitr)
-library(tidyverse)
-library(bulletxtrctr)
 library(kableExtra)
+library(tidyverse)
 library(patchwork)
 library(ggpubr)
 
-source("../code/func_collection.R")
-
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  out.width = "\\textwidth",
-  fig.align = "center",
-#  cache=TRUE,
-  dpi = 100,
-  warning = FALSE,
-  message = FALSE
-)
-
-
-## ----setup_knitr, echo=FALSE------------------------------
-## From Josh O'Brien's stackoverflow answer:
-## http://stackoverflow.com/questions/11030898/knitr-how-to-align-code-and-plot-side-by-side
-## These two settings control text width in codefig vs. usual code blocks
-partWidth <- 35
-fullWidth <- 60
-options(width = fullWidth)
-
-##  (1) CHUNK HOOK FUNCTION
-##   First, to set R's textual output width on a per-chunk basis, we
-## need to define a hook function which temporarily resets global R's
-## option() settings, just for the current chunk
-knit_hooks$set(r.opts = local({
-    ropts <- NA
-    function(before, options, envir) {
-        if (before) {
-            ropts <<- options(options$r.opts)
-        } else {
-            options(ropts)
-        }
-    }
-}))
-
-## (2) OUTPUT HOOK FUNCTION
-
-##   Define a custom output hook function. This function processes _all_
-## evaluated chunks, but will return the same output as the usual one,
-## UNLESS a 'codefig' argument appeared in the chunk's header.  In that
-## case, wrap the usual textual output in LaTeX code placing it in a
-## narrower adjustbox environment and setting the graphics that it
-## produced in another box beside it.
-
-defaultChunkHook <- environment(knit_hooks[["get"]])$defaults$chunk
-
-codefigChunkHook <- function(x, options) {
-  main <-  defaultChunkHook(x, options)
-  before <-
-    "\\vspace{1em}
-\\begin{adjustbox}{valign=t}
-\\begin{minipage}{.39\\textwidth}\n"
-  after <-
-    paste("\\vspace{1em}
-\\end{minipage}
-\\begin{minipage}{.59\\textwidth}",
-    paste0("\\includegraphics[width=\\textwidth]{ju-hofmann_files/figure-latex/",
-                 options[["label"]], "-1.pdf}
-\\end{minipage}
-\\end{adjustbox}"),
-          sep = "\n")
-  ## Was a codefig option supplied in chunk header?
-  ## If so, wrap code block and graphical output with needed LaTeX code.
-  if (!is.null(options$codefig)) {
-    main <- gsub("```","", main)
-    main <- gsub("=latex","", main)
-    main <- paste0("{\\small ", main, "}")
-    return(sprintf("%s\n%s\n%s", before, main, after))
-  } else {
-    return(main)
-  }
+## ----func, echo=FALSE----------------------------------------
+bootstrap_k <- function(scores, k, K, value) {
+  res <- replicate(K, {
+    mean(sample(scores, size = k, replace = TRUE), na.rm = TRUE)
+  })
+  sum(res >= value) / K
 }
 
-knit_hooks[["set"]](chunk = codefigChunkHook)
+compute_average_scores <- function(land1, land2, score, addNA = FALSE) {
+  if (!is.numeric(land1)) land1 <- readr::parse_number(as.character(land1))
+  if (!is.numeric(land2)) land2 <- readr::parse_number(as.character(land2))
+  # assert_that(is.numeric(land1), is.numeric(land2), is.numeric(score))
+
+  maxland <- max(land1, land2)
+  fullframe <- data.frame(expand.grid(land1 = 1:maxland, land2 = 1:maxland))
+  bcompare <- data.frame(land1, land2, score)
+
+  fullframe <- fullframe %>% left_join(bcompare, by = c("land1", "land2"))
+
+  fullframe <- fullframe %>% mutate(
+    land1 = factor(land1, levels = 1:maxland),
+    land2 = factor(land2, levels = 1:maxland)
+  )
+  # get averages, just in case
+  matrix <- xtabs(score ~ land1 + land2,
+    data = fullframe, addNA = addNA
+  ) / xtabs(~land1 + land2, data = fullframe, addNA = addNA)
+
+  matrix <- cbind(matrix, matrix)
+
+  scores <- 1:maxland %>% sapply(FUN = function(i) {
+    if (i == 1) {
+      mean(diag(matrix), na.rm = TRUE)
+    } else {
+      i <- i - 1
+      mean(diag(matrix[, -(1:i)]), na.rm = TRUE)
+    }
+  })
+  scores
+}
+
+bullet_to_land_predict <- function(land1, land2, scores, difference, alpha = 0.05, addNA = FALSE) {
+  if (!is.numeric(land1)) land1 <- readr::parse_number(as.character(land1))
+  if (!is.numeric(land2)) land2 <- readr::parse_number(as.character(land2))
+  avgs <- compute_average_scores(land2, land1, scores, addNA)
+
+  p <- max(c(land1, land2))
+  boot <- bootstrap_k(scores, p, 1000, max(avgs)) < alpha
+  if (!is.numeric(boot)) {
+    boot <- bootstrap_k(scores, p, 1000, max(avgs)) < alpha
+    #     print("boot is not numeric")
+    #      browser()
+  }
+
+  getdiff <- diff(sort(-avgs))[1]
+  if (!is.numeric(getdiff)) print("getdiff is not numeric") # browser()
+  if (getdiff > difference & boot) {
+    # pick the maximum to determine the phase
+    idx <- which.max(avgs)
+    dd <- data.frame(
+      land1,
+      land2
+    ) %>%
+      mutate_if(function(.) !is.numeric(.), parse_number)
+    dd$diff <- (dd$land1 - dd$land2) %% p + 1
 
 
-## (3) TEMPLATE
-##   codefig=TRUE is just one of several options needed for the
-## side-by-side code block and a figure to come out right. Rather
-## than typing out each of them in every single chunk header, we
-## define a _template_ which bundles them all together. Then we can
-## set all of those options simply by typing opts.label="codefig".
-
-opts_template[["set"]](
-codefig = list(codefig = TRUE, fig.show = "hide",
-               r.opts = list(width = partWidth),
-               tidy.opts = list(width.cutoff = partWidth)))
+    return(dd$diff == idx)
+  } else {
+    return(rep(FALSE, length = length(land1)))
+  }
+}
 
 
 ## ----bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."----
 # knitr::include_graphics("img/barrel_bullet_ps.png", dpi = 100)
-knitr::include_graphics("ju-hofmann_files/figure-latex/barrel_bullet_ps.png", dpi = 100)
+knitr::include_graphics("ju-hofmann_files/figure-latex/barrel_bullet_ps.png", dpi = 144)
 
 
-## ----process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) rendering from the 3d topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"----
-knitr::include_graphics("ju-hofmann_files/figure-latex/figure1_v2.png", dpi = 100)
+## ----process, echo=FALSE, out.width=".9\\textwidth", fig.cap="A framework of obtaining a bullet signature. (a) rendering from the 3D topographic scan of a land engraved area (LEA). The selected crosscut location is indicated by a thin white horizontal line. (b) view of the cross-section of the land engraved area at the white line in (a). (c) the crosscut data plotted in 2D; blue vertical lines indicate the position of left and right grooves. (d) the crosscut data after chopping the left and right grooves. (e) the fitted curvature using LOESS. (f) after removing the curvature from the crosscut data, the bullet signature is obtained"----
+knitr::include_graphics("ju-hofmann_files/figure-latex/figure1_v2.png", dpi = 144)
 
 
-## ---- eval=FALSE------------------------------------------
-#> # install.packages("devtools")
-#> # devtools::install_github("willju-wangqian/CMPS")
-#> 
-#> library(cmpsR)
-#> data(bullets)
-#> 
-#> sig1 <- bullets$sigs[[2]]$sig
-#> sig2 <- bullets$sigs[[9]]$sig
-#> sig3 <- bullets$sigs[[10]]$sig
-#> 
-#> cmps.result.KM <- extract_feature_cmps(sig1, sig2)
-#> cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
+## ---- eval=FALSE---------------------------------------------
+## # install.packages("cmpsR")
+## 
+## library(cmpsR)
+## data(bullets)
+## 
+## sig1 <- bullets$sigs[[2]]$sig
+## sig2 <- bullets$sigs[[9]]$sig
+## sig3 <- bullets$sigs[[10]]$sig
+## 
+## cmps.result.KM <- extract_feature_cmps(sig1, sig2)
+## cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
 
 
-## ---- eval=FALSE------------------------------------------
-#> extract_feature_cmps(
-#>   x,
-#>   y,
-#>   seg_length = 50,
-#>   Tx = 25,
-#>   npeaks.set = c(5, 3, 1),
-#>   include = NULL,
-#>   outlength = NULL
-#> )
+## ---- eval=FALSE---------------------------------------------
+## extract_feature_cmps(
+##   x,
+##   y,
+##   seg_length = 50,
+##   Tx = 25,
+##   npeaks.set = c(5, 3, 1),
+##   include = NULL,
+##   outlength = NULL
+## )
 
 
-## ---- eval=FALSE------------------------------------------
-#> # install.packages("remotes")
-#> remotes::install_github("willju-wangqian/cmpsR")
+## ---- eval=FALSE---------------------------------------------
+## install.packages("cmpsR")
 
 
-## ---- eval=TRUE-------------------------------------------
+## ---- eval=FALSE---------------------------------------------
+## # install.packages("remotes")
+## remotes::install_github("willju-wangqian/cmpsR")
+
+
+## ---- eval=TRUE----------------------------------------------
 library(cmpsR)
 data(bullets)
 
@@ -154,7 +139,7 @@ signatures %>% ggplot(aes(x = x/1000, y = sig)) + geom_line() + facet_wrap(~bull
   ylab("Relative height in micron")
 
 
-## ---- eval=TRUE-------------------------------------------
+## ---- eval=TRUE----------------------------------------------
 sigs1 <- bullets$sigs[bullets$bulletland == "2-5"][[1]]
 sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 
@@ -171,7 +156,7 @@ cmps_without_multi_scale <-
                        npeaks.set = 5, include = "full_result")
 
 
-## ----alternative, echo = FALSE----------------------------
+## ----alternative, echo = FALSE-------------------------------
 lands <- unique(bullets$bulletland)
 
 comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
@@ -220,7 +205,7 @@ sig.plot$segment_shift_plot
 sig.plot$signature_shift_plot
 
 
-## ---- echo=TRUE, eval=TRUE--------------------------------
+## ---- echo=TRUE, eval=TRUE-----------------------------------
 sig.plot$seg_shift
 
 
@@ -247,7 +232,7 @@ ggarrange(
   nrow = 3)
 
 
-## ----tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. \\hh{Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 2 in equation XXX}", out.width=".7\\textwidth", fig.align="center"----
+## ----tiles, echo=FALSE, fig.cap="CMPS scores of all 36 pairwise bullet signature comparisons for two bullets. Land engraving pairs generated by the same land (KM comparisons) are highlighted. Note that in this example the axis along Bullet 2 starts with Land 2. This corresponds to Phase 1 in equation (1).", out.width=".7\\textwidth", fig.align="center"----
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
@@ -294,327 +279,31 @@ ggarrange(p1, p2,
           common.legend = TRUE, legend = "bottom", labels = c("(a)", "(b)"))
 
 
-## ----hamby252-data-seg, eval=TRUE, echo=FALSE-------------
-# for hamby 252
-N <- 8 # the number of different sets of parameters
-CMPS_hamby252_results <- list() # a container for everything
+## ----load-results, eval=TRUE, echo=FALSE---------------------
+all_results_container <- readRDS("data/CMPSpaper_results.rds")
 
-#### setup span1
-CMPS_hamby252_results$span1 <- as.list(rep(0.25, N))
-
-#### setup signature name
-CMPS_hamby252_results$signame <- as.list(rep("sigs25", N))
-  # list("sigs75", "sigs25", "sigs25_1062", "sigs15")
-
-#### setup npeaks.set
-CMPS_hamby252_results$npeaks.set <- lapply(1:N, function(t) c(5,3,1))
-
-#### setup seg_length
-CMPS_hamby252_results$seg_length <- as.list(c(25, 50, 75, 100, 125, 150, 175, 200))
-
-#### setup Tx
-CMPS_hamby252_results$Tx <- as.list(rep(25, N))
-
-#### setup outlength
-CMPS_hamby252_results$outlength <- vector(mode = "list", length = N)
-
-#### create a plot title and a file name for each set of parameters
-CMPS_hamby252_results$titlee <- list()
-CMPS_hamby252_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby252_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby252_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby252_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby252_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby252_results$filename[[i]] <- 
-    paste(
-      "hamby252_segment",
-      CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby252_results$seg_length[[i]],
-      CMPS_hamby252_results$Tx[[i]],
-      sep = "_"
-    )
-}
-
-#### container for the cmps results and corresponding plots
-CMPS_hamby252_results$cmps.table <- list()
-CMPS_hamby252_results$plot <- list()
-
-#### a global title for Hamby252 plots
-com.title252 <- expression(paste(
-  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
-
-for(i in 1:N){
-  CMPS_hamby252_results$cmps.table[[i]] <- 
-  read.csv(file = paste("./data/hamby252/", 
-                        CMPS_hamby252_results$filename[[i]], 
-                        ".csv",
-                        sep = ""))
-}
-
-CMPS_hamby252_results_seg <- CMPS_hamby252_results
-
-
-
-
-## ----hamby252-data-npeak, eval=TRUE, echo=FALSE-----------
-N <- 8 # the number of different sets of parameters
-CMPS_hamby252_results <- list() # a container for everything
-
-#### setup span1
-CMPS_hamby252_results$span1 <- as.list(rep(0.25, N))
-
-#### setup signature name
-CMPS_hamby252_results$signame <- as.list(rep("sigs25", N))
-# list("sigs75", "sigs25", "sigs25_1062", "sigs15")
-
-#### setup npeaks.set
-CMPS_hamby252_results$npeaks.set <- 
-  list(c(5),
-       c(5,2),
-       c(5,3,1),
-       c(10,6,2),
-       c(6,4,2,1),
-       c(10,7,4,2),
-       c(10,6,4,2,1),
-       c(10,8,6,4,2,1))
-
-#### setup seg_length
-CMPS_hamby252_results$seg_length <- 
-  # as.list(c(25, 50, 75, 100, 125, 150, 175, 200))
-  as.list(rep(50, N))
-
-#### setup Tx
-CMPS_hamby252_results$Tx <- as.list(rep(25, N))
-
-#### setup outlength
-CMPS_hamby252_results$outlength <- vector(mode = "list", length = N)
-CMPS_hamby252_results$outlength[[7]] <- c(60, 90, 120, 150, 180)
-CMPS_hamby252_results$outlength[[8]] <- c(50,75,100,125,150,200)
-
-#### create a plot title and a file name for each set of parameters
-CMPS_hamby252_results$titlee <- list()
-CMPS_hamby252_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby252_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby252_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby252_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby252_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby252_results$filename[[i]] <- 
-    paste(
-      "hamby252_npeak",
-      CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby252_results$seg_length[[i]],
-      CMPS_hamby252_results$Tx[[i]],
-      sep = "_"
-    )
-}
-
-#### container for the cmps results and corresponding plots
-CMPS_hamby252_results$cmps.table <- list()
-CMPS_hamby252_results$plot <- list()
-
-#### a global title for Hamby252 plots
-com.title252 <- expression(paste(
-  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
-
-for(i in 1:N){
-  CMPS_hamby252_results$cmps.table[[i]] <- 
-  read.csv(file = paste("./data/hamby252/", 
-                        CMPS_hamby252_results$filename[[i]], 
-                        ".csv",
-                        sep = ""))
-}
-
-CMPS_hamby252_results_npeak <- CMPS_hamby252_results
-
-
-
-## ----hamby44-data-seg, eval=TRUE, echo=FALSE--------------
-N <- 8 # the number of different sets of parameters
-CMPS_hamby44_results <- list() # a container for everything
-
-#### setup span1
-CMPS_hamby44_results$span1 <- as.list(rep(0.25, N))
-
-#### setup signature name
-CMPS_hamby44_results$signame <-
-  as.list(rep("sigs25_531", N))
-
-#### setup neapks.set
-CMPS_hamby44_results$npeaks.set <-
-  lapply(1:N, function(t) c(5,3,1))
-
-#### setup seg_length
-CMPS_hamby44_results$seg_length <- as.list(c(30, 45, 61, 90, 122, 150, 180, 210))
-
-#### setup outlength
-CMPS_hamby44_results$outlength <- vector(mode = "list", length = N)
-
-#### setup Tx
-CMPS_hamby44_results$Tx <- as.list(rep(30, N))
-
-#### create a plot title and a file name for each set of parameters
-CMPS_hamby44_results$titlee <- list()
-CMPS_hamby44_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby44_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby44_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby44_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby44_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby44_results$filename[[i]] <- 
-    paste(
-      "hamby44_segment",
-      CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby44_results$seg_length[[i]],
-      CMPS_hamby44_results$Tx[[i]],
-      sep = "_"
-    )
-}
-
-#### container for the cmps results and corresponding plots
-CMPS_hamby44_results$cmps.table <- list()
-CMPS_hamby44_results$plot <- list()
+CMPS_hamby252_results_seg <- all_results_container$h252_seg
+CMPS_hamby252_results_npeak <- all_results_container$h252_npeak
+CMPS_hamby44_results_seg <- all_results_container$h44_seg
+CMPS_hamby44_results_npeak <- all_results_container$h44_npeak
+rf.results <- all_results_container$rf
 
 #### a global title for Hamby44 plots
 com.title44 <- expression(paste(
   "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
 ))
 
-for(i in 1:N){
-  CMPS_hamby44_results$cmps.table[[i]] <- 
-  read.csv(file = paste("./data/hamby44/", 
-                        CMPS_hamby44_results$filename[[i]], 
-                        ".csv",
-                        sep = ""))
-}
-
-CMPS_hamby44_results_seg <- CMPS_hamby44_results
-
-
-
-## ----hamby44-data-npeak, eval=TRUE, echo=FALSE------------
-N <- 8 # the number of different sets of parameters
-CMPS_hamby44_results <- list() # a container for everything
-
-#### setup span1
-CMPS_hamby44_results$span1 <- as.list(rep(0.25, N))
-
-#### setup signature name
-CMPS_hamby44_results$signame <-
-  as.list(rep("sigs25_531", N))
-
-#### setup neapks.set
-CMPS_hamby44_results$npeaks.set <-
-  list(c(5),
-       c(5,2),
-       c(5,3,1),
-       c(10,6,2),
-       c(6,4,2,1),
-       c(10,7,4,2),
-       c(10,6,4,2,1),
-       c(10,8,6,4,2,1))
-
-#### setup seg_length
-CMPS_hamby44_results$seg_length <- as.list(rep(61, N))
-
-#### setup outlength
-CMPS_hamby44_results$outlength <- vector(mode = "list", length = N)
-CMPS_hamby44_results$outlength[[7]] <- c(61, 91, 121, 151, 181)
-CMPS_hamby44_results$outlength[[8]] <- c(61, 91, 121, 151, 181, 211)
-
-#### setup Tx
-CMPS_hamby44_results$Tx <- as.list(rep(30, N))
-
-#### create a plot title and a file name for each set of parameters
-CMPS_hamby44_results$titlee <- list()
-CMPS_hamby44_results$filename <- list()
-for (i in 1:N) {
-  CMPS_hamby44_results$titlee[[i]] <-
-    paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
-      ")",
-      ", len=",
-      CMPS_hamby44_results$seg_length[[i]],
-      ", Tx=",
-      CMPS_hamby44_results$Tx[[i]],
-      ", \nspan1=",
-      CMPS_hamby44_results$span1[[i]],
-      ", span2=0.03"
-    )
-  CMPS_hamby44_results$filename[[i]] <- 
-    paste(
-      "hamby44_npeak",
-      CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
-      CMPS_hamby44_results$seg_length[[i]],
-      CMPS_hamby44_results$Tx[[i]],
-      sep = "_"
-    )
-}
-
-#### container for the cmps results and corresponding plots
-CMPS_hamby44_results$cmps.table <- list()
-CMPS_hamby44_results$plot <- list()
-
-#### a global title for Hamby44 plots
-com.title44 <- expression(paste(
-  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
+#### a global title for Hamby252 plots
+com.title252 <- expression(paste(
+  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
 ))
 
-for(i in 1:N){
-  CMPS_hamby44_results$cmps.table[[i]] <- 
-  read.csv(file = paste("./data/hamby44/", 
-                        CMPS_hamby44_results$filename[[i]], 
-                        ".csv",
-                        sep = ""))
-}
 
-CMPS_hamby44_results_npeak <- CMPS_hamby44_results
-
-
-## ----rf-data-load, echo=FALSE-----------------------------
-rf.results <- list()
-rf.results[[1]] <- read.csv(file = "./data/hamby252/hamby252_rf_results.csv")
-rf.results[[2]] <- read.csv(file = "./data/hamby44/hamby44_rf_results.csv")
-
+## ----rf-data-process, echo=FALSE-----------------------------
 rf.tt <- lapply(rf.results, function(rf_result) {
   with(rf_result, {
     tibble(rf.diff, rf.max, rf.maxbar) %>% 
-      apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
+      apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
   })
 }) %>% do.call(rbind, .) %>% as_tibble()
 
@@ -632,7 +321,7 @@ rf.tt$npeak <- "RF score* (Hare et al)"
 
 
 
-## ----ss-original-cmps, echo=FALSE-------------------------
+## ----ss-original-cmps, echo=FALSE----------------------------
 result.container <- list()
 
 result.container$npeak <- 
@@ -675,35 +364,35 @@ result.container <- result.container %>% as_tibble() %>%
              type_truth = rep(dd$type, dd$freq))
     }),
     value = purrr::map_dbl(dd.table, function(dd) {
-      compute_var_ratio_anova(dd$score, dd$type_truth, MS = FALSE)
+      compute_ss_ratio(dd$score, dd$type_truth, MS = FALSE)
     })
   ) 
 
 
-## ---- eval=FALSE------------------------------------------
-#> extract_feature_cmps(
-#>   x, y,
-#>   seg_length = 50,
-#>   Tx = 25,
-#>   npeaks.set = c(5,3,1),
-#>   include = "nseg"
-#> )
+## ---- eval=FALSE---------------------------------------------
+## extract_feature_cmps(
+##   x, y,
+##   seg_length = 50,
+##   Tx = 25,
+##   npeaks.set = c(5,3,1),
+##   include = "nseg"
+## )
 
 
-## ---- echo=FALSE, eval=FALSE------------------------------
-#> with(CMPS_hamby252_results_npeak$cmps.table[[3]], {
-#>   tibble(cmps.max, cmps.maxbar) %>%
-#>     apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
-#> })
-#> 
-#> with(CMPS_hamby252_results_seg$cmps.table[[2]], {
-#>   tibble(cmps.max, cmps.maxbar, cmps.diff, cmps.diff_scaled) %>%
-#>     apply(2, compute_var_ratio_anova, label = type_truth, MS = FALSE)
-#> })
-#> 
+## ---- echo=FALSE, eval=FALSE---------------------------------
+## with(CMPS_hamby252_results_npeak$cmps.table[[3]], {
+##   tibble(cmps.max, cmps.maxbar) %>%
+##     apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+## })
+## 
+## with(CMPS_hamby252_results_seg$cmps.table[[2]], {
+##   tibble(cmps.max, cmps.maxbar, cmps.diff, cmps.diff_scaled) %>%
+##     apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+## })
+## 
 
 
-## ----color-settings, echo=FALSE---------------------------
+## ----color-settings, echo=FALSE------------------------------
 
 cols_1 <- c("#748BA7", "#C583AE","#FFDFAA", "#D9F0A0")
 cols_2 <- c("#4C688B", "#A45287","#D4AC6A", "#ABC864")
@@ -752,7 +441,7 @@ cols_2 <- c("#4C688B", "#A45287","#D4AC6A", "#ABC864")
 table.252.cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
 table.252.cmps_seg$seg_length <- unlist(CMPS_hamby252_results_seg$seg_length)
@@ -789,7 +478,7 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
 table.44.cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
 table.44.cmps_seg$seg_length <- unlist(CMPS_hamby44_results_seg$seg_length)
@@ -840,7 +529,7 @@ p.seg_plot <- table.cmps_seg.long %>%
 table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
 table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks.set %>% 
@@ -861,7 +550,7 @@ table.252.cmps_npeak.longer$study <- "Hamby 252"
 table.44.cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_var_ratio_anova, label=type_truth, MS=FALSE)
+    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
 }) %>% do.call(rbind, .) %>% as.data.frame()
 
 table.44.cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks.set %>% 
@@ -954,14 +643,14 @@ p.result1_252 <- annotate_figure(p.result1_252, top = text_grob(com.title252))
 p.result1_252
 
 
-## ---- eval=FALSE------------------------------------------
-#> extract_feature_cmps(
-#>   x, y,
-#>   seg_length = 61,
-#>   Tx = 30,
-#>   npeaks.set = c(5,3,1),
-#>   include = "nseg"
-#> )
+## ---- eval=FALSE---------------------------------------------
+## extract_feature_cmps(
+##   x, y,
+##   seg_length = 61,
+##   Tx = 30,
+##   npeaks.set = c(5,3,1),
+##   include = "nseg"
+## )
 
 
 ## ----result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3, warning=FALSE----

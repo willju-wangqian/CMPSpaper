@@ -9,7 +9,10 @@
 
 ## Load the required packages
 library(tidyverse)
-library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
+if(!require(bulletxtrctr)) {
+  devtools::install_github("heike/bulletxtrctr")
+  library(bulletxtrctr)
+}
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
