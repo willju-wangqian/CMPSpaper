@@ -66,10 +66,6 @@ for (i in 1:N) {
 CMPS_hamby252_results$cmps.table <- list()
 CMPS_hamby252_results$plot <- list()
 
-#### a global title for Hamby252 plots
-com.title252 <- expression(paste(
-  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
 
 for(i in 1:N){
   CMPS_hamby252_results$cmps.table[[i]] <- 
@@ -149,10 +145,6 @@ for (i in 1:N) {
 CMPS_hamby252_results$cmps.table <- list()
 CMPS_hamby252_results$plot <- list()
 
-#### a global title for Hamby252 plots
-com.title252 <- expression(paste(
-  "Hamby 252 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
 
 for(i in 1:N){
   CMPS_hamby252_results$cmps.table[[i]] <- 
@@ -221,10 +213,6 @@ for (i in 1:N) {
 CMPS_hamby44_results$cmps.table <- list()
 CMPS_hamby44_results$plot <- list()
 
-#### a global title for Hamby44 plots
-com.title44 <- expression(paste(
-  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
 
 for(i in 1:N){
   CMPS_hamby44_results$cmps.table[[i]] <- 
@@ -301,11 +289,6 @@ for (i in 1:N) {
 #### container for the cmps results and corresponding plots
 CMPS_hamby44_results$cmps.table <- list()
 CMPS_hamby44_results$plot <- list()
-
-#### a global title for Hamby44 plots
-com.title44 <- expression(paste(
-  "Hamby 44 - ", CMPS[max], " and ", bar(CMPS)[max], " Distribution"
-))
 
 for(i in 1:N){
   CMPS_hamby44_results$cmps.table[[i]] <- 

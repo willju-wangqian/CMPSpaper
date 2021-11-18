@@ -1,29 +1,28 @@
-##########################
-# Note: This R script uses rds files in reproducible/bullet_signatures_etc/
-#       These rds files contain processed bullet signatures used in the paper
-#       The original data contains x3p objects of large size, so they are not
-#       uploaded to the Github repo
-##########################
+###############################
+# Note: read reproducible-readme.md first before reproducing the results
+# Please set the working directory properly so that func_collection.R and 
+# the data files mentioned in reproducible-readme.md are available
+###############################
 
+# set the working directory
+# setwd("~/your-path/supplementary-files")
 
 ## Load the required packages
 library(tidyverse)
-library(bulletxtrctr)
+library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
 library(parallel)
 
-source("code/func_collection.R")
+source("func_collection.R")
 
-#### code used to load the original data; commented out
-# b44.full <- 
-#   readRDS("~/Research/CMPSpaper/preconsideration/hamby44_manual5.rds")
+data_path <- "./data-csv/hamby44/"
 
 ## Data Processing
 
 #### load the data from reproducible/bullet_signatures_etc/
-b44 <- read_rds("./reproducible/bullet_signatures_etc/BulletSignatures44.rds")
+b44 <- read_rds("./bullet_signatures_etc/BulletSignatures44.rds")
 
 #### obtain all comparisons
 bulletid.tb <- b44 %>% select(scan_id)
@@ -318,8 +317,7 @@ for (i in 1:N) {
   
 }
 
-#### code used to save results as csv files used in the paper; commented out
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/hamby44/"
+#### code used to save results as csv files
 for(i in 1:N){
   write.csv(
     CMPS_hamby44_results$cmps.table[[i]] %>% select(-cmps.table, -cmps.table.m) %>% as.data.frame(),

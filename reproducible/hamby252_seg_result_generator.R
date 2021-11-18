@@ -1,28 +1,28 @@
-##########################
-# Note: This R script uses rds files in reproducible/bullet_signatures_etc/
-#       These rds files contain processed bullet signatures used in the paper
-#       The original data contains x3p objects of large size, so they are not
-#       uploaded to the Github repo
-##########################
+###############################
+# Note: read reproducible-readme.md first before reproducing the results
+# Please set the working directory properly so that func_collection.R and 
+# the data files mentioned in reproducible-readme.md are available
+###############################
+
+# set the working directory
+# setwd("~/your-path/supplementary-files")
 
 ## Load the required packages
 library(tidyverse)
-library(bulletxtrctr)
+library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
 library(parallel)
 
-source("code/func_collection.R")
+source("func_collection.R")
 
-#### code used to load the original data; commented out
-# b252.full <- 
-#   readRDS("~/Research/CMPSpaper/preconsideration/bullets_hamby252_Sep9.rds")
+data_path <- "./data-csv/hamby252/"
 
 ## Data Processing
 
 #### load the data from reproducible/bullet_signatures_etc/
-b252 <- read_rds("./reproducible/bullet_signatures_etc/BulletSignatures252.rds")
+b252 <- read_rds("./bullet_signatures_etc/BulletSignatures252.rds")
 
 #### obtain all comparisons
 b.cb <- unique(b252$bullet_id) %>% utils::combn(m = 2)
@@ -49,7 +49,7 @@ tmp.tibble <- tmp.tibble %>% mutate(
 ###### StudyInfo.xlsx provides the ground truth for Hamby252 
 studyinfo <-
   readxl::read_xlsx(
-    "./reproducible/bullet_signatures_etc/StudyInfo.xlsx",
+    "./bullet_signatures_etc/StudyInfo.xlsx",
     sheet = 3,
     skip = 1
   )
@@ -304,7 +304,6 @@ for (i in 1:N) {
 }
 
 #### code used to save results as csv files used in the paper; commented out
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/hamby252/"
 for(i in 1:N){
   write.csv(
     CMPS_hamby252_results$cmps.table[[i]] %>%

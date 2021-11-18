@@ -178,7 +178,7 @@ pre code {
 <p>source(“../code/func_collection.R”) points to a non-existing directory</p>
 <p>This function compute_var_ratio_anova() isn’t found.</p>
 </blockquote>
-<p>Thank you for pointing this out. This was an uncautious mistake and has been fixed. <code>../code/func_collection.R</code> is not needed for the paper. <code>compute_var_ratio_anova()</code> should actually be <code>cmpsR::compute_ss_ratio()</code> and is part of the <code>cmpsR</code> package.</p>
+<p>Thank you for pointing this out. This was an uncautious mistake and has been fixed. <code>../code/func_collection.R</code> is not needed for the paper. <code>compute_var_ratio_anova()</code> should really be <code>cmpsR::compute_ss_ratio()</code> and is part of the <code>cmpsR</code> package.</p>
 </div>
 <div id="paper" class="section level2">
 <h2>Paper</h2>
@@ -186,7 +186,7 @@ pre code {
 <p>If the paper was written in Rmarkdown please submit the .Rmd file too. My recommendation is for you to follow the format provided in the (new) rjtools package (<a href="https://rjournal.github.io/rjtools/" class="uri">https://rjournal.github.io/rjtools/</a>), when writing with Rmarkdown. (You should probably remove the extra lines referring to knitr options from the .R file after using curl to extract code from the Rmd.) (More details on this format are provided on the dev version of the R Journal site, which will become the primary web site from the next issue: <a href="https://journal.r-project.org/dev/submissions.html" class="uri">https://journal.r-project.org/dev/submissions.html</a> .)</p>
 </blockquote>
 <p>Yes, the paper was written in Rmarkdown, and the <code>.Rmd</code> file has been included in the re-submission.</p>
-<p>The extra lines referring to knitr options from the .R file are removed.</p>
+<p>The extra lines referring to knitr options from the <code>.R</code> file are removed.</p>
 <p>To address the requirements described on the dev version of the R Journal site, all the R scripts in the <code>reproducible</code> folder of the original submission has been zipped into <code>supplementary-files.zip</code>, and the data contained in the <code>reproducible</code> folder has been made available on an alternative site with the link provided in the paper under the section “Supplementary materials” to reduce the size of the submission file.</p>
 <blockquote>
 <p>Please don’t have URLs randomly in the text: “Our implementation is made available as part of the R package cmpsR on GitHub at <a href="https://github.com/willju-wangqian/" class="uri">https://github.com/willju-wangqian/</a> cmpsR.” You should be referring to the CRAN version, and development version on github, and these would be listed in a section titled “Supplementary materials” after the Conclusions section.</p>

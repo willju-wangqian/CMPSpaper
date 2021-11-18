@@ -10,7 +10,7 @@ something
 >
 > This function compute_var_ratio_anova() isn’t found.
 
-Thank you for pointing this out. This was an uncautious mistake and has been fixed. `../code/func_collection.R` is not needed for the paper. `compute_var_ratio_anova()` should actually be `cmpsR::compute_ss_ratio()` and is part of the `cmpsR` package.
+Thank you for pointing this out. This was an uncautious mistake and has been fixed. `../code/func_collection.R` is not needed for the paper. `compute_var_ratio_anova()` should really be `cmpsR::compute_ss_ratio()` and is part of the `cmpsR` package.
 
 ## Paper
 
@@ -18,7 +18,7 @@ Thank you for pointing this out. This was an uncautious mistake and has been fix
 
 Yes, the paper was written in Rmarkdown, and the `.Rmd` file has been included in the re-submission. 
 
-The extra lines referring to knitr options from the .R file are removed. 
+The extra lines referring to knitr options from the `.R` file are removed. 
 
 To address the requirements described on the dev version of the R Journal site, all the R scripts in the `reproducible` folder of the original submission has been zipped into `supplementary-files.zip`, and the data contained in the `reproducible` folder has been made available on an alternative site with the link provided in the paper under the section "Supplementary materials" to reduce the size of the submission file.
 

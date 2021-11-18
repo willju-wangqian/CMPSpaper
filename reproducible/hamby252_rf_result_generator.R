@@ -1,5 +1,15 @@
+###############################
+# Note: read reproducible-readme.md first before reproducing the results
+# Please set the working directory properly so that func_collection.R and 
+# the data files mentioned in reproducible-readme.md are available
+###############################
+
+# set the working directory
+# setwd("~/your-path/supplementary-files")
+
+## Load the required packages
 library(tidyverse)
-library(bulletxtrctr)
+library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
@@ -7,26 +17,27 @@ library(parallel)
 library(assertthat)
 require(randomForest)
 
-source("code/func_collection.R")
+source("func_collection.R")
 
-# b252.full <-
-#   readRDS("C:/Research/Bullet/Bullet_Rcode/hamby252/bullets_hamby252_Sep9.rds")
-b252.full <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/bullets_hamby252_Sep9.rds")
+data_path <- "./data-csv/hamby252/"
 
+#### load the data from reproducible/bullet_signatures_etc/
+b252 <- read_rds("./bullet_signatures_etc/BulletSignatures252.rds")
+b252$sig_rf <- b252$sigs25
+
+####
+# Note: if this random forest is not published yet by the time of reproduction, 
+# please contact the author of the paper
 rf.model <- readRDS("~/Desktop/csafe_rf2.rds")
 
 # generate bullet_id
-bulletid.tb <- b252.full %>% select(scan_id)
+bulletid.tb <- b252 %>% select(scan_id)
 bulletid.tb <- bulletid.tb %>% mutate(
   barrel_id = sapply(strsplit(scan_id, "-"), "[[", 1),
   bullet = sapply(strsplit(scan_id, "-"), "[[", 2),
   land_id = sapply(strsplit(scan_id, "-"), "[[", 3),
   bullet_id = paste(barrel_id, bullet)
 )
-
-# remove x3p files
-b252 <- b252.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
 
 # get bullet id
 b252$bullet_id <- bulletid.tb %>% pull(bullet_id)
@@ -49,22 +60,17 @@ tmp.tibble <- tmp.tibble %>% mutate(
   type = if_else(is.na(type), "Ukn", type)
 )
 
-
 tr.id <- c("Br3-1-4", "Ukn-B-2", "Ukn-Q-4", "Br6-2-1", "Br9-2-4")
 
 ######################################
 # add ground-truth for hamby 252
 studyinfo <-
   readxl::read_xlsx(
-    "~/Research/CMPSpaper/preconsideration/StudyInfo.xlsx",
+    "./bullet_signatures_etc/StudyInfo.xlsx",
     sheet = 3,
     skip = 1
   )
-# readxl::read_xlsx(
-#   "C:/Research/Bullet/Bullet_Rcode/grooves/NRBTDSearchResults/Hamby (2009) Barrel/StudyInfo.xlsx",
-#   sheet = 3,
-#   skip = 1
-# )
+
 
 keyss <- studyinfo$`Specimen ID`[-length(studyinfo$`Specimen ID`)]
 keyss <- tibble(specimen = keyss)
@@ -132,17 +138,17 @@ com.title252 <- expression(paste(
 # start of the loop
 i <- 1
 
-b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
-  .x = b252.full$ccdata,
-  .y = b252.full$grooves,
-  .f = function(x, y) {
-    cc_get_signature(
-      ccdata = x,
-      grooves = y,
-      span1 = CMPS_hamby252_results$span1[[i]],
-      span2 = 0.03
-    )
-  })
+# b252[[CMPS_hamby252_results$signame[[i]]]] <- purrr::map2(
+#   .x = b252.full$ccdata,
+#   .y = b252.full$grooves,
+#   .f = function(x, y) {
+#     cc_get_signature(
+#       ccdata = x,
+#       grooves = y,
+#       span1 = CMPS_hamby252_results$span1[[i]],
+#       span2 = 0.03
+#     )
+#   })
 
 
 # process of removing outliers
@@ -256,7 +262,6 @@ hamby252.rf$type_truth <- tmp.tibble$type_truth
 
 hamby252.csv <- hamby252.rf %>% select(-rf.table, -rf.table.m)
 
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/hamby252/"
 write.csv(
   hamby252.csv %>% as.data.frame(),
   file = paste(data_path, "hamby252_rf_results", ".csv", sep = "")

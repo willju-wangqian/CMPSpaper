@@ -1,5 +1,15 @@
+###############################
+# Note: read reproducible-readme.md first before reproducing the results
+# Please set the working directory properly so that func_collection.R and 
+# the data files mentioned in reproducible-readme.md are available
+###############################
+
+# set the working directory
+# setwd("~/your-path/supplementary-files")
+
+## Load the required packages
 library(tidyverse)
-library(bulletxtrctr)
+library(bulletxtrctr) # devtools::install_github("heike/bulletxtrctr")
 library(x3ptools)
 library(CMPS)
 library(ggpubr)
@@ -7,27 +17,33 @@ library(parallel)
 library(assertthat)
 require(randomForest)
 
-source("code/func_collection.R")
+source("func_collection.R")
 
-b44.full <- 
-  readRDS("~/Research/CMPSpaper/preconsideration/hamby44_manual5.rds")
+data_path <- "./data-csv/hamby44/"
 
+
+## Data Processing
+
+#### load the data from reproducible/bullet_signatures_etc/
+b44 <- read_rds("./bullet_signatures_etc/BulletSignatures44.rds")
+b44$sig_rf <- b44$sigs25_531
+
+####
+# Note: if this random forest is not published yet by the time of reproduction, 
+# please contact the author of the paper
 rf.model <- readRDS("~/Desktop/csafe_rf2.rds")
 
 idf.idx <- c(23,35,39,41,102,126,149)
-idf.scan_id <- b44.full %>% slice(idf.idx) %>% .$scan_id
+idf.scan_id <- b44 %>% slice(idf.idx) %>% .$scan_id
 
 # generate bullet_id
-bulletid.tb <- b44.full %>% select(scan_id)
+bulletid.tb <- b44 %>% select(scan_id)
 bulletid.tb <- bulletid.tb %>% mutate(
   barrel_id = sapply(strsplit(scan_id, "-"), "[[", 1),
   bullet = sapply(strsplit(scan_id, "-"), "[[", 2),
   land_id = sapply(strsplit(scan_id, "-"), "[[", 3),
   bullet_id = paste(barrel_id, bullet)
 )
-
-# remove x3p files
-b44 <- b44.full %>% select(-x3p,-crosscut,-grooves,-ccdata)
 
 # get all comparisons
 b44$bullet_id <- bulletid.tb %>% pull(bullet_id)
@@ -118,17 +134,17 @@ com.title44 <- expression(paste(
 # start of the loop
 i <- 1
 
-b44[[CMPS_hamby44_results$signame[[i]]]] <- purrr::map2(
-  .x = b44.full$ccdata,
-  .y = b44.full$grooves,
-  .f = function(x, y) {
-    cc_get_signature(
-      ccdata = x,
-      grooves = y,
-      span1 = CMPS_hamby44_results$span1[[i]],
-      span2 = 0.03
-    )
-  })
+# b44[[CMPS_hamby44_results$signame[[i]]]] <- purrr::map2(
+#   .x = b44.full$ccdata,
+#   .y = b44.full$grooves,
+#   .f = function(x, y) {
+#     cc_get_signature(
+#       ccdata = x,
+#       grooves = y,
+#       span1 = CMPS_hamby44_results$span1[[i]],
+#       span2 = 0.03
+#     )
+#   })
 
 # process of removing outliers
 tt <- lapply(b44[[CMPS_hamby44_results$signame[[i]]]], function(x) {
@@ -234,12 +250,6 @@ hamby44.rf <- hamby44.rf %>% mutate(
   })
 ) %>% tidyr::unnest(metric_list_scaled)
 
-# hamby44.rf <- hamby44.rf %>% mutate(
-#   metric_list = rf.table.m %>% purrr::map(.f = score_metrics_helper, score = "rf_score") 
-# )
-# 
-# hamby44.rf <- bind_cols(hamby44.rf %>% dplyr::select(-metric_list), 
-#                          bind_rows(hamby44.rf$metric_list)) 
 
 # add type and type_truth
 hamby44.rf$type <- tmp.table.44$type
@@ -247,20 +257,9 @@ hamby44.rf$type_truth <- tmp.table.44$type_truth
 
 hamby44.csv <- hamby44.rf %>% select(-rf.table, -rf.table.m)
 
-data_path <- "~/Research/CMPSpaper/CMPSpaper_writing/data/hamby44/"
 write.csv(
   hamby44.csv %>% as.data.frame(),
   file = paste(data_path, "hamby44_rf_results", ".csv", sep = "")
 )
 
-###################################
-# save result in a list
-CMPS_hamby44_results$rf.table[[i]] <- hamby44.rf
-
-saveRDS(CMPS_hamby44_results, "code/saved_rds/h44_rf2_features_rmo.rds")
-
-rf_hamby44_results <- 
-  readRDS("~/Research/CMPSpaper/code/saved_rds/h44_rf_features_def.rds")
-
-rf_hamby44_results <- CMPS_hamby44_results
 
