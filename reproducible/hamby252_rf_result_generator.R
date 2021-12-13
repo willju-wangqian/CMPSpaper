@@ -14,7 +14,7 @@ if(!require(bulletxtrctr)) {
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(CMPS)
+library(cmpsR)
 library(ggpubr)
 library(parallel)
 library(assertthat)
