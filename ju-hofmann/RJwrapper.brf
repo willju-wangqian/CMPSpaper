@@ -2,6 +2,7 @@
 \backcite {cmps}{{1}{2.0.1}{subsection.2.0.1}}
 \backcite {R}{{1}{2.0.1}{subsection.2.0.1}}
 \backcite {fbiucr}{{1}{2.0.1}{subsection.2.0.1}}
+\backcite {fbiucr20}{{1}{2.0.1}{subsection.2.0.1}}
 \backcite {afte}{{1}{2.0.1}{subsection.2.0.1}}
 \backcite {pcast}{{1}{2.0.1}{subsection.2.0.1}}
 \backcite {nrc}{{1}{2.0.1}{subsection.2.0.1}}
@@ -44,14 +45,14 @@
 \backcite {nistdb}{{7}{2.0.3}{Item.3}}
 \backcite {cmps}{{7}{2.0.3}{figure.caption.4}}
 \backcite {cmps}{{9}{2.0.4}{subsection.2.0.4}}
-\backcite {cmps}{{9}{2.0.4}{subsection.2.0.4}}
+\backcite {cmps}{{9}{2.0.4}{equation.2.0.1}}
 \backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
 \backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
 \backcite {aoas}{{13}{2.0.5}{subsection.2.0.5}}
 \backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
 \backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
-\backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
-\backcite {cmps}{{13}{2.0.5}{subsection.2.0.5}}
+\backcite {cmps}{{14}{2.0.5}{subsection.2.0.5}}
+\backcite {cmps}{{14}{2.0.5}{subsection.2.0.5}}
 \backcite {cmps}{{16}{2.0.5}{figure.caption.13}}
 \backcite {cmps}{{16}{2.0.5}{figure.caption.13}}
 \backcite {cmps}{{16}{2.0.5}{figure.caption.13}}
@@ -59,8 +60,8 @@
 \backcite {aoas}{{16}{2.0.5}{figure.caption.13}}
 \backcite {aoas}{{16}{2.0.5}{figure.caption.13}}
 \backcite {bulletxtrctr}{{16}{2.0.5}{figure.caption.13}}
-\backcite {cmps}{{16}{2.0.6}{subsection.2.0.6}}
-\backcite {hamby}{{16}{2.0.6}{subsection.2.0.6}}
+\backcite {cmps}{{17}{2.0.6}{subsection.2.0.6}}
+\backcite {hamby}{{17}{2.0.6}{subsection.2.0.6}}
 \backcite {cmps}{{17}{2.0.6}{subsection.2.0.6}}
 \backcite {vanderplas}{{17}{2.0.6}{subsection.2.0.6}}
 \backcite {aoas}{{17}{2.0.6}{subsection.2.0.6}}

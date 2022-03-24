@@ -1,4 +1,4 @@
-\begin{thebibliography}{19}
+\begin{thebibliography}{20}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -130,12 +130,20 @@ J.~Song, L.~Ma, E.~Whitenton, and T.~Vorburger.
 \newblock \doi{10.4028/www.scientific.net/KEM.295-296.437}.
 
 \bibitem[{United States Department of Justice, Federal Bureau of
-  Investigation.}()]{fbiucr}
+  Investigation.}({\natexlab{a}})]{fbiucr}
 {United States Department of Justice, Federal Bureau of Investigation.}
-\newblock {Crime in the United States, 2019}.
+\newblock {Crime in the United States, 2019}, {\natexlab{a}}.
 \newblock URL
   \url{https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/tables/expanded-homicide-data-table-8.xls}.
 \newblock {Expanded Homicide Data Table 8}.
+
+\bibitem[{United States Department of Justice, Federal Bureau of
+  Investigation.}({\natexlab{b}})]{fbiucr20}
+{United States Department of Justice, Federal Bureau of Investigation.}
+\newblock {Expanded Homicide Tables, 2020}, {\natexlab{b}}.
+\newblock URL
+  \url{https://s3-us-gov-west-1.amazonaws.com/cg-d4b776d0-d898-4153-90c8-8336f86bdfec/CIUS/downloads/2020/expanded-homicide-2020.zip}.
+\newblock {Data available through the link, not published to the website yet}.
 
 \bibitem[Vanderplas et~al.(2020)Vanderplas, Nally, Klep, Cadevall, and
   Hofmann]{vanderplas}
