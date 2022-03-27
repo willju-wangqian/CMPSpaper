@@ -230,7 +230,7 @@ following code:
 
 \begin{Schunk}
 \begin{Sinput}
-# install.packages("cmpsR") 
+# install.packages("cmpsR")
 
 library(cmpsR)
 data(bullets)
@@ -239,8 +239,8 @@ sig1 <- bullets$sigs[[2]]$sig
 sig2 <- bullets$sigs[[9]]$sig
 sig3 <- bullets$sigs[[10]]$sig
 
-cmps.result.KM <- extract_feature_cmps(sig1, sig2)
-cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
+cmps_result_KM <- extract_feature_cmps(sig1, sig2)
+cmps_result_KNM <- extract_feature_cmps(sig1, sig3)
 \end{Sinput}
 \end{Schunk}
 
@@ -312,19 +312,19 @@ Conceptually, the CMPS algorithm consists of three main steps:
     segment lengths'' in \citet{cmps} are used for identifying positions
     of correlation peaks as candidate positions. The latter is also
     called ``multi-segment lengths strategy''. The parameter
-    \code{npeaks.set} in \code{extract\_feature\_cmps(...)} determines
+    \code{npeaks\_set} in \code{extract\_feature\_cmps(...)} determines
     which strategy to use and the number of candidate positions:
 
     \begin{itemize}
     \tightlist
     \item
-      If \code{npeaks.set} is an integer vector of length 1, for example
-      \code{npeaks.set = 5}, the positions of the top five peaks in the
-      cross-correlation curve are identified as candidate positions for
-      registration.
+      If \code{npeaks\_set} is an integer vector of length 1, for
+      example \code{npeaks\_set = 5}, the positions of the top five
+      peaks in the cross-correlation curve are identified as candidate
+      positions for registration.
     \item
-      If \code{npeaks.set} is an integer vector of length more than 1,
-      for example \code{npeaks.set = c(5, 3, 1)}, the multi-segment
+      If \code{npeaks\_set} is an integer vector of length more than 1,
+      for example \code{npeaks\_set = c(5, 3, 1)}, the multi-segment
       lengths strategy will be used: calculate the cross-correlation
       function between a basis segment and the reference and identify
       positions of the top five peaks; double the segment length to a
@@ -348,7 +348,7 @@ Conceptually, the CMPS algorithm consists of three main steps:
       reference signature. If the multi-segment lengths strategy is
       used, then \code{get\_ccr\_peaks(...)} is called in a
       \code{lapply()} for each level of the basis segment. The resulting
-      list is called \code{ccr.list}.
+      list is called \code{ccr\_list}.
     \end{itemize}
   \item
     \textbf{multi-segment lengths strategy:} with the multi-segment
@@ -371,8 +371,8 @@ Conceptually, the CMPS algorithm consists of three main steps:
       increased. \code{out\_length} specifies the length of the output
       segment.
     \item
-      \code{get\_ccp(ccr.list, Tx = 25)} tries to identify the
-      ``consistent correlation peak''. \code{ccr.list} is the result of
+      \code{get\_ccp(ccr\_list, Tx = 25)} tries to identify the
+      ``consistent correlation peak''. \code{ccr\_list} is the result of
       \code{lapply()} and \code{get\_ccr\_peaks(...)}, and \code{Tx}
       determines the size of a tolerance zone used in identifying the
       consistent correlation peak. \code{get\_ccp(...)} returns
@@ -392,14 +392,14 @@ Conceptually, the CMPS algorithm consists of three main steps:
   registration position. Basis segments with a congruent registration
   position are called ``congruent matching profile segments'' (CMPS).
   The total number of CMPS is the CMPS score of the comparison.
-  \code{get\_CMPS(input.ccp, Tx = 25)} is the function that tallies the
+  \code{get\_CMPS(input\_ccp, Tx = 25)} is the function that tallies the
   votes and determines the congruent registration position and congruent
   matching profile segments (CMPS).
 \end{enumerate}
 
 Note that there are several parameters in the CMPS algorithm that are
 left to the users to decide, such as the length of basis segments
-\code{seg\_length} in step 1, the number of peaks \code{npeaks.set}
+\code{seg\_length} in step 1, the number of peaks \code{npeaks\_set}
 identified on each level in step 2, and the length of the tolerance zone
 \code{Tx} in both step 2 and 3. In our implementation of the CMPS
 algorithm we used the parameters given in the original CMPS paper
@@ -419,7 +419,7 @@ extract_feature_cmps(
   y,
   seg_length = 50,
   Tx = 25,
-  npeaks.set = c(5, 3, 1),
+  npeaks_set = c(5, 3, 1),
   include = NULL,
   outlength = NULL
 )
@@ -428,7 +428,7 @@ extract_feature_cmps(
 
 The function \code{extract\_feature\_cmps} allows for the following
 input from users besides the previously discussed parameters
-\code{seg\_length}, \code{npeaks.set}, and \code{Tx}:
+\code{seg\_length}, \code{npeaks\_set}, and \code{Tx}:
 
 \begin{itemize}
 \item
@@ -437,12 +437,12 @@ input from users besides the previously discussed parameters
   \code{y} is the reference signature;
 \item
   \code{include} determines the format of the function result. Besides
-  the \code{CMPS.score}, other aspects of the comparison help in
-  understanding how the \code{CMPS.score} is computed. By default
-  \code{include} is set to \code{NULL} and only the \code{CMPS.score} is
-  returned; further results are included when \code{include} is (an
+  the \code{CMPS\_score}, other aspects of the comparison help in
+  understanding how the \code{CMPS\_score} is computed. By default
+  \code{include} is set to \code{NULL} and only the \code{CMPS\_score}
+  is returned; further results are included when \code{include} is (an
   abbreviation of) one of or a vector of the following strings:
-  \code{"nseg"}, \code{"congruent.pos"}, \code{"congruent.seg.idx"},
+  \code{"nseg"}, \code{"congruent\_pos"}, \code{"congruent\_seg\_idx"},
   \code{"segments"}, \code{"parameters"}, and \code{"full\_result"}. If
   \code{include} is specified as \code{"full\_result"} (or its
   abbreviation), the output includes everything listed below.
@@ -454,15 +454,15 @@ input from users besides the previously discussed parameters
     signature; this is also the highest possible CMPS score of the
     comparison;
   \item
-    \code{congruent.pos}: the congruent registration position;
+    \code{congruent\_pos}: the congruent registration position;
   \item
-    \code{congruent.seg.idx}: the indices of all congruent matching
+    \code{congruent\_seg\_idx}: the indices of all congruent matching
     profile segments;
   \item
-    \code{ccp.list}: a list showing identified candidate positions of
+    \code{ccp\_list}: a list showing identified candidate positions of
     all basis segments;
   \item
-    \code{pos.df}: a data frame containing all candidate positions and
+    \code{pos\_df}: a data frame containing all candidate positions and
     their respective number of votes;
   \item
     \code{segments}: a list containing all basis segments;
@@ -489,7 +489,7 @@ installed by
 
 \begin{Schunk}
 \begin{Sinput}
-install.packages("cmpsR") 
+install.packages("cmpsR")
 \end{Sinput}
 \end{Schunk}
 
@@ -498,7 +498,7 @@ be installed by
 
 \begin{Schunk}
 \begin{Sinput}
-# install.packages("remotes") 
+# install.packages("remotes")
 remotes::install_github("willju-wangqian/cmpsR")
 \end{Sinput}
 \end{Schunk}
@@ -554,18 +554,20 @@ sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 # compute cmps
 
 # algorithm with multi-peak insepction at three different segment levels
-cmps_with_multi_scale <- 
-  extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                       npeaks.set = c(5,3,1), include = "full_result")
+cmps_with_multi_scale <-
+  extract_feature_cmps(sigs1$sig, sigs2$sig,
+    npeaks_set = c(5, 3, 1), include = "full_result"
+  )
 
 # algorithm with multi-peak inspection at the basis scale only
-cmps_without_multi_scale <- 
-  extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                       npeaks.set = 5, include = "full_result")
+cmps_without_multi_scale <-
+  extract_feature_cmps(sigs1$sig, sigs2$sig,
+    npeaks_set = 5, include = "full_result"
+  )
 \end{Sinput}
 \end{Schunk}
 
-In the first example, \code{npeaks.set} is a vector of three integers,
+In the first example, \code{npeaks\_set} is a vector of three integers,
 i.e.~the algorithm uses the multi-segment lengths strategy to create the
 result object \code{cmps\_with\_multi\_scale}. For
 \code{cmps\_without\_multi\_scale} each basis segment is linked to the
@@ -621,10 +623,10 @@ congruent registration position.
 {\small {}
 \begin{Schunk}
 \begin{Sinput}
-sig.plot <- cmps_signature_plot(
+sig_plot <- cmps_signature_plot(
   cmps_with_multi_scale
 )
-sig.plot$segment_shift_plot
+sig_plot$segment_shift_plot
 \end{Sinput}
 \end{Schunk}
 }
@@ -644,7 +646,7 @@ sig.plot$segment_shift_plot
 {\small {}
 \begin{Schunk}
 \begin{Sinput}
-sig.plot$signature_shift_plot
+sig_plot$signature_shift_plot
 \end{Sinput}
 \end{Schunk}
 }
@@ -670,10 +672,10 @@ sig.plot$signature_shift_plot
 
 \begin{Schunk}
 \begin{Sinput}
-sig.plot$seg_shift
+sig_plot$seg_shift
 \end{Sinput}
 \begin{Soutput}
-#>    seg.idx seg.shift
+#>    seg_idx seg_shift
 #> 7        7         0
 #> 8        8        -1
 #> 14      14         5
@@ -689,10 +691,10 @@ sig.plot$seg_shift
 While \code{cmps\_signature\_plot()} focuses on the signature level,
 \code{cmps\_segment\_plot()} focuses on the segment level. It provides
 the ``full result'' of \code{extract\_feature\_cmps()}, but also takes
-an argument, \code{seg.idx}, indicating which segment should be
-inspected. When checking \code{sig.plot\$seg\_shift} we notice that
+an argument, \code{seg\_idx}, indicating which segment should be
+inspected. When checking \code{sig\_plot\$seg\_shift} we notice that
 segment number 6 is not one of the congruent matching profile segments.
-We can therefore set \code{seg.idx = 6} in \code{cmps\_segment\_plot()}
+We can therefore set \code{seg\_idx = 6} in \code{cmps\_segment\_plot()}
 and investigate the reason why this segment disagrees with the congruent
 registration position.
 
@@ -705,8 +707,8 @@ example of segment number 6:
 \item
   \autoref{fig:segplot} is the \code{segment\_plot} for basis segment 6
   at level one (in its original length). We used
-  \code{npeaks.set = c(5, 3, 1)} in \code{extract\_feature\_cmps()} when
-  calculating the CMPS score. Therefore the top five peaks are
+  \code{npeaks\_set = c(5, 3, 1)} in \code{extract\_feature\_cmps()}
+  when calculating the CMPS score. Therefore the top five peaks are
   identified in the cross-correlation curve at level one. Segment 6 is
   plotted at the positions where these 5 peaks are identified with
   dashed lines in the \code{segment\_plot}. The solid thick black line
@@ -729,11 +731,11 @@ example of segment number 6:
 {\small {}
 \begin{Schunk}
 \begin{Sinput}
-seg.plot <- cmps_segment_plot(
-  cmps_with_multi_scale, 
-  seg.idx = 6
+seg_plot <- cmps_segment_plot(
+  cmps_with_multi_scale,
+  seg_idx = 6
 )
-seg.plot[[1]]$segment_plot
+seg_plot[[1]]$segment_plot
 \end{Sinput}
 \end{Schunk}
 }
@@ -753,7 +755,7 @@ seg.plot[[1]]$segment_plot
 {\small {}
 \begin{Schunk}
 \begin{Sinput}
-seg.plot[[1]]$scale_ccf_plot
+seg_plot[[1]]$scale_ccf_plot
 \end{Sinput}
 \end{Schunk}
 }
@@ -784,11 +786,13 @@ shown in \autoref{fig:seg_all} with the help of
 library(ggpubr)
 
 ggarrange(
-  plotlist = 
-    unlist(seg.plot, 
-           recursive = FALSE),
-  ncol = 2, 
-  nrow = 3)
+  plotlist =
+    unlist(seg_plot,
+      recursive = FALSE
+    ),
+  ncol = 2,
+  nrow = 3
+)
 \end{Sinput}
 \end{Schunk}
 }
@@ -798,7 +802,7 @@ ggarrange(
 \includegraphics[width=\textwidth]{ju-hofmann_files/figure-latex/segplot3-1.pdf}
 \end{minipage}
 \end{adjustbox}
-\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since npeaks.set = c(5, 3, 1). The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
+\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since npeaks\_set = c(5, 3, 1). The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
 \end{figure}
 
 In \autoref{fig:seg_all}, the red vertical dashed line indicates the
@@ -1036,7 +1040,7 @@ extract_feature_cmps(
   x, y,
   seg_length = 50,
   Tx = 25,
-  npeaks.set = c(5,3,1),
+  npeaks_set = c(5, 3, 1),
   include = "nseg"
 )
 \end{Sinput}
@@ -1071,7 +1075,7 @@ comparisons.
 
 }
 
-\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \texttt{seg\_length = 50}, \texttt{Tx = 25}, \texttt{npeaks.set = c(5,3,1)} }\label{fig:result1_252}
+\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \texttt{seg\_length = 50}, \texttt{Tx = 25}, \texttt{npeaks\_set = c(5,3,1)} }\label{fig:result1_252}
 \end{figure}
 \end{Schunk}
 
@@ -1086,9 +1090,9 @@ respectively. The parameters used in \code{extract\_feature\_cmps} are:
 \begin{Sinput}
 extract_feature_cmps(
   x, y,
-  seg_length = 61, 
+  seg_length = 61,
   Tx = 30,
-  npeaks.set = c(5,3,1),
+  npeaks_set = c(5, 3, 1),
   include = "nseg"
 )
 \end{Sinput}
@@ -1117,7 +1121,7 @@ ratio by using other CMPS metrics and other sets of parameters.
 
 }
 
-\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \texttt{seg\_length = 61}, \texttt{Tx = 30}, \texttt{npeaks.set = c(5,3,1)} }\label{fig:result1_44}
+\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \texttt{seg\_length = 61}, \texttt{Tx = 30}, \texttt{npeaks\_set = c(5,3,1)} }\label{fig:result1_44}
 \end{figure}
 \end{Schunk}
 
@@ -1150,8 +1154,8 @@ example of both Hamby sets 252 and 44. More specifically, we
 investigated the separation achieved using the \pkg{cmpsR}
 implementation under various segment lengths (controlled by the
 parameter \code{seg\_length}). Specifically, we fixed the parameter
-\code{npeaks.set} that controls the number of peaks at each segment
-level to be \code{npeaks.set = c(5,3,1)} and modified the parameter
+\code{npeaks\_set} that controls the number of peaks at each segment
+level to be \code{npeaks\_set = c(5,3,1)} and modified the parameter
 \code{seg\_length}. \autoref{fig:param_seg_plot} shows that the default
 values of \code{seg\_length} for Hamby 252 and Hamby 44 (50 for Hamby
 252 and 61 for Hamby 44, which represent 78.125 \textmu m and 78.69
@@ -1165,10 +1169,10 @@ better choice than the default segment length; a basis segment length of
 different strategies for identifying peaks in the correlation structure
 between signatures. Basis segment length is fixed to the default level
 for this evaluation. As can be seen in \autoref{fig:param_npeak_plot},
-the default value of \code{npeaks.set} (\code{npeaks.set = c(5,3,1)})
+the default value of \code{npeaks\_set} (\code{npeaks\_set = c(5,3,1)})
 leads to promising results in terms of the sum of squares ratio;
-however, other choices of \code{npeaks.set} match and exceed this sum of
-squares ratio value.
+however, other choices of \code{npeaks\_set} match and exceed this sum
+of squares ratio value.
 
 As seen before, the results suggest that the \(\mathrm{CMPS_{max}}\)
 metric produces the least amount of separation compared with the other
@@ -1203,13 +1207,13 @@ cross-validate the parameters of the CMPS algorithm.
 \textbf{Comparing with original results and the random forest model}
 
 \citet{cmps} present histograms of \(\mathrm{CMPS_{max}}\) and
-\(\mathrm{\overline{CMPS}_{max}}\) for \code{npeaks.set = 5} and
-\code{npeaks.set = c(5,3,1)} with (presumably) Hamby 252. The values in
+\(\mathrm{\overline{CMPS}_{max}}\) for \code{npeaks\_set = 5} and
+\code{npeaks\_set = c(5,3,1)} with (presumably) Hamby 252. The values in
 these histograms allow us to calculate the sum of squares ratios and
 include the results in \autoref{fig:param_npeak_plot} as well. They are
 marked by an asterisk at the top right corner in
 \autoref{fig:param_npeak_plot}. The sum of squares ratios we obtained
-for \code{npeaks.set = 5} and \code{npeaks.set = c(5,3,1)} is slightly
+for \code{npeaks\_set = 5} and \code{npeaks\_set = c(5,3,1)} is slightly
 higher than those obtained from the histograms of \citet{cmps}. It's
 curious to see that for the Hamby 252 results published in \citet{cmps}
 the \(\mathrm{{CMPS}_{max}}\) metric achieves values of the sum of

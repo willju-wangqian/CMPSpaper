@@ -65,12 +65,11 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "\\textwidth",
   fig.align = "center",
-#  cache=TRUE,
+  #  cache=TRUE,
   dpi = 144,
   warning = FALSE,
   message = FALSE
 )
-
 ```
 
 ```{r setup_knitr, echo=FALSE}
@@ -86,14 +85,14 @@ options(width = fullWidth)
 ## need to define a hook function which temporarily resets global R's
 ## option() settings, just for the current chunk
 knit_hooks$set(r.opts = local({
-    ropts <- NA
-    function(before, options, envir) {
-        if (before) {
-            ropts <<- options(options$r.opts)
-        } else {
-            options(ropts)
-        }
+  ropts <- NA
+  function(before, options, envir) {
+    if (before) {
+      ropts <<- options(options$r.opts)
+    } else {
+      options(ropts)
     }
+  }
 }))
 
 ## (2) OUTPUT HOOK FUNCTION
@@ -108,7 +107,7 @@ knit_hooks$set(r.opts = local({
 defaultChunkHook <- environment(knit_hooks[["get"]])$defaults$chunk
 
 codefigChunkHook <- function(x, options) {
-  main <-  defaultChunkHook(x, options)
+  main <- defaultChunkHook(x, options)
   before <-
     "\\vspace{1em}
 \\begin{adjustbox}{valign=t}
@@ -117,16 +116,19 @@ codefigChunkHook <- function(x, options) {
     paste("\\vspace{1em}
 \\end{minipage}
 \\begin{minipage}{.59\\textwidth}",
-    paste0("\\includegraphics[width=\\textwidth]{ju-hofmann_files/figure-latex/",
-                 options[["label"]], "-1.pdf}
+      paste0(
+        "\\includegraphics[width=\\textwidth]{ju-hofmann_files/figure-latex/",
+        options[["label"]], "-1.pdf}
 \\end{minipage}
-\\end{adjustbox}"),
-          sep = "\n")
+\\end{adjustbox}"
+      ),
+      sep = "\n"
+    )
   ## Was a codefig option supplied in chunk header?
   ## If so, wrap code block and graphical output with needed LaTeX code.
   if (!is.null(options$codefig)) {
-    main <- gsub("```","", main)
-    main <- gsub("=latex","", main)
+    main <- gsub("```", "", main)
+    main <- gsub("=latex", "", main)
     main <- paste0("{\\small ", main, "}")
     return(sprintf("%s\n%s\n%s", before, main, after))
   } else {
@@ -145,9 +147,11 @@ knit_hooks[["set"]](chunk = codefigChunkHook)
 ## set all of those options simply by typing opts.label="codefig".
 
 opts_template[["set"]](
-codefig = list(codefig = TRUE, fig.show = "hide",
-               r.opts = list(width = partWidth),
-               tidy.opts = list(width.cutoff = partWidth)))
+  codefig = list(
+    codefig = TRUE, fig.show = "hide",
+    r.opts = list(width = partWidth),
+    tidy.opts = list(width.cutoff = partWidth)
+))
 ```
 
 ```{r func, echo=FALSE}
@@ -176,7 +180,7 @@ compute_average_scores <- function(land1, land2, score, addNA = FALSE) {
   # get averages, just in case
   matrix <- xtabs(score ~ land1 + land2,
     data = fullframe, addNA = addNA
-  ) / xtabs(~land1 + land2, data = fullframe, addNA = addNA)
+  ) / xtabs(~ land1 + land2, data = fullframe, addNA = addNA)
 
   matrix <- cbind(matrix, matrix)
 
@@ -319,7 +323,7 @@ Thus, in this paper we present an open-source implementation of the CMPS algorit
 
 
 ```{r, eval=FALSE}
-# install.packages("cmpsR") 
+# install.packages("cmpsR")
 
 library(cmpsR)
 data(bullets)
@@ -328,8 +332,8 @@ sig1 <- bullets$sigs[[2]]$sig
 sig2 <- bullets$sigs[[9]]$sig
 sig3 <- bullets$sigs[[10]]$sig
 
-cmps.result.KM <- extract_feature_cmps(sig1, sig2)
-cmps.result.KNM <- extract_feature_cmps(sig1, sig3)
+cmps_result_KM <- extract_feature_cmps(sig1, sig2)
+cmps_result_KNM <- extract_feature_cmps(sig1, sig3)
 ```
 
 In this example, the comparison between \code{sig1} and \code{sig2}, two signatures coming from the same source (a known-match comparison), gets a CMPS score of 17; the comparison between \code{sig1} and \code{sig3}, two signatures coming from different sources (a known non-match comparison), gets a CMPS score of 1.
@@ -358,25 +362,25 @@ Conceptually, the CMPS algorithm consists of three main steps:
 
     -   **Calculate the cross-correlation curve:** Calculate the cross-correlation curve between a basis segment \code{x} and the reference signature \code{y} using the function \code{get\_ccf4(x, y, ...)} as shown in \autoref{fig:segplot2}. The position indicates the lag by which a basis segment is moved with respect to its original placement. A position is considered "good" if it results in a peak in the cross-correlation between the basis segment and the reference.
 
-    -   **Correlation peaks:** Two strategies referred to as "multi-peak inspection" and "multi-peak inspection at different segment lengths" in @cmps are used for identifying positions of correlation peaks as candidate positions. The latter is also called "multi-segment lengths strategy". The parameter \code{npeaks.set} in \code{extract\_feature\_cmps(...)} determines which strategy to use and the number of candidate positions:
+    -   **Correlation peaks:** Two strategies referred to as "multi-peak inspection" and "multi-peak inspection at different segment lengths" in @cmps are used for identifying positions of correlation peaks as candidate positions. The latter is also called "multi-segment lengths strategy". The parameter \code{npeaks\_set} in \code{extract\_feature\_cmps(...)} determines which strategy to use and the number of candidate positions:
 
-        -   If \code{npeaks.set} is an integer vector of length 1, for example \code{npeaks.set = 5}, the positions of the top five peaks in the cross-correlation curve are identified as candidate positions for registration.
-        -   If \code{npeaks.set} is an integer vector of length more than 1, for example \code{npeaks.set = c(5, 3, 1)}, the multi-segment lengths strategy will be used: calculate the cross-correlation function between a basis segment and the reference and identify positions of the top five peaks; double the segment length to a specified value, re-calculate the cross-correlation function, and identify three peaks; repeat this process and identify a single peak in the newly computed cross-correlation function. \autoref{fig:seg_all} shows an example of three levels of basis segment 6 and their corresponding cross-correlation curves and identified peaks. Note that in @cmps the segment length is doubled at each level of a basis segment, but in the present implementation users are allowed to choose the segment length at each level.
-        -   \code{get\_ccr\_peaks(comp, segments, seg\_outlength, nseg = 1, npeaks = 5)} computes the cross-correlation curve between a basis or increased segment and the reference signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to \code{npeaks}, which is an integer. \code{segments}, \code{seg\_outlength}, and \code{nseg} determines the segment in the cross-correlation computation, and \code{comp} gives the reference signature. If the multi-segment lengths strategy is used, then \code{get\_ccr\_peaks(...)} is called in a \code{lapply()} for each level of the basis segment. The resulting list is called \code{ccr.list}.
+        -   If \code{npeaks\_set} is an integer vector of length 1, for example \code{npeaks\_set = 5}, the positions of the top five peaks in the cross-correlation curve are identified as candidate positions for registration.
+        -   If \code{npeaks\_set} is an integer vector of length more than 1, for example \code{npeaks\_set = c(5, 3, 1)}, the multi-segment lengths strategy will be used: calculate the cross-correlation function between a basis segment and the reference and identify positions of the top five peaks; double the segment length to a specified value, re-calculate the cross-correlation function, and identify three peaks; repeat this process and identify a single peak in the newly computed cross-correlation function. \autoref{fig:seg_all} shows an example of three levels of basis segment 6 and their corresponding cross-correlation curves and identified peaks. Note that in @cmps the segment length is doubled at each level of a basis segment, but in the present implementation users are allowed to choose the segment length at each level.
+        -   \code{get\_ccr\_peaks(comp, segments, seg\_outlength, nseg = 1, npeaks = 5)} computes the cross-correlation curve between a basis or increased segment and the reference signature and finds peaks in the cross-correlation curve. The number of peaks detected is equal to \code{npeaks}, which is an integer. \code{segments}, \code{seg\_outlength}, and \code{nseg} determines the segment in the cross-correlation computation, and \code{comp} gives the reference signature. If the multi-segment lengths strategy is used, then \code{get\_ccr\_peaks(...)} is called in a \code{lapply()} for each level of the basis segment. The resulting list is called \code{ccr\_list}.
 
     -   **multi-segment lengths strategy:** with the multi-segment lengths strategy being used, a position is identified as a candidate position for registration and is called as a "consistent correlation peak" if it results in a top peak in the cross-correlation curve with a tolerance zone determined by \code{Tx} in all segment levels. Note that in @cmps, a segment at its largest scale (highest level) always identifies one peak, but we do not have this requirement in our implementation.
 
         -   the function \code{get\_seg\_scale(segments, nseg, out\_length)} is used to obtain the (potentially increased) version of a basis segment. \code{segments}, which is a list containing all basis segments generated by the function \code{get\_segs(...)} in step 1, and \code{nseg} are used to determine the basis segment to be increased. \code{out\_length} specifies the length of the output segment.
-        -   \code{get\_ccp(ccr.list, Tx = 25)} tries to identify the "consistent correlation peak". \code{ccr.list} is the result of \code{lapply()} and \code{get\_ccr\_peaks(...)}, and \code{Tx} determines the size of a tolerance zone used in identifying the consistent correlation peak. \code{get\_ccp(...)} returns \code{NULL} if there is no consistent correlation peak.
+        -   \code{get\_ccp(ccr\_list, Tx = 25)} tries to identify the "consistent correlation peak". \code{ccr\_list} is the result of \code{lapply()} and \code{get\_ccr\_peaks(...)}, and \code{Tx} determines the size of a tolerance zone used in identifying the consistent correlation peak. \code{get\_ccp(...)} returns \code{NULL} if there is no consistent correlation peak.
 
 3.  **determine the congruent registration position:** A candidate position "receives" votes from basis segments that identify it or a close position within a tolerance zone of \code{Tx} as a candidate position in step 2.
     Votes for all candidate positions are tallied, and the position with the highest number of votes gets chosen as the *congruent registration position*, indicating that most of the basis segments find their highly similar counterpart in the reference signature in terms of correlation at this registration position.
     In case of ties the middle position is taken as the congruent registration position.
     Basis segments with a congruent registration position are called "congruent matching profile segments" (CMPS).
     The total number of CMPS is the CMPS score of the comparison.
-    \code{get\_CMPS(input.ccp, Tx = 25)} is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (CMPS).
+    \code{get\_CMPS(input\_ccp, Tx = 25)} is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (CMPS).
 
-Note that there are several parameters in the CMPS algorithm that are left to the users to decide, such as the length of basis segments \code{seg\_length} in step 1, the number of peaks \code{npeaks.set} identified on each level in step 2, and the length of the tolerance zone \code{Tx} in both step 2 and 3.
+Note that there are several parameters in the CMPS algorithm that are left to the users to decide, such as the length of basis segments \code{seg\_length} in step 1, the number of peaks \code{npeaks\_set} identified on each level in step 2, and the length of the tolerance zone \code{Tx} in both step 2 and 3.
 In our implementation of the CMPS algorithm we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters.
 However, the authors state that no cross-validation has been done - there might be also issues with respect to resolution of the scans.
 Further research is needed, until then users are advised to think of default values as starting values and consider alternatives.
@@ -389,26 +393,26 @@ extract_feature_cmps(
   y,
   seg_length = 50,
   Tx = 25,
-  npeaks.set = c(5, 3, 1),
+  npeaks_set = c(5, 3, 1),
   include = NULL,
   outlength = NULL
 )
 ```
 
-The function \code{extract\_feature\_cmps} allows for the following input from users besides the previously discussed parameters \code{seg\_length}, \code{npeaks.set}, and \code{Tx}:
+The function \code{extract\_feature\_cmps} allows for the following input from users besides the previously discussed parameters \code{seg\_length}, \code{npeaks\_set}, and \code{Tx}:
 
 -   \code{x} and \code{y} are two signatures: \code{x} serves as the comparison signature (which will be divided into basis segments) and \code{y} is the reference signature;
 
 -   \code{include} determines the format of the function result.
-    Besides the \code{CMPS.score}, other aspects of the comparison help in understanding how the \code{CMPS.score} is computed.
-    By default \code{include} is set to \code{NULL} and only the \code{CMPS.score} is returned; further results are included when \code{include} is (an abbreviation of) one of or a vector of the following strings: \code{"nseg"}, \code{"congruent.pos"}, \code{"congruent.seg.idx"}, \code{"segments"}, \code{"parameters"}, and \code{"full\_result"}.
+    Besides the \code{CMPS\_score}, other aspects of the comparison help in understanding how the \code{CMPS\_score} is computed.
+    By default \code{include} is set to \code{NULL} and only the \code{CMPS\_score} is returned; further results are included when \code{include} is (an abbreviation of) one of or a vector of the following strings: \code{"nseg"}, \code{"congruent\_pos"}, \code{"congruent\_seg\_idx"}, \code{"segments"}, \code{"parameters"}, and \code{"full\_result"}.
     If \code{include} is specified as \code{"full\_result"} (or its abbreviation), the output includes everything listed below.
 
     -   \code{nseg}: the number of basis segments from the comparison signature; this is also the highest possible CMPS score of the comparison;
-    -   \code{congruent.pos}: the congruent registration position;
-    -   \code{congruent.seg.idx}: the indices of all congruent matching profile segments;
-    -   \code{ccp.list}: a list showing identified candidate positions of all basis segments;
-    -   \code{pos.df}: a data frame containing all candidate positions and their respective number of votes;
+    -   \code{congruent\_pos}: the congruent registration position;
+    -   \code{congruent\_seg\_idx}: the indices of all congruent matching profile segments;
+    -   \code{ccp\_list}: a list showing identified candidate positions of all basis segments;
+    -   \code{pos\_df}: a data frame containing all candidate positions and their respective number of votes;
     -   \code{segments}: a list containing all basis segments;
     -   \code{parameters}: a list containing all input arguments of \code{extract\_feature\_cmps};
 
@@ -422,13 +426,13 @@ In the remainder of the paper we showcase the use of the \pkg{cmpsR} functionali
 The \pkg{cmpsR} package is publicly available from CRAN and can be installed by
 
 ```{r, eval=FALSE}
-install.packages("cmpsR") 
+install.packages("cmpsR")
 ```
 
 Moreover, its development version is also available from Github and can be installed by
 
 ```{r, eval=FALSE}
-# install.packages("remotes") 
+# install.packages("remotes")
 remotes::install_github("willju-wangqian/cmpsR")
 ```
 
@@ -451,9 +455,11 @@ data(bullets)
 ```{r sigs, echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other."}
 signatures <- bullets %>% unnest(sigs)
 signatures <- signatures %>% mutate(
-  bulletland = factor(bulletland, levels=c(paste(rep(c(1,2), each=6), c(1:6,2:6,1), sep="-")))
+  bulletland = factor(bulletland, levels = c(paste(rep(c(1, 2), each = 6), c(1:6, 2:6, 1), sep = "-")))
 )
-signatures %>% ggplot(aes(x = x/1000, y = sig)) + geom_line() + facet_wrap(~bulletland, ncol=6) +
+signatures %>% ggplot(aes(x = x / 1000, y = sig)) +
+  geom_line() +
+  facet_wrap(~bulletland, ncol = 6) +
   theme_bw() +
   xlab("Length in mm") +
   ylab("Relative height in micron")
@@ -470,17 +476,19 @@ sigs2 <- bullets$sigs[bullets$bulletland == "1-4"][[1]]
 # compute cmps
 
 # algorithm with multi-peak insepction at three different segment levels
-cmps_with_multi_scale <- 
-  extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                       npeaks.set = c(5,3,1), include = "full_result")
+cmps_with_multi_scale <-
+  extract_feature_cmps(sigs1$sig, sigs2$sig,
+    npeaks_set = c(5, 3, 1), include = "full_result"
+  )
 
 # algorithm with multi-peak inspection at the basis scale only
-cmps_without_multi_scale <- 
-  extract_feature_cmps(sigs1$sig, sigs2$sig, 
-                       npeaks.set = 5, include = "full_result")
+cmps_without_multi_scale <-
+  extract_feature_cmps(sigs1$sig, sigs2$sig,
+    npeaks_set = 5, include = "full_result"
+  )
 ```
 
-In the first example, \code{npeaks.set} is a vector of three integers, i.e. the algorithm uses the multi-segment lengths strategy to create the result object \code{cmps\_with\_multi\_scale}.
+In the first example, \code{npeaks\_set} is a vector of three integers, i.e. the algorithm uses the multi-segment lengths strategy to create the result object \code{cmps\_with\_multi\_scale}.
 For \code{cmps\_without\_multi\_scale} each basis segment is linked to the top 5 candidate positions.
 We use \code{include = "full\_result"} to capture all results.
 In this example, the CMPS is 9 when using multiple segments, and 12 when using a single segment.
@@ -492,24 +500,27 @@ Note, that the multi-segment lengths method is slower because the algorithm is r
 ```{r alternative, echo = FALSE}
 lands <- unique(bullets$bulletland)
 
-comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]), 
-                          stringsAsFactors = FALSE)
+comparisons <- data.frame(expand.grid(land1 = lands[1:6], land2 = lands[7:12]),
+  stringsAsFactors = FALSE
+)
 
-comparisons <- comparisons %>% 
-  left_join(bullets %>% select(bulletland, sig1=sigs),
-            by = c("land1" = "bulletland")) %>%
-  left_join(bullets %>% select(bulletland, sig2=sigs),
-            by = c("land2" = "bulletland"))
+comparisons <- comparisons %>%
+  left_join(bullets %>% select(bulletland, sig1 = sigs),
+    by = c("land1" = "bulletland")
+  ) %>%
+  left_join(bullets %>% select(bulletland, sig2 = sigs),
+    by = c("land2" = "bulletland")
+  )
 
 comparisons <- comparisons %>% mutate(
   cmps = purrr::map2(sig1, sig2, .f = function(x, y) {
     extract_feature_cmps(x$sig, y$sig, include = "full")
-    })
+  })
 )
 
-comparisons <- comparisons %>% 
+comparisons <- comparisons %>%
   mutate(
-    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS.score),
+    cmps_score = sapply(comparisons$cmps, function(x) x$CMPS_score),
     cmps_nseg = sapply(comparisons$cmps, function(x) x$nseg),
     cmps_scaled = cmps_score / cmps_nseg
   )
@@ -524,7 +535,7 @@ comparisons <- comparisons %>%
 
 dframe <- comparisons %>% select(-sig1, -sig2)
 
-dframe$samesource <- with(dframe, bullet_to_land_predict(land1=landA, land2=landB, cmps_score, difference=1))
+dframe$samesource <- with(dframe, bullet_to_land_predict(land1 = landA, land2 = landB, cmps_score, difference = 1))
 ```
 
 **Visualize and understand CMPS results**
@@ -544,16 +555,16 @@ It creates an overall impression of how the comparison signature aligns with the
 \begin{subfigure}[t]{\textwidth}
 \caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
 ```{r sigplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
-sig.plot <- cmps_signature_plot(
+sig_plot <- cmps_signature_plot(
   cmps_with_multi_scale
 )
-sig.plot$segment_shift_plot
+sig_plot$segment_shift_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
 \caption{\label{fig:sigplot2}The black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.}
 ```{r sigplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
-sig.plot$signature_shift_plot
+sig_plot$signature_shift_plot
 ```
 \end{subfigure}
 \caption{\label{fig:sigplots} Two visual outputs of cmps\_signature\_plot()}
@@ -562,17 +573,17 @@ sig.plot$signature_shift_plot
 -   Other elements of this list are \code{seg\_shift} and \code{sig\_shift}. \code{sig\_shift} gives the congruent registration position, while \code{seg\_shift} is a data frame showing the congruent matching profile segments and their identified candidate position closest to the congruent registration position.
 
 ```{r, echo=TRUE, eval=TRUE}
-sig.plot$seg_shift
+sig_plot$seg_shift
 ```
 
 While \code{cmps\_signature\_plot()} focuses on the signature level, \code{cmps\_segment\_plot()} focuses on the segment level.
-It provides the "full result" of \code{extract\_feature\_cmps()}, but also takes an argument, \code{seg.idx}, indicating which segment should be inspected.
-When checking \code{sig.plot\$seg\_shift} we notice that segment number 6 is not one of the congruent matching profile segments.
-We can therefore set \code{seg.idx = 6} in \code{cmps\_segment\_plot()} and investigate the reason why this segment disagrees with the congruent registration position.
+It provides the "full result" of \code{extract\_feature\_cmps()}, but also takes an argument, \code{seg\_idx}, indicating which segment should be inspected.
+When checking \code{sig\_plot\$seg\_shift} we notice that segment number 6 is not one of the congruent matching profile segments.
+We can therefore set \code{seg\_idx = 6} in \code{cmps\_segment\_plot()} and investigate the reason why this segment disagrees with the congruent registration position.
 
 For each segment scale, we have two plots: \code{segment\_plot} and \code{scale\_ccf\_plot}, as shown in \autoref{fig:segplots} for the example of segment number 6:
 
--   \autoref{fig:segplot} is the \code{segment\_plot} for basis segment 6 at level one (in its original length). We used \code{npeaks.set = c(5, 3, 1)} in \code{extract\_feature\_cmps()} when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these 5 peaks are identified with dashed lines in the \code{segment\_plot}. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position).
+-   \autoref{fig:segplot} is the \code{segment\_plot} for basis segment 6 at level one (in its original length). We used \code{npeaks\_set = c(5, 3, 1)} in \code{extract\_feature\_cmps()} when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these 5 peaks are identified with dashed lines in the \code{segment\_plot}. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position).
 -   \autoref{fig:segplot2} is the \code{scale\_ccf\_plot} of basis segment 6 at level one. It shows the cross-correlation curve computed by the reference signature and the level-one basis segment 6. The five highest peaks are marked by dots on the curve.
 
 ```{=tex}
@@ -580,17 +591,17 @@ For each segment scale, we have two plots: \code{segment\_plot} and \code{scale\
 \begin{subfigure}[t]{\textwidth}
 \caption{\label{fig:segplot}segment\_plot for segment 6 at level one. The original position of segment 6 is indicated by the solid black line. Positions where the segment achieves the 5 highest cross-correlations are indicated by the dashed line segments.}
 ```{r segplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
-seg.plot <- cmps_segment_plot(
-  cmps_with_multi_scale, 
-  seg.idx = 6
+seg_plot <- cmps_segment_plot(
+  cmps_with_multi_scale,
+  seg_idx = 6
 )
-seg.plot[[1]]$segment_plot
+seg_plot[[1]]$segment_plot
 ```
 \end{subfigure}
 \begin{subfigure}[t]{\textwidth}
 \caption{\label{fig:segplot2}scale\_ccf\_plot shows the cross-correlation curve between the reference signature and segment 6 at level one. The five highest peaks are marked by dots. The vertical red dashed line indicates the congruent registration position; the green dashed line shows a peak position in the highest segment level; the blue dashed lines show the tolerance zone around the green dashed line. We can see that none of the five highest peaks at level one falls within the tolerance zone, indicating that there is no consistent correlation peak or a candidate position identified by basis segment 6 under the multi-segment lengths strategy. Thus, the basis segment 6 doesn't vote for the congruent registration position and is not a cmps.}
 ```{r segplot2, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
-seg.plot[[1]]$scale_ccf_plot
+seg_plot[[1]]$scale_ccf_plot
 ```
 \end{subfigure}
 \caption{\label{fig:segplots} Two plots used to investigate basis segment 6 at level one}
@@ -604,13 +615,15 @@ Additionally, users can have more insights about why segment 6 is not a congruen
 library(ggpubr)
 
 ggarrange(
-  plotlist = 
-    unlist(seg.plot, 
-           recursive = FALSE),
-  ncol = 2, 
-  nrow = 3)
+  plotlist =
+    unlist(seg_plot,
+      recursive = FALSE
+    ),
+  ncol = 2,
+  nrow = 3
+)
 ```
-\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since npeaks.set = c(5, 3, 1). The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
+\caption{\label{fig:seg_all} Put segment\_plot and scale\_ccf\_plot of all three levels together. We are identifying five highest peaks at level one, three peaks at level two, and one peak at level three since npeaks\_set = c(5, 3, 1). The highest peak position at level three is marked by the green dashed line across all segment levels. However, the highest peak on level three does not coincide with any of the top five highest peaks at level one. This indicates that there is no consistent correlation peak or a candidate position for basis segment 6 under the multi-segment lengths strategy.}
 \end{figure}
 ```
 In \autoref{fig:seg_all}, the red vertical dashed line indicates the congruent registration position.
@@ -682,19 +695,20 @@ $$
 dframe <- dframe %>% mutate(
   landA = paste0("L", landA),
   landB = paste0("L", landB),
-  landB = factor(landB, levels = paste0("L", c(2:6,1))),
+  landB = factor(landB, levels = paste0("L", c(2:6, 1))),
   bulletA = paste0("Bullet ", bulletA),
   bulletB = paste0("Bullet ", bulletB)
 )
 
-dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) + 
-  geom_tile() + 
-  geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
-  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) + 
-  scale_colour_manual("Source", values="darkorange") +
-  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
-  ylab("Bullet2 Lands") + 
-  geom_text(aes(label=cmps_score)) +
+dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_score)) +
+  geom_tile() +
+  geom_tile(aes(colour = "same land"), fill = NA, data = dframe %>% filter(samesource), size = 1) +
+  scale_fill_gradient2("CMPS score", low = "gray80", high = "darkorange", midpoint = 6) +
+  scale_colour_manual("Source", values = "darkorange") +
+  facet_grid(bulletB ~ bulletA) +
+  xlab("Bullet1 Lands") +
+  ylab("Bullet2 Lands") +
+  geom_text(aes(label = cmps_score)) +
   theme_bw() +
   theme(aspect.ratio = 1)
 ```
@@ -730,29 +744,32 @@ Similarly to the original CMPS scores, we will denote the scaled CMPS scores adj
 For example, $\mathrm{\overline{CMPS^*}_{diff}} = 0.498$ for \autoref{fig:tiles2}(b)
 
 ```{r tiles2, echo=FALSE, fig.cap="Plot (a) shows the highest possible CMPS scores (the total number of basis segments) for the 36 comparisons. (b) shows the scaled CMPS scores for the 36 comparisons.", out.width=".7\\textwidth", fig.align="center"}
-p1 <- dframe %>% ggplot(aes(x = landA, y = landB)) + 
-  geom_tile(fill = "grey") + 
-  geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
-  scale_colour_manual("Source", values="darkorange") +
-  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
-  ylab("Bullet2 Lands") + 
-  geom_text(aes(label=cmps_nseg)) +
+p1 <- dframe %>% ggplot(aes(x = landA, y = landB)) +
+  geom_tile(fill = "grey") +
+  geom_tile(aes(colour = "same land"), fill = NA, data = dframe %>% filter(samesource), size = 1) +
+  scale_colour_manual("Source", values = "darkorange") +
+  facet_grid(bulletB ~ bulletA) +
+  xlab("Bullet1 Lands") +
+  ylab("Bullet2 Lands") +
+  geom_text(aes(label = cmps_nseg)) +
   theme_bw() +
   theme(aspect.ratio = 1)
 
-p2 <- dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_scaled)) + 
-  geom_tile() + 
-  geom_tile(aes(colour="same land"), fill=NA, data = dframe %>% filter(samesource), size=1) + 
-  scale_fill_gradient2("Scaled CMPS", low = "gray80", high = "darkorange", midpoint = 0.3) + 
-  scale_colour_manual("Source", values="darkorange") +
-  facet_grid(bulletB ~ bulletA) + xlab("Bullet1 Lands") + 
-  ylab("Bullet2 Lands") + 
-  geom_text(aes(label=round(cmps_scaled, 2))) +
+p2 <- dframe %>% ggplot(aes(x = landA, y = landB, fill = cmps_scaled)) +
+  geom_tile() +
+  geom_tile(aes(colour = "same land"), fill = NA, data = dframe %>% filter(samesource), size = 1) +
+  scale_fill_gradient2("Scaled CMPS", low = "gray80", high = "darkorange", midpoint = 0.3) +
+  scale_colour_manual("Source", values = "darkorange") +
+  facet_grid(bulletB ~ bulletA) +
+  xlab("Bullet1 Lands") +
+  ylab("Bullet2 Lands") +
+  geom_text(aes(label = round(cmps_scaled, 2))) +
   theme_bw() +
   theme(aspect.ratio = 1)
 
-ggarrange(p1, p2, 
-          common.legend = TRUE, legend = "bottom", labels = c("(a)", "(b)"))
+ggarrange(p1, p2,
+  common.legend = TRUE, legend = "bottom", labels = c("(a)", "(b)")
+)
 ```
 
 **Sum of squares ratio**
@@ -810,10 +827,12 @@ com.title252 <- expression(paste(
 ```{r rf-data-process, echo=FALSE}
 rf.tt <- lapply(rf.results, function(rf_result) {
   with(rf_result, {
-    tibble(rf.diff, rf.max, rf.maxbar) %>% 
+    tibble(rf.diff, rf.max, rf.maxbar) %>%
       apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
   })
-}) %>% do.call(rbind, .) %>% as_tibble()
+}) %>%
+  do.call(rbind, .) %>%
+  as_tibble()
 
 colnames(rf.tt) <- c("cmps.diff", "cmps.max", "cmps.maxbar")
 
@@ -826,14 +845,13 @@ rf.tt <- rf.tt %>% pivot_longer(
 )
 
 rf.tt$npeak <- "RF score* (Hare et al)"
-
 ```
 
 
 ```{r ss-original-cmps, echo=FALSE}
 result.container <- list()
 
-result.container$npeak <- 
+result.container$npeak <-
   c("5* (Chen et al)", "5-3-1* (Chen et al)", "5* (Chen et al)", "5-3-1* (Chen et al)")
 result.container$Metric <- c("cmps.max", "cmps.max", "cmps.maxbar", "cmps.maxbar")
 result.container$study <- "Hamby 252"
@@ -842,40 +860,43 @@ dd.list <- list()
 
 dd.list[[1]] <- tibble(
   score = c(9:13, 16:24),
-  freq = c(132, 282, 115, 19, 1, 1, 3,2,4,8,12,7,7,2),
+  freq = c(132, 282, 115, 19, 1, 1, 3, 2, 4, 8, 12, 7, 7, 2),
   type = c(rep("KNM", 5), rep("KM", 9))
 )
 
 dd.list[[2]] <- tibble(
   score = c(1:5, 14:23),
-  freq = c(7,343,168,24,7,1,1,2,3,6,7,8,8,7,3),
+  freq = c(7, 343, 168, 24, 7, 1, 1, 2, 3, 6, 7, 8, 8, 7, 3),
   type = c(rep("KNM", 5), rep("KM", 10))
 )
 
 dd.list[[3]] <- tibble(
   score = c(6:9, 13:19),
-  freq = c(2,210,307,30,6,3,9,9,11,7,1),
+  freq = c(2, 210, 307, 30, 6, 3, 9, 9, 11, 7, 1),
   type = c(rep("KNM", 4), rep("KM", 7))
 )
 
 dd.list[[4]] <- tibble(
   score = c(0:2, 8:17),
-  freq = c(36, 508, 5, 1,3,4,2,11,3,9,8,4,1),
+  freq = c(36, 508, 5, 1, 3, 4, 2, 11, 3, 9, 8, 4, 1),
   type = c(rep("KNM", 3), rep("KM", 10))
 )
 
 result.container$dd.list <- dd.list
 
-result.container <- result.container %>% as_tibble() %>% 
+result.container <- result.container %>%
+  as_tibble() %>%
   mutate(
     dd.table = purrr::map(dd.list, function(dd) {
-      tibble(score = rep(dd$score, dd$freq),
-             type_truth = rep(dd$type, dd$freq))
+      tibble(
+        score = rep(dd$score, dd$freq),
+        type_truth = rep(dd$type, dd$freq)
+      )
     }),
     value = purrr::map_dbl(dd.table, function(dd) {
       compute_ss_ratio(dd$score, dd$type_truth, MS = FALSE)
     })
-  ) 
+  )
 ```
 
 
@@ -897,7 +918,7 @@ extract_feature_cmps(
   x, y,
   seg_length = 50,
   Tx = 25,
-  npeaks.set = c(5,3,1),
+  npeaks_set = c(5, 3, 1),
   include = "nseg"
 )
 ```
@@ -911,58 +932,57 @@ This indicates, that even though scores from $\mathrm{CMPS_{max}}$ for known-mat
 
 ```{r, echo=FALSE, eval=FALSE}
 with(CMPS_hamby252_results_npeak$cmps.table[[3]], {
-  tibble(cmps.max, cmps.maxbar) %>% 
+  tibble(cmps.max, cmps.maxbar) %>%
     apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
 })
 
 with(CMPS_hamby252_results_seg$cmps.table[[2]], {
-  tibble(cmps.max, cmps.maxbar, cmps.diff, cmps.diff_scaled) %>% 
+  tibble(cmps.max, cmps.maxbar, cmps.diff, cmps.diff_scaled) %>%
     apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
 })
-
 ```
 
 ```{r color-settings, echo=FALSE}
 
-cols_1 <- c("#748BA7", "#C583AE","#FFDFAA", "#D9F0A0")
-cols_2 <- c("#4C688B", "#A45287","#D4AC6A", "#ABC864")
+cols_1 <- c("#748BA7", "#C583AE", "#FFDFAA", "#D9F0A0")
+cols_2 <- c("#4C688B", "#A45287", "#D4AC6A", "#ABC864")
 # #####  Color Palette by Paletton.com
 # #####  Palette URL: http://paletton.com/#uid=7561m0kllllaFw0g0qFqFg0w0aF
-# 
-# 
+#
+#
 # *** Primary color:
-# 
+#
 #    shade 0 = #832C65 = rgb(131, 44,101) = rgba(131, 44,101,1) = rgb0(0.514,0.173,0.396)
 #    shade 1 = #C583AE = rgb(197,131,174) = rgba(197,131,174,1) = rgb0(0.773,0.514,0.682)
 #    shade 2 = #A45287 = rgb(164, 82,135) = rgba(164, 82,135,1) = rgb0(0.643,0.322,0.529)
 #    shade 3 = #621046 = rgb( 98, 16, 70) = rgba( 98, 16, 70,1) = rgb0(0.384,0.063,0.275)
 #    shade 4 = #42002B = rgb( 66,  0, 43) = rgba( 66,  0, 43,1) = rgb0(0.259,0,0.169)
-# 
+#
 # *** Secondary color (1):
-# 
+#
 #    shade 0 = #AA7F39 = rgb(170,127, 57) = rgba(170,127, 57,1) = rgb0(0.667,0.498,0.224)
 #    shade 1 = #FFDFAA = rgb(255,223,170) = rgba(255,223,170,1) = rgb0(1,0.875,0.667)
 #    shade 2 = #D4AC6A = rgb(212,172,106) = rgba(212,172,106,1) = rgb0(0.831,0.675,0.416)
 #    shade 3 = #805715 = rgb(128, 87, 21) = rgba(128, 87, 21,1) = rgb0(0.502,0.341,0.082)
 #    shade 4 = #553500 = rgb( 85, 53,  0) = rgba( 85, 53,  0,1) = rgb0(0.333,0.208,0)
-# 
+#
 # *** Secondary color (2):
-# 
+#
 #    shade 0 = #2B4970 = rgb( 43, 73,112) = rgba( 43, 73,112,1) = rgb0(0.169,0.286,0.439)
 #    shade 1 = #748BA7 = rgb(116,139,167) = rgba(116,139,167,1) = rgb0(0.455,0.545,0.655)
 #    shade 2 = #4C688B = rgb( 76,104,139) = rgba( 76,104,139,1) = rgb0(0.298,0.408,0.545)
 #    shade 3 = #143054 = rgb( 20, 48, 84) = rgba( 20, 48, 84,1) = rgb0(0.078,0.188,0.329)
 #    shade 4 = #051B38 = rgb(  5, 27, 56) = rgba(  5, 27, 56,1) = rgb0(0.02,0.106,0.22)
-# 
+#
 # *** Complement color:
-# 
+#
 #    shade 0 = #81A035 = rgb(129,160, 53) = rgba(129,160, 53,1) = rgb0(0.506,0.627,0.208)
 #    shade 1 = #D9F0A0 = rgb(217,240,160) = rgba(217,240,160,1) = rgb0(0.851,0.941,0.627)
 #    shade 2 = #ABC864 = rgb(171,200,100) = rgba(171,200,100,1) = rgb0(0.671,0.784,0.392)
 #    shade 3 = #5B7814 = rgb( 91,120, 20) = rgba( 91,120, 20,1) = rgb0(0.357,0.471,0.078)
 #    shade 4 = #395000 = rgb( 57, 80,  0) = rgba( 57, 80,  0,1) = rgb0(0.224,0.314,0)
-# 
-# 
+#
+#
 # #####  Generated by Paletton.com (c) 2002-2014
 ```
 
@@ -971,131 +991,182 @@ cols_2 <- c("#4C688B", "#A45287","#D4AC6A", "#ABC864")
 # 252 - seg
 table.252.cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
-  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
-}) %>% do.call(rbind, .) %>% as.data.frame()
+  tt %>%
+    select(cmps.diff:cmps.maxbar_scaled) %>%
+    apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+}) %>%
+  do.call(rbind, .) %>%
+  as.data.frame()
 
 table.252.cmps_seg$seg_length <- unlist(CMPS_hamby252_results_seg$seg_length)
 
 table.252.cmps_seg.long <- table.252.cmps_seg %>%
-  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, 
-                        cmps.max, cmps.maxbar), 
-               names_to = "Metric")
+  pivot_longer(
+    cols = c(
+      cmps.diff, cmps.diff_scaled,
+      cmps.max, cmps.maxbar
+    ),
+    names_to = "Metric"
+  )
 
-table.252.cmps_seg.long <- table.252.cmps_seg.long %>% 
+table.252.cmps_seg.long <- table.252.cmps_seg.long %>%
   mutate(study = "Hamby 252")
 
 
-labels <- expression( CMPS[max], bar(CMPS)[diff], {bar(CMPS)^symbol("*")}[diff], bar(CMPS)[max])
+labels <- expression(
+  CMPS[max],
+  bar(CMPS)[diff],
+  {
+    bar(CMPS)^symbol("*")
+  }[diff],
+  bar(CMPS)[max]
+)
 
 p.seg_252_plot <- table.252.cmps_seg.long %>%
-  ggplot(aes(x = seg_length +3*as.numeric(factor(Metric))-9)) +
-  geom_segment(aes(xend =  seg_length +3*as.numeric(factor(Metric))-9,
-               y = value, yend = 0, colour = Metric)) + 
-  geom_point(aes(y =  value, color = Metric), 
-             alpha = 0.8,
-             position=position_dodge(width = 0.5), size = 3.5) +
-  scale_x_continuous(breaks = table.252.cmps_seg$seg_length, 
-                     minor_breaks = NULL) +
+  ggplot(aes(x = seg_length + 3 * as.numeric(factor(Metric)) - 9)) +
+  geom_segment(aes(
+    xend = seg_length + 3 * as.numeric(factor(Metric)) - 9,
+    y = value, yend = 0, colour = Metric
+  )) +
+  geom_point(aes(y = value, color = Metric),
+    alpha = 0.8,
+    position = position_dodge(width = 0.5), size = 3.5
+  ) +
+  scale_x_continuous(
+    breaks = table.252.cmps_seg$seg_length,
+    minor_breaks = NULL
+  ) +
   theme_bw() +
   # theme(legend.position="none") +
   ggtitle("Results for Hamby 252") +
-  ylab("Sum of Squares Ratio") + 
+  ylab("Sum of Squares Ratio") +
   xlab("Segment Length") +
-  scale_colour_manual(values=cols_2, labels = labels) +
-  scale_fill_manual(values=cols_1, labels = labels) 
+  scale_colour_manual(values = cols_2, labels = labels) +
+  scale_fill_manual(values = cols_1, labels = labels)
 
 # 44 - seg
 table.44.cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
-  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
-}) %>% do.call(rbind, .) %>% as.data.frame()
+  tt %>%
+    select(cmps.diff:cmps.maxbar_scaled) %>%
+    apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+}) %>%
+  do.call(rbind, .) %>%
+  as.data.frame()
 
 table.44.cmps_seg$seg_length <- unlist(CMPS_hamby44_results_seg$seg_length)
 
 table.44.cmps_seg.long <- table.44.cmps_seg %>%
-  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, 
-                        cmps.max, cmps.maxbar),
-               names_to = "Metric")
+  pivot_longer(
+    cols = c(
+      cmps.diff, cmps.diff_scaled,
+      cmps.max, cmps.maxbar
+    ),
+    names_to = "Metric"
+  )
 
 table.44.cmps_seg.long <- table.44.cmps_seg.long %>% mutate(
   study = "Hamby 44"
 )
 
-table.cmps_seg.long <- bind_rows(table.44.cmps_seg.long,
-                                 table.252.cmps_seg.long)
+table.cmps_seg.long <- bind_rows(
+  table.44.cmps_seg.long,
+  table.252.cmps_seg.long
+)
 
 breaks_fun <- function(x) {
-  if(x[2] < 220) {
-    c(25,  50,  75, 100, 125, 150, 175, 200)
+  if (x[2] < 220) {
+    c(25, 50, 75, 100, 125, 150, 175, 200)
   } else {
-    c(30, 45,  61,  90, 122, 150, 180, 210)
+    c(30, 45, 61, 90, 122, 150, 180, 210)
   }
 }
 
 p.seg_plot <- table.cmps_seg.long %>%
   mutate(
     Metric = factor(Metric,
-                    levels = c("cmps.max", "cmps.diff", "cmps.diff_scaled", "cmps.maxbar"))
-  ) %>% 
-  ggplot(aes(x = seg_length+3*as.numeric((Metric))-9)) +
-  geom_segment(aes(xend = seg_length+3*as.numeric((Metric))-9, 
-                   y = value, yend= 0, color=Metric),
-               position=position_dodge(width = 0.6)) +
-  geom_point(aes(y =  value, color = Metric), 
-             alpha = 0.8,
-             position=position_dodge(width = 0.5), size = 3.5) +
-  facet_grid(.~study, scales = "free_x") +
-  scale_x_continuous(breaks = breaks_fun, 
-                     minor_breaks = NULL) +
+      levels = c("cmps.max", "cmps.diff", "cmps.diff_scaled", "cmps.maxbar")
+    )
+  ) %>%
+  ggplot(aes(x = seg_length + 3 * as.numeric((Metric)) - 9)) +
+  geom_segment(aes(
+    xend = seg_length + 3 * as.numeric((Metric)) - 9,
+    y = value, yend = 0, color = Metric
+  ),
+  position = position_dodge(width = 0.6)
+  ) +
+  geom_point(aes(y = value, color = Metric),
+    alpha = 0.8,
+    position = position_dodge(width = 0.5), size = 3.5
+  ) +
+  facet_grid(. ~ study, scales = "free_x") +
+  scale_x_continuous(
+    breaks = breaks_fun,
+    minor_breaks = NULL
+  ) +
   theme_bw() +
   theme(legend.position = "bottom") +
-  ylab("Sums of Squares Ratio") + 
+  ylab("Sums of Squares Ratio") +
   xlab("Segment length") +
-  scale_colour_manual(values=cols_2, labels = labels) +
-  scale_fill_manual(values=cols_1, labels = labels) 
+  scale_colour_manual(values = cols_2, labels = labels) +
+  scale_fill_manual(values = cols_1, labels = labels)
 
 # npeak - 252
 table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
-  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
-}) %>% do.call(rbind, .) %>% as.data.frame()
+  tt %>%
+    select(cmps.diff:cmps.maxbar_scaled) %>%
+    apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+}) %>%
+  do.call(rbind, .) %>%
+  as.data.frame()
 
-table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks.set %>% 
-  purrr::map(.f = paste, collapse = "-") %>% sapply(as.character)
+table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks_set %>%
+  purrr::map(.f = paste, collapse = "-") %>%
+  sapply(as.character)
 
-table.252.cmps_npeak.longer <- table.252.cmps_npeak %>% as_tibble() %>% 
-  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>% 
+table.252.cmps_npeak.longer <- table.252.cmps_npeak %>%
+  as_tibble() %>%
+  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>%
   mutate(
     npeak = factor(
       npeak,
-      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
-  ) %>% 
-  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
-               names_to = "Metric") 
+      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)]
+    )
+  ) %>%
+  pivot_longer(
+    cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
+    names_to = "Metric"
+  )
 table.252.cmps_npeak.longer$study <- "Hamby 252"
 
 # npeak - 44
 table.44.cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
-  tt %>% select(cmps.diff:cmps.maxbar_scaled) %>% 
-    apply(2, compute_ss_ratio, label=type_truth, MS=FALSE)
-}) %>% do.call(rbind, .) %>% as.data.frame()
+  tt %>%
+    select(cmps.diff:cmps.maxbar_scaled) %>%
+    apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
+}) %>%
+  do.call(rbind, .) %>%
+  as.data.frame()
 
-table.44.cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks.set %>% 
-  purrr::map(.f = paste, collapse = "-") %>% sapply(as.character)
+table.44.cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks_set %>%
+  purrr::map(.f = paste, collapse = "-") %>%
+  sapply(as.character)
 
-table.44.cmps_npeak.longer <- table.44.cmps_npeak %>% as_tibble() %>% 
-  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>% 
+table.44.cmps_npeak.longer <- table.44.cmps_npeak %>%
+  as_tibble() %>%
+  filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>%
   mutate(
     npeak = factor(
       npeak,
-      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)])
-  ) %>% 
-  pivot_longer(cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
-               names_to = "Metric") 
+      levels = npeak[order(cmps.diff_scaled, decreasing = FALSE)]
+    )
+  ) %>%
+  pivot_longer(
+    cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
+    names_to = "Metric"
+  )
 table.44.cmps_npeak.longer$study <- "Hamby 44"
 
 selected_var <- c("npeak", "Metric", "study", "value")
@@ -1107,9 +1178,11 @@ table.cmps_neapk.long <- bind_rows(
   result.container %>% select(all_of(selected_var))
 )
 
-order.level <- table.cmps_neapk.long %>% 
+order.level <- table.cmps_neapk.long %>%
   filter(Metric == "cmps.maxbar", study == "Hamby 252") %>%
-  {.$npeak[order(.$value, decreasing = FALSE)]}
+  {
+    .$npeak[order(.$value, decreasing = FALSE)]
+  }
 
 table.cmps_neapk.long <- table.cmps_neapk.long %>% mutate(
   npeak = factor(npeak, levels = order.level)
@@ -1128,50 +1201,59 @@ table.cmps_neapk.long <- table.cmps_neapk.long %>% left_join(
 
 table.cmps_neapk.long <- table.cmps_neapk.long %>% mutate(
   rf_status = if_else(npeak == "RF score* (Hare et al)",
-                      TRUE, FALSE)
+    TRUE, FALSE
+  )
 )
 
-table.cmps_neapk.long$Metric <- 
-  table.cmps_neapk.long$Metric %>% 
+table.cmps_neapk.long$Metric <-
+  table.cmps_neapk.long$Metric %>%
   factor(levels = c("cmps.max", "cmps.diff", "cmps.diff_scaled", "cmps.maxbar"))
 
 p.npeak_plot <- table.cmps_neapk.long %>%
-  ggplot(aes(x = xstart + 3*as.numeric(factor(Metric))-9)) +
-  geom_segment(aes(xend = xstart + 3*as.numeric(factor(Metric))-9, 
-                   y = value, yend= 0, color=Metric),
-               position=position_dodge(width = 0.6)) +
-  geom_point(aes(y =  value, color = Metric, shape = rf_status), 
-             alpha = 0.8,
-             position=position_dodge(width = 0.5), size = 3.5) +
-  facet_grid(.~study) +
-  ylab("Sums of Squares Ratio") + 
+  ggplot(aes(x = xstart + 3 * as.numeric(factor(Metric)) - 9)) +
+  geom_segment(aes(
+    xend = xstart + 3 * as.numeric(factor(Metric)) - 9,
+    y = value, yend = 0, color = Metric
+  ),
+  position = position_dodge(width = 0.6)
+  ) +
+  geom_point(aes(y = value, color = Metric, shape = rf_status),
+    alpha = 0.8,
+    position = position_dodge(width = 0.5), size = 3.5
+  ) +
+  facet_grid(. ~ study) +
+  ylab("Sums of Squares Ratio") +
   xlab("Number of Peaks") +
   coord_flip() +
-  scale_x_continuous(breaks = npeak_convert$xstart, labels = npeak_convert$npeak ) +
+  scale_x_continuous(breaks = npeak_convert$xstart, labels = npeak_convert$npeak) +
   theme_bw() +
   theme(legend.position = "bottom") +
-  guides(shape = "none") + 
+  guides(shape = "none") +
   scale_shape_manual(values = c(16, 1)) +
-  scale_colour_manual(values=cols_2, labels = labels) +
-  scale_fill_manual(values=cols_1, labels = labels) 
+  scale_colour_manual(values = cols_2, labels = labels) +
+  scale_fill_manual(values = cols_1, labels = labels)
 ```
 
 <!-- this is figure 2 -->
 
-```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3}
-# [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"  
+```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3}
+# [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 # CMPS_hamby252_results$plot[[2]]
 
-p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max", 
-                         subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
+p1 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max",
+  subtitle = "npeaks_set: 5-3-1, seg_length: 50"
+) +
   xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
-                         subtitle = "npeaks.set: 5-3-1, seg_length: 50") +
+  subtitle = "npeaks_set: 5-3-1, seg_length: 50"
+) +
   xlab(labels[4])
 
-p.result1_252 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
-               common.legend = TRUE, legend = "bottom")
+p.result1_252 <- ggarrange(
+  plotlist = list(p1, p2), nrow = 1, ncol = 2,
+  common.legend = TRUE, legend = "bottom"
+)
 p.result1_252 <- annotate_figure(p.result1_252, top = text_grob(com.title252))
 p.result1_252
 ```
@@ -1184,9 +1266,9 @@ The parameters used in \code{extract\_feature\_cmps} are:
 ```{r, eval=FALSE}
 extract_feature_cmps(
   x, y,
-  seg_length = 61, 
+  seg_length = 61,
   Tx = 30,
-  npeaks.set = c(5,3,1),
+  npeaks_set = c(5, 3, 1),
   include = "nseg"
 )
 ```
@@ -1197,15 +1279,19 @@ As shown in \autoref{fig:result1_44}, again, we are able to see a clear separati
 For this specific set of parameters, the sum of squares ratios are 8.87 and 10.64 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively.
 This might suggest that we could enlarge the separation in terms of the sum of squares ratio by using other CMPS metrics and other sets of parameters.
 
-```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks.set = c(5,3,1)} ", fig.height=3, warning=FALSE}
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3, warning=FALSE}
 p1 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
-                         subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
+  subtitle = "npeaks_set: 5-3-1, seg_length: 61"
+) +
   xlab(labels[1])
 p2 <- metric_plot_helper(CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
-                         subtitle = "npeaks.set: 5-3-1, seg_length: 61") +
+  subtitle = "npeaks_set: 5-3-1, seg_length: 61"
+) +
   xlab(labels[4])
-p.result1_44 <- ggarrange(plotlist = list(p1, p2), nrow = 1, ncol = 2,
-               common.legend = TRUE, legend = "bottom")
+p.result1_44 <- ggarrange(
+  plotlist = list(p1, p2), nrow = 1, ncol = 2,
+  common.legend = TRUE, legend = "bottom"
+)
 p.result1_44 <- annotate_figure(p.result1_44, top = text_grob(com.title44))
 p.result1_44
 ```
@@ -1213,7 +1299,7 @@ p.result1_44
 **Comparing CMPS metrics and parameters**
 
 ```{r param_seg_plot, echo=FALSE, out.width="400px", fig.cap="Comparison of results from the CMPS algorithm based on different basis segment lengths (parameter \\texttt{seg\\_length}). Only the $\\mathrm{CMPS_{max}}$ metric suggests that the default values for the basis segment length result in the best separation. Better separation is achieved based on the modified CMPS metrics, inclusing the newly suggested ones. For Hamby 252 these metrics agree on a segment length of 75, and a segment length of 122 for Hamby 44 yields better results", fig.height=3, warning = FALSE}
-p.seg_plot 
+p.seg_plot
 ```
 
 
@@ -1223,12 +1309,12 @@ p.npeak_plot
 
 
 We investigated the effects of different sets of parameters at the example of both Hamby sets 252 and 44.
-More specifically, we investigated the separation achieved using the \pkg{cmpsR} implementation under various segment lengths (controlled by the parameter \code{seg\_length}). Specifically, we fixed the parameter \code{npeaks.set} that controls the number of peaks at each segment level to be \code{npeaks.set = c(5,3,1)} and modified the parameter \code{seg\_length}. 
+More specifically, we investigated the separation achieved using the \pkg{cmpsR} implementation under various segment lengths (controlled by the parameter \code{seg\_length}). Specifically, we fixed the parameter \code{npeaks\_set} that controls the number of peaks at each segment level to be \code{npeaks\_set = c(5,3,1)} and modified the parameter \code{seg\_length}. 
 \autoref{fig:param_seg_plot} shows that the default values of \code{seg\_length}  for Hamby 252 and Hamby 44 (50 for Hamby 252 and 61 for Hamby 44, which represent 78.125 \textmu m and 78.69 \textmu m, respectively) result in high values of the sum of squares ratio, no matter which CMPS metrics are used for an evaluation. 
 However, we also see, that for Hamby set 252 a basis segment length of 75 is a better choice than the default segment length; a basis segment length of 122 results in a higher value of sum of squares ratio for Hamby 44.
 
 \autoref{fig:param_npeak_plot} shows results of the CMPS algorithm using different strategies for identifying peaks in the correlation structure between signatures. Basis segment length is fixed to the default level for this evaluation. 
-As can be seen in \autoref{fig:param_npeak_plot}, the default value of \code{npeaks.set} (\code{npeaks.set = c(5,3,1)}) leads to promising results in terms of the sum of squares ratio; however, other choices of \code{npeaks.set} match and  exceed this sum of squares ratio value.
+As can be seen in \autoref{fig:param_npeak_plot}, the default value of \code{npeaks\_set} (\code{npeaks\_set = c(5,3,1)}) leads to promising results in terms of the sum of squares ratio; however, other choices of \code{npeaks\_set} match and  exceed this sum of squares ratio value.
 
 As seen before, the results suggest that the $\mathrm{CMPS_{max}}$ metric produces the least amount of separation compared with the other three CMPS metrics.
 They also suggest that the two newly proposed metrics, $\mathrm{\overline{CMPS}_{diff}}$ and $\mathrm{\overline{CMPS^*}_{diff}}$,  lead to equally good or even better results as $\mathrm{\overline{CMPS}_{max}}$. 
@@ -1244,10 +1330,10 @@ But a large database that is representative is what we really need in order to f
 
 **Comparing with original results and the random forest model**
 
-@cmps present histograms of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for \code{npeaks.set = 5} and \code{npeaks.set = c(5,3,1)} with (presumably) Hamby 252.
+@cmps present histograms of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for \code{npeaks\_set = 5} and \code{npeaks\_set = c(5,3,1)} with (presumably) Hamby 252.
 The values in these histograms allow us to calculate the sum of squares ratios and include the results in \autoref{fig:param_npeak_plot} as well.
 They are marked by an asterisk at the top right corner in \autoref{fig:param_npeak_plot}.
-The sum of squares ratios we obtained for \code{npeaks.set = 5} and \code{npeaks.set = c(5,3,1)} is slightly higher than those obtained from the histograms of @cmps. 
+The sum of squares ratios we obtained for \code{npeaks\_set = 5} and \code{npeaks\_set = c(5,3,1)} is slightly higher than those obtained from the histograms of @cmps. 
 It's curious to see that for the Hamby 252 results published in @cmps the $\mathrm{{CMPS}_{max}}$ metric achieves values of the sum of squares ratio higher than those achieved by the $\mathrm{\overline{CMPS}_{max}}$ metric. 
 
 Since the researchers of @cmps did not use $\mathrm{\overline{CMPS}_{diff}}$ or $\mathrm{\overline{CMPS^*}_{diff}}$, and they did not apply the CMPS algorithm to the Hamby set 44, we were not able to compare those results.

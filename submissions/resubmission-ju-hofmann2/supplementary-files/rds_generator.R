@@ -21,8 +21,8 @@ CMPS_hamby252_results$span1 <- as.list(rep(0.25, N))
 CMPS_hamby252_results$signame <- as.list(rep("sigs25", N))
 # list("sigs75", "sigs25", "sigs25_1062", "sigs15")
 
-#### setup npeaks.set
-CMPS_hamby252_results$npeaks.set <- lapply(1:N, function(t) c(5,3,1))
+#### setup npeaks_set
+CMPS_hamby252_results$npeaks_set <- lapply(1:N, function(t) c(5,3,1))
 
 #### setup seg_length
 CMPS_hamby252_results$seg_length <- as.list(c(25, 50, 75, 100, 125, 150, 175, 200))
@@ -39,8 +39,8 @@ CMPS_hamby252_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby252_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby252_results$seg_length[[i]],
@@ -54,7 +54,7 @@ for (i in 1:N) {
     paste(
       "hamby252_segment",
       CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby252_results$seg_length[[i]],
       CMPS_hamby252_results$Tx[[i]],
       sep = "_"
@@ -88,8 +88,8 @@ CMPS_hamby252_results$span1 <- as.list(rep(0.25, N))
 CMPS_hamby252_results$signame <- as.list(rep("sigs25", N))
 # list("sigs75", "sigs25", "sigs25_1062", "sigs15")
 
-#### setup npeaks.set
-CMPS_hamby252_results$npeaks.set <- 
+#### setup npeaks_set
+CMPS_hamby252_results$npeaks_set <- 
   list(c(5),
        c(5,2),
        c(5,3,1),
@@ -118,8 +118,8 @@ CMPS_hamby252_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby252_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby252_results$seg_length[[i]],
@@ -133,7 +133,7 @@ for (i in 1:N) {
     paste(
       "hamby252_npeak",
       CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby252_results$seg_length[[i]],
       CMPS_hamby252_results$Tx[[i]],
       sep = "_"
@@ -168,7 +168,7 @@ CMPS_hamby44_results$signame <-
   as.list(rep("sigs25_531", N))
 
 #### setup neapks.set
-CMPS_hamby44_results$npeaks.set <-
+CMPS_hamby44_results$npeaks_set <-
   lapply(1:N, function(t) c(5,3,1))
 
 #### setup seg_length
@@ -186,8 +186,8 @@ CMPS_hamby44_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby44_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby44_results$seg_length[[i]],
@@ -201,7 +201,7 @@ for (i in 1:N) {
     paste(
       "hamby44_segment",
       CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby44_results$seg_length[[i]],
       CMPS_hamby44_results$Tx[[i]],
       sep = "_"
@@ -236,7 +236,7 @@ CMPS_hamby44_results$signame <-
   as.list(rep("sigs25_531", N))
 
 #### setup neapks.set
-CMPS_hamby44_results$npeaks.set <-
+CMPS_hamby44_results$npeaks_set <-
   list(c(5),
        c(5,2),
        c(5,3,1),
@@ -263,8 +263,8 @@ CMPS_hamby44_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby44_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby44_results$seg_length[[i]],
@@ -278,7 +278,7 @@ for (i in 1:N) {
     paste(
       "hamby44_npeak",
       CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby44_results$seg_length[[i]],
       CMPS_hamby44_results$Tx[[i]],
       sep = "_"
