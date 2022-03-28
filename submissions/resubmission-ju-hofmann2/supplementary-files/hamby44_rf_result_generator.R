@@ -1,5 +1,5 @@
 ###############################
-# Note: read reproducible-readme.md first before reproducing the results
+# Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
 ###############################
@@ -10,17 +10,54 @@
 ## Load the required packages
 library(tidyverse)
 if(!require(bulletxtrctr)) {
-  devtools::install_github("heike/bulletxtrctr")
+  devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(CMPS)
+library(cmpsR)
 library(ggpubr)
 library(parallel)
 library(assertthat)
 require(randomForest)
 
-source("func_collection.R")
+# define a local function for performing feature extraction in bulletxtrctr
+my_extract_feature_all <- function (aligned, striae, resolution, tmpfile = NULL, ...)
+{
+  feature <- value <- NULL
+  assert_that(!is.null(aligned), !is.null(striae), msg = "aligned and striae must not be NULL")
+  features <- apropos("^extract_feature_") # change: added a start anchor
+  features <- features[!str_detect(features, "extract_feature_cmps")] # change: exclude _cmps from the search list
+  dots <- list(...)
+  values <- features %>% purrr::map_dbl(.f = function(f) {
+    fun <- getFromNamespace(f, asNamespace("bulletxtrctr"))
+    fun_args <- names(formals(fun))
+    matching_args <- dots[names(dots) %in% fun_args]
+    if ("aligned" %in% fun_args) {
+      matching_args$aligned <- aligned$lands
+    }
+    if ("striae" %in% fun_args) {
+      matching_args$striae <- striae$lines
+    }
+    if ("resolution" %in% fun_args) {
+      matching_args$resolution <- resolution
+    }
+    res <- do.call(fun, matching_args)
+    res
+  })
+  dframe <- data.frame(feature = gsub("extract_feature_", "",
+                                      features), value = values) %>% spread(feature, value)
+  if (!is.null(tmpfile)) {
+    if (file.exists(tmpfile)) {
+      write.table(dframe, file = tmpfile, sep = ",", append = TRUE,
+                  col.names = FALSE, row.names = FALSE)
+    }
+    else {
+      write.table(dframe, file = tmpfile, sep = ",", append = FALSE,
+                  col.names = TRUE, row.names = FALSE)
+    }
+  }
+  dframe
+}
 
 data_path <- "./data-csv/hamby44/"
 
@@ -166,10 +203,23 @@ b44 <- b44 %>% mutate(sigs_main = purrr::map(
   }
 ))
 
+cl <- parallel::makeCluster(detectCores())
+par.setup <- parLapply(cl, 1:length(cl),
+                       function(xx) {
+                         library(tidyverse)
+                         library(cmpsR)
+                         library(bulletxtrctr)
+                         library(randomForest)
+                         library(assertthat)
+                       })
+clusterExport(cl, list('b44', 'b.cb', 'CMPS_hamby44_results','i',
+                       'my_extract_feature_all', 'rf.model'))
+
+
 # start the parallel computing
 system.time({
-  # tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-  tmp.44.list <- mclapply(p, function(cb.idx) {
+  tmp.44.list <- parLapply(cl, p, function(cb.idx) {
+  # tmp.44.list <- mclapply(p, function(cb.idx) {
     
     tmp.lands <-
       c(
@@ -204,7 +254,8 @@ system.time({
         features = purrr::map2(.x = aligned, .y = striae, 
                                .f = my_extract_feature_all, resolution = 1.29), 
         legacy_features = purrr::map(striae, 
-                                     extract_features_all_legacy, resolution = 1.29))
+                                     extract_features_all_legacy, resolution = 1.29)
+      )
     # tidyr::unnest(features) # change: instead of legacy_feature
     
     
@@ -223,13 +274,15 @@ system.time({
       bullet2 = b.cb[, cb.idx][2],
       rf.table = list(rf.table)
     )
-    # })
-  }, mc.cores = detectCores())
+    })
+  # }, mc.cores = detectCores())
 })
 # user  system elapsed
 # 0.02    0.00  126.06
 
 hamby44.rf <- do.call(rbind, tmp.44.list)
+
+stopCluster(cl)
 
 # remove outliers/damaged data
 hamby44.rf$rf.table.m <-

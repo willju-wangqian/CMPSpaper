@@ -1,5 +1,5 @@
 ###############################
-# Note: read reproducible-readme.md first before reproducing the results
+# Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
 ###############################
@@ -10,15 +10,15 @@
 ## Load the required packages
 library(tidyverse)
 if(!require(bulletxtrctr)) {
-  devtools::install_github("heike/bulletxtrctr")
+  devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(CMPS)
+library(cmpsR)
 library(ggpubr)
 library(parallel)
 
-source("func_collection.R")
+# source("func_collection.R")
 
 data_path <- "./data-csv/hamby252/"
 
@@ -114,8 +114,8 @@ CMPS_hamby252_results$span1 <- as.list(rep(0.25, N))
 CMPS_hamby252_results$signame <- as.list(rep("sigs25", N))
 # list("sigs75", "sigs25", "sigs25_1062", "sigs15")
 
-#### setup npeaks.set
-CMPS_hamby252_results$npeaks.set <- 
+#### setup npeaks_set
+CMPS_hamby252_results$npeaks_set <- 
   list(c(5),
        c(5,2),
        c(5,3,1),
@@ -144,8 +144,8 @@ CMPS_hamby252_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby252_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby252_results$seg_length[[i]],
@@ -159,7 +159,7 @@ for (i in 1:N) {
     paste(
       "hamby252_npeak",
       CMPS_hamby252_results$span1[[i]]*100,
-      paste(CMPS_hamby252_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby252_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby252_results$seg_length[[i]],
       CMPS_hamby252_results$Tx[[i]],
       sep = "_"
@@ -216,9 +216,17 @@ for (i in 1:N) {
   ))
   
   
+  cl <- parallel::makeCluster(detectCores())
+  par.setup <- parLapply(cl, 1:length(cl),
+                         function(xx) {
+                           library(tidyverse)
+                           library(cmpsR)
+                         })
+  clusterExport(cl, list('b252', 'b.cb', 'CMPS_hamby252_results','i'))
+  
   #### compute CMPS scores with parallel computing
   system.time({
-    tmp.252.list <- mclapply(p, function(cb.idx) { # for each pairwise comparison
+    tmp.252.list <- parLapply(cl, p, function(cb.idx) {
       
       # identify two bullets with their IDs
       tmp.lands <-
@@ -246,7 +254,7 @@ for (i in 1:N) {
             extract_feature_cmps(
               sig1,
               sig2,
-              npeaks.set = CMPS_hamby252_results$npeaks.set[[i]],
+              npeaks_set = CMPS_hamby252_results$npeaks_set[[i]],
               seg_length = CMPS_hamby252_results$seg_length[[i]],
               Tx = CMPS_hamby252_results$Tx[[i]],
               include = "nseg",
@@ -259,7 +267,7 @@ for (i in 1:N) {
       tmp.comp <- tmp.comp %>%
         mutate(
           cmps_score = sapply(tmp.comp$cmps, function(x)
-            x$CMPS.score),
+            x$CMPS_score),
           cmps_nseg = sapply(tmp.comp$cmps, function(x)
             x$nseg),
           cmps_score_scaled = cmps_score / cmps_nseg
@@ -274,13 +282,16 @@ for (i in 1:N) {
         bullet2 = b.cb[, cb.idx][2],
         cmps.table = list(cmps.table)
       )
-    }, mc.cores = detectCores())
+    })
+    # }, mc.cores = detectCores())
   })
   
   # user  system elapsed
   # 0.02    0.00  126.06
   
   hamby252.cmps <- do.call(rbind, tmp.252.list)
+  
+  stopCluster(cl)
   
   # compute CMPS_{max} and \bar{CMPS_{max}} for the bullet comparison
   # set NAs for tank-rashed data
@@ -325,47 +336,47 @@ for(i in 1:N){
       select(-cmps.table, -cmps.table.m) %>% as.data.frame(),
     file = paste(data_path, CMPS_hamby252_results$filename[[i]], ".csv", sep = ""))
 }
-
-## Generate plots
-for (i in 1:N) {
-  hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
-  
-  hamby252.plot.list <- list()
-  titlee <- CMPS_hamby252_results$titlee[[i]]
-  
-  # generate plot for CMPS_{max}
-  hamby252.plot.list[[1]] <- hamby252.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.max.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      fill = "Comparison Type",
-      x = expression(CMPS[max]),
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 27, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank()) +
-    font("x.text", size = 6)
-  
-  # generate plot for \bar{CMPS_{max}}
-  hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.maxbar.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      x = expression(bar(CMPS)[max]),
-      fill = "Comparison Type",
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 24, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank())
-  
-  # combine the two plots
-  plot <- ggarrange(plotlist = hamby252.plot.list,
-                    nrow = 1,
-                    ncol = 2,
-                    common.legend = TRUE, legend = "bottom")
-  plot <- annotate_figure(plot, 
-                          top = text_grob(com.title252))
-  CMPS_hamby252_results$plot[[i]] <- plot
-}
+# 
+# ## Generate plots
+# for (i in 1:N) {
+#   hamby252.cmps <- CMPS_hamby252_results$cmps.table[[i]]
+#   
+#   hamby252.plot.list <- list()
+#   titlee <- CMPS_hamby252_results$titlee[[i]]
+#   
+#   # generate plot for CMPS_{max}
+#   hamby252.plot.list[[1]] <- hamby252.cmps %>% ggplot() +
+#     geom_histogram(aes(x = cmps.max.m,
+#                        fill = as.factor(type_truth)), binwidth = 1) +
+#     labs(
+#       fill = "Comparison Type",
+#       x = expression(CMPS[max]),
+#       subtitle = titlee
+#     ) +
+#     scale_x_continuous(breaks = seq(0, 27, 1)) +
+#     theme_bw() +
+#     theme(panel.grid.minor = element_blank()) +
+#     font("x.text", size = 6)
+#   
+#   # generate plot for \bar{CMPS_{max}}
+#   hamby252.plot.list[[2]] <- hamby252.cmps %>% ggplot() +
+#     geom_histogram(aes(x = cmps.maxbar.m,
+#                        fill = as.factor(type_truth)), binwidth = 1) +
+#     labs(
+#       x = expression(bar(CMPS)[max]),
+#       fill = "Comparison Type",
+#       subtitle = titlee
+#     ) +
+#     scale_x_continuous(breaks = seq(0, 24, 1)) +
+#     theme_bw() +
+#     theme(panel.grid.minor = element_blank())
+#   
+#   # combine the two plots
+#   plot <- ggarrange(plotlist = hamby252.plot.list,
+#                     nrow = 1,
+#                     ncol = 2,
+#                     common.legend = TRUE, legend = "bottom")
+#   plot <- annotate_figure(plot, 
+#                           top = text_grob(com.title252))
+#   CMPS_hamby252_results$plot[[i]] <- plot
+# }

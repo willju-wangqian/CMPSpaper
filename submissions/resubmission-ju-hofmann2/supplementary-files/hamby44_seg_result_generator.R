@@ -1,5 +1,5 @@
 ###############################
-# Note: read reproducible-readme.md first before reproducing the results
+# Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
 ###############################
@@ -10,15 +10,15 @@
 ## Load the required packages
 library(tidyverse)
 if(!require(bulletxtrctr)) {
-  devtools::install_github("heike/bulletxtrctr")
+  devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(CMPS)
+library(cmpsR)
 library(ggpubr)
 library(parallel)
 
-source("func_collection.R")
+# source("func_collection.R")
 
 data_path <- "./data-csv/hamby44/"
 
@@ -121,7 +121,7 @@ CMPS_hamby44_results$signame <-
   as.list(rep("sigs25_531", N))
 
 #### setup neapks.set
-CMPS_hamby44_results$npeaks.set <-
+CMPS_hamby44_results$npeaks_set <-
   lapply(1:N, function(t) c(5,3,1))
 
 #### setup seg_length
@@ -139,8 +139,8 @@ CMPS_hamby44_results$filename <- list()
 for (i in 1:N) {
   CMPS_hamby44_results$titlee[[i]] <-
     paste0(
-      "npeaks.set=c(",
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = ","),
+      "npeaks_set=c(",
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = ","),
       ")",
       ", len=",
       CMPS_hamby44_results$seg_length[[i]],
@@ -154,7 +154,7 @@ for (i in 1:N) {
     paste(
       "hamby44_segment",
       CMPS_hamby44_results$span1[[i]]*100,
-      paste(CMPS_hamby44_results$npeaks.set[[i]], collapse = "-"),
+      paste(CMPS_hamby44_results$npeaks_set[[i]], collapse = "-"),
       CMPS_hamby44_results$seg_length[[i]],
       CMPS_hamby44_results$Tx[[i]],
       sep = "_"
@@ -209,10 +209,18 @@ for (i in 1:N) {
     }
   ))
   
+  cl <- parallel::makeCluster(detectCores())
+  par.setup <- parLapply(cl, 1:length(cl),
+                         function(xx) {
+                           library(tidyverse)
+                           library(cmpsR)
+                         })
+  clusterExport(cl, list('b44', 'b.cb', 'CMPS_hamby44_results','i'))
+  
   #### compute CMPS scores with parallel computing
   system.time({
-    # tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-    tmp.44.list <- mclapply(p, function(cb.idx) {
+    tmp.44.list <- parLapply(cl, p, function(cb.idx) {
+    # tmp.44.list <- mclapply(p, function(cb.idx) {
       
       tmp.lands <-
         c(
@@ -238,7 +246,7 @@ for (i in 1:N) {
             extract_feature_cmps(
               sig1,
               sig2,
-              npeaks.set = CMPS_hamby44_results$npeaks.set[[i]],
+              npeaks_set = CMPS_hamby44_results$npeaks_set[[i]],
               seg_length = CMPS_hamby44_results$seg_length[[i]],
               Tx = CMPS_hamby44_results$Tx[[i]],
               include = "nseg",
@@ -252,7 +260,7 @@ for (i in 1:N) {
       tmp.comp <- tmp.comp %>%
         mutate(
           cmps_score = sapply(tmp.comp$cmps, function(x)
-            x$CMPS.score),
+            x$CMPS_score),
           cmps_nseg = sapply(tmp.comp$cmps, function(x)
             x$nseg),
           cmps_score_scaled = cmps_score / cmps_nseg
@@ -267,12 +275,15 @@ for (i in 1:N) {
         bullet2 = b.cb[, cb.idx][2],
         cmps.table = list(cmps.table)
       )
-    }, mc.cores = detectCores())
+    # }, mc.cores = detectCores())
+    })
   })
   
   # user  system elapsed
   # 0.02    0.00  147.06
   hamby44.cmps <- do.call(rbind, tmp.44.list)
+  
+  stopCluster(cl)
   
   ## compute CMPS_{max} and \bar{CMPS_{max}} for the bullet comparison
   # set NAs for tank-rashed data
@@ -319,45 +330,45 @@ for(i in 1:N){
 }
 
 ## Generate plots
-for (i in 1:N) {
-  hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
-  
-  hamby44.plot.list <- list()
-  titlee <- CMPS_hamby44_results$titlee[[i]]
-  
-  # generate plot for CMPS_{max}
-  hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.max.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      fill = "Comparison Type",
-      x = expression(CMPS[max]),
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 27, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank()) +
-    font("x.text", size = 6)
-  
-  # generate plot for \bar{CMPS_{max}}
-  hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
-    geom_histogram(aes(x = cmps.maxbar.m,
-                       fill = as.factor(type_truth)), binwidth = 1) +
-    labs(
-      x = expression(bar(CMPS)[max]),
-      fill = "Comparison Type",
-      subtitle = titlee
-    ) +
-    scale_x_continuous(breaks = seq(0, 24, 1)) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank())
-  
-  # combine the two plots
-  plot <- ggarrange(plotlist = hamby44.plot.list,
-                    nrow = 1,
-                    ncol = 2,
-                    common.legend = TRUE, legend = "bottom")
-  plot <- annotate_figure(plot, 
-                          top = text_grob(com.title44))
-  CMPS_hamby44_results$plot[[i]] <- plot
-}
+# for (i in 1:N) {
+#   hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
+#   
+#   hamby44.plot.list <- list()
+#   titlee <- CMPS_hamby44_results$titlee[[i]]
+#   
+#   # generate plot for CMPS_{max}
+#   hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
+#     geom_histogram(aes(x = cmps.max.m,
+#                        fill = as.factor(type_truth)), binwidth = 1) +
+#     labs(
+#       fill = "Comparison Type",
+#       x = expression(CMPS[max]),
+#       subtitle = titlee
+#     ) +
+#     scale_x_continuous(breaks = seq(0, 27, 1)) +
+#     theme_bw() +
+#     theme(panel.grid.minor = element_blank()) +
+#     font("x.text", size = 6)
+#   
+#   # generate plot for \bar{CMPS_{max}}
+#   hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
+#     geom_histogram(aes(x = cmps.maxbar.m,
+#                        fill = as.factor(type_truth)), binwidth = 1) +
+#     labs(
+#       x = expression(bar(CMPS)[max]),
+#       fill = "Comparison Type",
+#       subtitle = titlee
+#     ) +
+#     scale_x_continuous(breaks = seq(0, 24, 1)) +
+#     theme_bw() +
+#     theme(panel.grid.minor = element_blank())
+#   
+#   # combine the two plots
+#   plot <- ggarrange(plotlist = hamby44.plot.list,
+#                     nrow = 1,
+#                     ncol = 2,
+#                     common.legend = TRUE, legend = "bottom")
+#   plot <- annotate_figure(plot, 
+#                           top = text_grob(com.title44))
+#   CMPS_hamby44_results$plot[[i]] <- plot
+# }
