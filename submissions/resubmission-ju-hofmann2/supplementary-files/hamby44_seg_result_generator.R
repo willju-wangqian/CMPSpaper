@@ -1,24 +1,25 @@
-###############################
+################################################################################
 # Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
-###############################
+################################################################################
 
 # set the working directory
 # setwd("~/your-path/supplementary-files")
 
 ## Load the required packages
 library(tidyverse)
-if(!require(bulletxtrctr)) {
+if(!require(bulletxtrctr) || packageVersion("bulletxtrctr") < '0.2.1') {
   devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(cmpsR)
+if(!require(cmpsR) || packageVersion("cmpsR") < '0.1.2') {
+  devtools::install_github("willju-wangqian/cmpsR")
+  library(cmpsR)
+}
 library(ggpubr)
 library(parallel)
-
-# source("func_collection.R")
 
 data_path <- "./data-csv/hamby44/"
 
@@ -220,7 +221,6 @@ for (i in 1:N) {
   #### compute CMPS scores with parallel computing
   system.time({
     tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-    # tmp.44.list <- mclapply(p, function(cb.idx) {
       
       tmp.lands <-
         c(
@@ -255,8 +255,6 @@ for (i in 1:N) {
           }
         )
       
-      # cat(cb.idx, "- 3; ")
-      
       tmp.comp <- tmp.comp %>%
         mutate(
           cmps_score = sapply(tmp.comp$cmps, function(x)
@@ -275,12 +273,9 @@ for (i in 1:N) {
         bullet2 = b.cb[, cb.idx][2],
         cmps.table = list(cmps.table)
       )
-    # }, mc.cores = detectCores())
     })
   })
   
-  # user  system elapsed
-  # 0.02    0.00  147.06
   hamby44.cmps <- do.call(rbind, tmp.44.list)
   
   stopCluster(cl)
@@ -329,46 +324,4 @@ for(i in 1:N){
     file = paste(data_path, CMPS_hamby44_results$filename[[i]], ".csv", sep = ""))
 }
 
-## Generate plots
-# for (i in 1:N) {
-#   hamby44.cmps <- CMPS_hamby44_results$cmps.table[[i]]
-#   
-#   hamby44.plot.list <- list()
-#   titlee <- CMPS_hamby44_results$titlee[[i]]
-#   
-#   # generate plot for CMPS_{max}
-#   hamby44.plot.list[[1]] <- hamby44.cmps %>% ggplot() +
-#     geom_histogram(aes(x = cmps.max.m,
-#                        fill = as.factor(type_truth)), binwidth = 1) +
-#     labs(
-#       fill = "Comparison Type",
-#       x = expression(CMPS[max]),
-#       subtitle = titlee
-#     ) +
-#     scale_x_continuous(breaks = seq(0, 27, 1)) +
-#     theme_bw() +
-#     theme(panel.grid.minor = element_blank()) +
-#     font("x.text", size = 6)
-#   
-#   # generate plot for \bar{CMPS_{max}}
-#   hamby44.plot.list[[2]] <- hamby44.cmps %>% ggplot() +
-#     geom_histogram(aes(x = cmps.maxbar.m,
-#                        fill = as.factor(type_truth)), binwidth = 1) +
-#     labs(
-#       x = expression(bar(CMPS)[max]),
-#       fill = "Comparison Type",
-#       subtitle = titlee
-#     ) +
-#     scale_x_continuous(breaks = seq(0, 24, 1)) +
-#     theme_bw() +
-#     theme(panel.grid.minor = element_blank())
-#   
-#   # combine the two plots
-#   plot <- ggarrange(plotlist = hamby44.plot.list,
-#                     nrow = 1,
-#                     ncol = 2,
-#                     common.legend = TRUE, legend = "bottom")
-#   plot <- annotate_figure(plot, 
-#                           top = text_grob(com.title44))
-#   CMPS_hamby44_results$plot[[i]] <- plot
-# }
+

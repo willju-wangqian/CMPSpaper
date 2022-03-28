@@ -1,20 +1,23 @@
-###############################
+################################################################################
 # Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
-###############################
+################################################################################
 
 # set the working directory
 # setwd("~/your-path/supplementary-files")
 
 ## Load the required packages
 library(tidyverse)
-if(!require(bulletxtrctr)) {
+if(!require(bulletxtrctr) || packageVersion("bulletxtrctr") < '0.2.1') {
   devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(cmpsR)
+if(!require(cmpsR) || packageVersion("cmpsR") < '0.1.2') {
+  devtools::install_github("willju-wangqian/cmpsR")
+  library(cmpsR)
+}
 library(ggpubr)
 library(parallel)
 library(assertthat)
@@ -187,7 +190,6 @@ i <- 1
 #     )
 #   })
 
-
 # process of removing outliers
 tt <- lapply(b252[[CMPS_hamby252_results$signame[[i]]]], function(x) {
   x$sig
@@ -196,8 +198,6 @@ qtt <- quantile(tt, na.rm = TRUE)
 multi.iqr <- 3
 outrange <- c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]),
               qtt[4] + multi.iqr * (qtt[4] - qtt[2]))
-
-# outrange <- c(-10000, 10000) # without excluding the outliers
 
 b252 <- b252 %>% mutate(sigs_main = purrr::map(
   .x = .data[[CMPS_hamby252_results$signame[[i]]]],
@@ -223,7 +223,6 @@ clusterExport(cl, list('b252', 'b.cb', 'CMPS_hamby252_results','i',
 # start the parallel computing
 system.time({
   tmp.252.list <- parLapply(cl, p, function(cb.idx) {
-  # tmp.252.list <- mclapply(p, function(cb.idx) {
     
     tmp.lands <-
       c(
@@ -248,7 +247,6 @@ system.time({
                               land2$bullet <- "second-land"
                               
                               sig_align(land1$sig, land2$sig)
-                              # bulletxtrctr::sig_align(land1$sig, land2$sig)
                             }))
     
     # compute the rf_score
@@ -259,10 +257,6 @@ system.time({
                                .f = my_extract_feature_all, resolution = 1.5625), 
         legacy_features = purrr::map(striae, 
                                      extract_features_all_legacy, resolution = 1.5625))
-    # tidyr::unnest(features) # change: instead of legacy_feature
-    
-    # tmp.comp$rf_score <- predict(bulletxtrctr::rtrees, newdata = tmp.comp, 
-    #                             type = "prob")[, 2]
     tmp.comp$rf_score <- predict(rf.model, 
                                  newdata = tmp.comp %>% tidyr::unnest(features) %>% mutate(
                                    abs_lag_mm = abs(lag_mm)
@@ -279,10 +273,7 @@ system.time({
       rf.table = list(rf.table)
     )
     })
-  # }, mc.cores = detectCores())
 })
-# user  system elapsed
-# 0.02    0.00  126.06
 
 hamby252.rf <- do.call(rbind, tmp.252.list)
 

@@ -1,20 +1,23 @@
-###############################
+################################################################################
 # Note: please read reproducible-readme.md first before reproducing the results
 # Please set the working directory properly so that func_collection.R and 
 # the data files mentioned in reproducible-readme.md are available
-###############################
+################################################################################
 
 # set the working directory
 # setwd("~/your-path/supplementary-files")
 
 ## Load the required packages
 library(tidyverse)
-if(!require(bulletxtrctr)) {
+if(!require(bulletxtrctr) || packageVersion("bulletxtrctr") < '0.2.1') {
   devtools::install_github("heike/bulletxtrctr", ref = "develop")
   library(bulletxtrctr)
 }
 library(x3ptools)
-library(cmpsR)
+if(!require(cmpsR) || packageVersion("cmpsR") < '0.1.2') {
+  devtools::install_github("willju-wangqian/cmpsR")
+  library(cmpsR)
+}
 library(ggpubr)
 library(parallel)
 library(assertthat)
@@ -192,8 +195,6 @@ multi.iqr <- 3
 outrange <- c(qtt[2] - multi.iqr * (qtt[4] - qtt[2]),
               qtt[4] + multi.iqr * (qtt[4] - qtt[2]))
 
-# outrange <- c(-10000, 10000) # without excluding the outliers
-
 b44 <- b44 %>% mutate(sigs_main = purrr::map(
   .x = .data[[CMPS_hamby44_results$signame[[i]]]],
   .f = function(x) {
@@ -219,7 +220,6 @@ clusterExport(cl, list('b44', 'b.cb', 'CMPS_hamby44_results','i',
 # start the parallel computing
 system.time({
   tmp.44.list <- parLapply(cl, p, function(cb.idx) {
-  # tmp.44.list <- mclapply(p, function(cb.idx) {
     
     tmp.lands <-
       c(
@@ -244,7 +244,6 @@ system.time({
                               land2$bullet <- "second-land"
                               
                               sig_align(land1$sig, land2$sig)
-                              # bulletxtrctr::sig_align(land1$sig, land2$sig)
                             }))
     
     # compute the rf_score
@@ -256,8 +255,6 @@ system.time({
         legacy_features = purrr::map(striae, 
                                      extract_features_all_legacy, resolution = 1.29)
       )
-    # tidyr::unnest(features) # change: instead of legacy_feature
-    
     
     tmp.comp$rf_score <- predict(rf.model, 
                                  newdata = tmp.comp %>% tidyr::unnest(features) %>% mutate(
@@ -275,10 +272,7 @@ system.time({
       rf.table = list(rf.table)
     )
     })
-  # }, mc.cores = detectCores())
 })
-# user  system elapsed
-# 0.02    0.00  126.06
 
 hamby44.rf <- do.call(rbind, tmp.44.list)
 

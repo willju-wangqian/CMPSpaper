@@ -17,3 +17,8 @@ for (i in 1:length(new_files_name)) {
   
   if(!identical(tt1,tt2)) print(i)
 }
+
+# 5, 22
+i <- 22
+new_files_name[i]
+ogn_files_name[i]
