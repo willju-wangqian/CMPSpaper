@@ -69,6 +69,12 @@ probability = TRUE))
 
 Thank you for your suggestion. There is no overlap between KM and KNM in Figure 9 and Figure 10. And in order to make the counts more visible, we have converted the counts to XXX
 
+#### Note on the marked article
+\ 
+
+The `marked_article.pdf` in the same folder of the review responds is a marked version of the article, where the new added contents are highlighted in blue. The intention of this file is to allow the reviewers to quickly find out what has been changed for this revision.
+
+
 ## Reference
 
 Z. Chen, W. Chu, J. A. Soons, R. M. Thompson, J. Song, and X. Zhao. Fired bullet signature correlation using the Congruent Matching Profile Segments (CMPS) method. Forensic Science International, 305: Article 109964, (10 pages), 2019. ISSN 0379-0738. doi: https://doi.org/10.1016/j.forsciint.2019.109964.
