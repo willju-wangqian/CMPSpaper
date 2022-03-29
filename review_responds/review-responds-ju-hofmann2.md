@@ -22,6 +22,10 @@ Thank you for your advice. The coding style is now consistent both throughout th
 
 This global assignment is now removed and is replaced by an equivalent for loop.
 
+> It might be good to add a CITATION file and a README.md file to the package.
+
+The `README.md` file and `CITATION` file are now added to the package.
+
 > Some codes are commented, such as line 50 and line 53 in cmps.R. I suggest removing them as
 they are not executed, and they might confuse the user who wants to view the code.
 
