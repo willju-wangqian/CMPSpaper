@@ -81,17 +81,17 @@ surface texture \citep{song2005}, tool marks
 notion of bullet signatures is one of the results of these efforts, and
 we will use it to explain the CMPS algorithm and showcase the
 \pkg{cmpsR} implementation. Bullet signatures can be extracted from
-bullet land engraved areas (LEAs), typically one for each land engraved
-area, and how those bullet signatures are extracted from scans will be
-discussed in the Background section. Bullet signatures capture striation
-marks on the bullet in a numeric format and therefore serve as the
-foundation for algorithms. These scans played an important role in
-bringing objectivity into the field. In the following sections we will:
-review the background of bullet signature comparisons, discuss how we
-followed the idea described by \citet{cmps} for the implementation of
-the CMPS algorithm, propose new metrics based on the CMPS score and a
-principled evaluation framework for algorithmic results comparison, and
-present results of applying our implementation to real data.
+bullet LEAs, typically one for each land engraved area, and how those
+bullet signatures are extracted from scans will be discussed in the
+Background section. Bullet signatures capture striation marks on the
+bullet in a numeric format and therefore serve as the foundation for
+algorithms. These scans played an important role in bringing objectivity
+into the field. In the following sections we will: review the background
+of bullet signature comparisons, discuss how we followed the idea
+described by \citet{cmps} for the implementation of the CMPS algorithm,
+propose new metrics based on the CMPS score and a principled evaluation
+framework for algorithmic results comparison, and present results of
+applying our implementation to real data.
 
 \hypertarget{background}{%
 \subsection{Background}\label{background}}
@@ -255,17 +255,17 @@ results as well as the algorithm itself.
 
 The section ``Implementation'' will go through the algorithm and show
 how to use the \pkg{cmpsR} package. A further example that illustrates
-the main points is also included. In the section on 'Evaluation metrics"
-we introduce new CMPS metrics that summarize land-level CMPS scores and
-a sum of squares ratio that can be used to evaluate algorithmic results.
-The section ``Results'' presents the results of evaluating the
-\pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results
-from Hamby set 252 are used to verify that our implementation is, at
-least qualitatively, comparable to the algorithm described in
-\citet{cmps}. Results from Hamby 44 show the need for a further
-investigation of the parameter choices even in the case of bullets fired
-from the same barrels. The last section covers some final discussion and
-conclusions.
+the main points is also included. In the section on 'Evaluation
+metrics'' we introduce new CMPS metrics that summarize land-level CMPS
+scores and a sum of squares ratio that can be used to evaluate
+algorithmic results. The section ``Results'' presents the results of
+evaluating the \pkg{cmpsR} package using Hamby set 252 and Hamby set 44.
+The results from Hamby set 252 are used to verify that our
+implementation is, at least qualitatively, comparable to the algorithm
+described in \citet{cmps}. Results from Hamby 44 show the need for a
+further investigation of the parameter choices even in the case of
+bullets fired from the same barrels. The last section covers some final
+discussion and conclusions.
 
 \hypertarget{implementation}{%
 \subsection{Implementation}\label{implementation}}
@@ -283,6 +283,10 @@ Conceptually, the CMPS algorithm consists of three main steps:
   signature \code{x} in the format of a numeric vector and cuts it into
   consecutive, non-overlapping and equal-length segments of length
   \code{len}, which are referred to as ``basis segments''.
+  \wj{Note that the parameter} \code{len}
+  \wj{determines the length of a basis segment and thus affects the total number of basis segments, which is the upper limit of the CMPS score of a comparison. The default value of}
+  \code{len}
+  \wj{is 50, which will result in about 25 basis segments for the example data of the package. }
 \item
   \textbf{identify candidate positions:} For each basis segment a set of
   candidate registration positions on the comparison signature is
@@ -397,20 +401,21 @@ Conceptually, the CMPS algorithm consists of three main steps:
   matching profile segments (CMPS).
 \end{enumerate}
 
-Note that there are several parameters in the CMPS algorithm that are
-left to the users to decide, such as the length of basis segments
-\code{seg\_length} in step 1, the number of peaks \code{npeaks\_set}
-identified on each level in step 2, and the length of the tolerance zone
-\code{Tx} in both step 2 and 3. In our implementation of the CMPS
-algorithm we used the parameters given in the original CMPS paper
-\citep{cmps} as the default values for these parameters. However, the
-authors state that no cross-validation has been done - there might be
-also issues with respect to resolution of the scans. Further research is
-needed, until then users are advised to think of default values as
-starting values and consider alternatives. The main function that
-combines all steps in the CMPS algorithm described above is called
-\code{extract\_feature\_cmps(...)}. Here we present it with its default
-parameters.
+Note that there are several parameters in the CMPS algorithm that
+\wj{will affect the final results and} are left to the users to decide,
+such as the length of basis segments \code{seg\_length} in step 1, the
+number of peaks \code{npeaks\_set} identified on each level in step 2,
+and the length of the tolerance zone \code{Tx} in both step 2 and 3. In
+our implementation of the CMPS algorithm we used the parameters given in
+the original CMPS paper \citep{cmps} as the default values for these
+parameters. However, the authors state that no cross-validation has been
+done - there might also be issues with respect to resolution of the
+scans. Further research is needed, until then users are advised to think
+of default values as starting values and consider alternatives.
+\wj{However, the evaluation framework based on the Sum of Squares Ratio introduced in the later section could be used to evaluate the choices of these parameters. }
+The main function that combines all steps in the CMPS algorithm
+described above is called \code{extract\_feature\_cmps(...)}. Here we
+present it with its default parameters.
 
 \begin{Schunk}
 \begin{Sinput}

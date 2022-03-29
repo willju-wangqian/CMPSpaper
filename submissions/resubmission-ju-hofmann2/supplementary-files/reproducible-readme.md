@@ -17,9 +17,8 @@ Please check out the folder structure of [the `reproducible` folder](https://git
 
 **File description**
 
--   `hamby*_result_generator.R`: these R scripts take the processed data of Hamby set 252 and Hamby set 44, generate preliminary results used in the paper, and save the results in the `.csv` format in the folder `data-csv`.
+-   `hamby*_result_generator.R`: these R scripts take the processed data of Hamby set 252 and Hamby set 44, generate preliminary results used in the paper, and save the results in the `.csv` format in the folder `data-csv`. Please make sure that the package versions of `bulletxtrctr` and `cmpsR` meet the requirements.
 -   `rds_generator.R`: this R script takes the generated `.csv` files and produce `CMPSpaper_results.rds`. `CMPSpaper_results.rds` is identical to `data/CMPSpaper_results.rds` and is used generate figures and other results presented in the paper.
--   `func_collection.R`: this R script contains some helper functions used by other R scripts.
 
 **Data included in "supplementary-files.zip"**
 
