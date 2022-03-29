@@ -822,7 +822,7 @@ CMPS_hamby252_results_seg <- all_results_container$h252_seg
 CMPS_hamby252_results_npeak <- all_results_container$h252_npeak
 CMPS_hamby44_results_seg <- all_results_container$h44_seg
 CMPS_hamby44_results_npeak <- all_results_container$h44_npeak
-rf.results <- all_results_container$rf
+rf_results <- all_results_container$rf
 
 #### a global title for Hamby44 plots
 com.title44 <- expression(paste(
@@ -837,7 +837,7 @@ com.title252 <- expression(paste(
 
 
 ```{r rf-data-process, echo=FALSE}
-rf.tt <- lapply(rf.results, function(rf_result) {
+rf_tt <- lapply(rf_results, function(rf_result) {
   with(rf_result, {
     tibble(rf.diff, rf.max, rf.maxbar) %>%
       apply(2, compute_ss_ratio, label = type_truth, MS = FALSE)
@@ -846,66 +846,66 @@ rf.tt <- lapply(rf.results, function(rf_result) {
   do.call(rbind, .) %>%
   as_tibble()
 
-colnames(rf.tt) <- c("cmps.diff", "cmps.max", "cmps.maxbar")
+colnames(rf_tt) <- c("cmps.diff", "cmps.max", "cmps.maxbar")
 
-rf.tt$cmps.diff_scaled <- rf.tt$cmps.diff
+rf_tt$cmps.diff_scaled <- rf_tt$cmps.diff
 
-rf.tt$study <- c("Hamby 252", "Hamby 44")
-rf.tt <- rf.tt %>% pivot_longer(
+rf_tt$study <- c("Hamby 252", "Hamby 44")
+rf_tt <- rf_tt %>% pivot_longer(
   cols = c("cmps.diff", "cmps.max", "cmps.maxbar", "cmps.diff_scaled"),
   names_to = "Metric"
 )
 
-rf.tt$npeak <- "RF score* (Hare et al)"
+rf_tt$npeak <- "RF score* (Hare et al)"
 ```
 
 
 ```{r ss-original-cmps, echo=FALSE}
-result.container <- list()
+result_container <- list()
 
-result.container$npeak <-
+result_container$npeak <-
   c("5* (Chen et al)", "5-3-1* (Chen et al)", "5* (Chen et al)", "5-3-1* (Chen et al)")
-result.container$Metric <- c("cmps.max", "cmps.max", "cmps.maxbar", "cmps.maxbar")
-result.container$study <- "Hamby 252"
+result_container$Metric <- c("cmps.max", "cmps.max", "cmps.maxbar", "cmps.maxbar")
+result_container$study <- "Hamby 252"
 
-dd.list <- list()
+dd_list <- list()
 
-dd.list[[1]] <- tibble(
+dd_list[[1]] <- tibble(
   score = c(9:13, 16:24),
   freq = c(132, 282, 115, 19, 1, 1, 3, 2, 4, 8, 12, 7, 7, 2),
   type = c(rep("KNM", 5), rep("KM", 9))
 )
 
-dd.list[[2]] <- tibble(
+dd_list[[2]] <- tibble(
   score = c(1:5, 14:23),
   freq = c(7, 343, 168, 24, 7, 1, 1, 2, 3, 6, 7, 8, 8, 7, 3),
   type = c(rep("KNM", 5), rep("KM", 10))
 )
 
-dd.list[[3]] <- tibble(
+dd_list[[3]] <- tibble(
   score = c(6:9, 13:19),
   freq = c(2, 210, 307, 30, 6, 3, 9, 9, 11, 7, 1),
   type = c(rep("KNM", 4), rep("KM", 7))
 )
 
-dd.list[[4]] <- tibble(
+dd_list[[4]] <- tibble(
   score = c(0:2, 8:17),
   freq = c(36, 508, 5, 1, 3, 4, 2, 11, 3, 9, 8, 4, 1),
   type = c(rep("KNM", 3), rep("KM", 10))
 )
 
-result.container$dd.list <- dd.list
+result_container$dd_list <- dd_list
 
-result.container <- result.container %>%
+result_container <- result_container %>%
   as_tibble() %>%
   mutate(
-    dd.table = purrr::map(dd.list, function(dd) {
+    dd_table = purrr::map(dd_list, function(dd) {
       tibble(
         score = rep(dd$score, dd$freq),
         type_truth = rep(dd$type, dd$freq)
       )
     }),
-    value = purrr::map_dbl(dd.table, function(dd) {
+    value = purrr::map_dbl(dd_table, function(dd) {
       compute_ss_ratio(dd$score, dd$type_truth, MS = FALSE)
     })
   )
@@ -1001,7 +1001,7 @@ cols_2 <- c("#4C688B", "#A45287", "#D4AC6A", "#ABC864")
 
 ```{r plot_computation, echo=FALSE, fig.width=8, fig.height = 8, out.width='\\linewidth'}
 # 252 - seg
-table.252.cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) {
+table_252_cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>%
     select(cmps.diff:cmps.maxbar_scaled) %>%
@@ -1010,9 +1010,9 @@ table.252.cmps_seg <- lapply(CMPS_hamby252_results_seg$cmps.table, function(tt) 
   do.call(rbind, .) %>%
   as.data.frame()
 
-table.252.cmps_seg$seg_length <- unlist(CMPS_hamby252_results_seg$seg_length)
+table_252_cmps_seg$seg_length <- unlist(CMPS_hamby252_results_seg$seg_length)
 
-table.252.cmps_seg.long <- table.252.cmps_seg %>%
+table_252_cmps_seg.long <- table_252_cmps_seg %>%
   pivot_longer(
     cols = c(
       cmps.diff, cmps.diff_scaled,
@@ -1021,7 +1021,7 @@ table.252.cmps_seg.long <- table.252.cmps_seg %>%
     names_to = "Metric"
   )
 
-table.252.cmps_seg.long <- table.252.cmps_seg.long %>%
+table_252_cmps_seg.long <- table_252_cmps_seg.long %>%
   mutate(study = "Hamby 252")
 
 
@@ -1034,7 +1034,7 @@ labels <- expression(
   bar(CMPS)[max]
 )
 
-p.seg_252_plot <- table.252.cmps_seg.long %>%
+p.seg_252_plot <- table_252_cmps_seg.long %>%
   ggplot(aes(x = seg_length + 3 * as.numeric(factor(Metric)) - 9)) +
   geom_segment(aes(
     xend = seg_length + 3 * as.numeric(factor(Metric)) - 9,
@@ -1045,7 +1045,7 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
     position = position_dodge(width = 0.5), size = 3.5
   ) +
   scale_x_continuous(
-    breaks = table.252.cmps_seg$seg_length,
+    breaks = table_252_cmps_seg$seg_length,
     minor_breaks = NULL
   ) +
   theme_bw() +
@@ -1057,7 +1057,7 @@ p.seg_252_plot <- table.252.cmps_seg.long %>%
   scale_fill_manual(values = cols_1, labels = labels)
 
 # 44 - seg
-table.44.cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
+table_44_cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>%
     select(cmps.diff:cmps.maxbar_scaled) %>%
@@ -1066,9 +1066,9 @@ table.44.cmps_seg <- lapply(CMPS_hamby44_results_seg$cmps.table, function(tt) {
   do.call(rbind, .) %>%
   as.data.frame()
 
-table.44.cmps_seg$seg_length <- unlist(CMPS_hamby44_results_seg$seg_length)
+table_44_cmps_seg$seg_length <- unlist(CMPS_hamby44_results_seg$seg_length)
 
-table.44.cmps_seg.long <- table.44.cmps_seg %>%
+table_44_cmps_seg.long <- table_44_cmps_seg %>%
   pivot_longer(
     cols = c(
       cmps.diff, cmps.diff_scaled,
@@ -1077,13 +1077,13 @@ table.44.cmps_seg.long <- table.44.cmps_seg %>%
     names_to = "Metric"
   )
 
-table.44.cmps_seg.long <- table.44.cmps_seg.long %>% mutate(
+table_44_cmps_seg.long <- table_44_cmps_seg.long %>% mutate(
   study = "Hamby 44"
 )
 
 table.cmps_seg.long <- bind_rows(
-  table.44.cmps_seg.long,
-  table.252.cmps_seg.long
+  table_44_cmps_seg.long,
+  table_252_cmps_seg.long
 )
 
 breaks_fun <- function(x) {
@@ -1124,7 +1124,7 @@ p.seg_plot <- table.cmps_seg.long %>%
   scale_fill_manual(values = cols_1, labels = labels)
 
 # npeak - 252
-table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
+table_252_cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>%
     select(cmps.diff:cmps.maxbar_scaled) %>%
@@ -1133,11 +1133,11 @@ table.252.cmps_npeak <- lapply(CMPS_hamby252_results_npeak$cmps.table, function(
   do.call(rbind, .) %>%
   as.data.frame()
 
-table.252.cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks_set %>%
+table_252_cmps_npeak$npeak <- CMPS_hamby252_results_npeak$npeaks_set %>%
   purrr::map(.f = paste, collapse = "-") %>%
   sapply(as.character)
 
-table.252.cmps_npeak.longer <- table.252.cmps_npeak %>%
+table_252_cmps_npeak.longer <- table_252_cmps_npeak %>%
   as_tibble() %>%
   filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>%
   mutate(
@@ -1150,10 +1150,10 @@ table.252.cmps_npeak.longer <- table.252.cmps_npeak %>%
     cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
     names_to = "Metric"
   )
-table.252.cmps_npeak.longer$study <- "Hamby 252"
+table_252_cmps_npeak.longer$study <- "Hamby 252"
 
 # npeak - 44
-table.44.cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt) {
+table_44_cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt) {
   type_truth <- tt$type_truth
   tt %>%
     select(cmps.diff:cmps.maxbar_scaled) %>%
@@ -1162,11 +1162,11 @@ table.44.cmps_npeak <- lapply(CMPS_hamby44_results_npeak$cmps.table, function(tt
   do.call(rbind, .) %>%
   as.data.frame()
 
-table.44.cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks_set %>%
+table_44_cmps_npeak$npeak <- CMPS_hamby44_results_npeak$npeaks_set %>%
   purrr::map(.f = paste, collapse = "-") %>%
   sapply(as.character)
 
-table.44.cmps_npeak.longer <- table.44.cmps_npeak %>%
+table_44_cmps_npeak.longer <- table_44_cmps_npeak %>%
   as_tibble() %>%
   filter(npeak %in% c("5", "5-3-1", "10-8-6-4-2-1", "10-7-4-2")) %>%
   mutate(
@@ -1179,49 +1179,49 @@ table.44.cmps_npeak.longer <- table.44.cmps_npeak %>%
     cols = c(cmps.diff, cmps.diff_scaled, cmps.max, cmps.maxbar),
     names_to = "Metric"
   )
-table.44.cmps_npeak.longer$study <- "Hamby 44"
+table_44_cmps_npeak.longer$study <- "Hamby 44"
 
 selected_var <- c("npeak", "Metric", "study", "value")
 
-table.cmps_neapk.long <- bind_rows(
-  table.252.cmps_npeak.longer %>% select(all_of(selected_var)),
-  table.44.cmps_npeak.longer %>% select(all_of(selected_var)),
-  rf.tt %>% select(all_of(selected_var)),
-  result.container %>% select(all_of(selected_var))
+table_cmps_neapk.long <- bind_rows(
+  table_252_cmps_npeak.longer %>% select(all_of(selected_var)),
+  table_44_cmps_npeak.longer %>% select(all_of(selected_var)),
+  rf_tt %>% select(all_of(selected_var)),
+  result_container %>% select(all_of(selected_var))
 )
 
-order.level <- table.cmps_neapk.long %>%
+order_level <- table_cmps_neapk.long %>%
   filter(Metric == "cmps.maxbar", study == "Hamby 252") %>%
   {
     .$npeak[order(.$value, decreasing = FALSE)]
   }
 
-table.cmps_neapk.long <- table.cmps_neapk.long %>% mutate(
-  npeak = factor(npeak, levels = order.level)
+table_cmps_neapk.long <- table_cmps_neapk.long %>% mutate(
+  npeak = factor(npeak, levels = order_level)
 )
 
-npeak_convert <- with(table.cmps_neapk.long, {
+npeak_convert <- with(table_cmps_neapk.long, {
   tt <- tibble(npeak = levels(npeak))
   tt$xstart <- seq.int(from = 0, by = 20, length.out = length(tt$npeak))
   tt
 })
 
-table.cmps_neapk.long <- table.cmps_neapk.long %>% left_join(
+table_cmps_neapk.long <- table_cmps_neapk.long %>% left_join(
   npeak_convert,
   by = "npeak"
 )
 
-table.cmps_neapk.long <- table.cmps_neapk.long %>% mutate(
+table_cmps_neapk.long <- table_cmps_neapk.long %>% mutate(
   rf_status = if_else(npeak == "RF score* (Hare et al)",
     TRUE, FALSE
   )
 )
 
-table.cmps_neapk.long$Metric <-
-  table.cmps_neapk.long$Metric %>%
+table_cmps_neapk.long$Metric <-
+  table_cmps_neapk.long$Metric %>%
   factor(levels = c("cmps.max", "cmps.diff", "cmps.diff_scaled", "cmps.maxbar"))
 
-p.npeak_plot <- table.cmps_neapk.long %>%
+p.npeak_plot <- table_cmps_neapk.long %>%
   ggplot(aes(x = xstart + 3 * as.numeric(factor(Metric)) - 9)) +
   geom_segment(aes(
     xend = xstart + 3 * as.numeric(factor(Metric)) - 9,
