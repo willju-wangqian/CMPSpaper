@@ -238,7 +238,7 @@ add_labels_repel <- function(plot) {
   )
 }
 
-ADD_LABELS_HIST <- TRUE
+ADD_LABELS_HIST <- FALSE
 ```
 
 ## Introduction
