@@ -11,7 +11,7 @@ header-includes:
   - \usepackage{bbm}
 author:
   # see ?rjournal_article for more information
-  - name: Wangqian W. Ju
+  - name: Wangqian Ju
     affiliation: Department of Statistics
     address:
     - Center for Statistics and Applications in Forensic Evidence
@@ -364,7 +364,7 @@ The last section covers some final discussion and conclusions.
 
 Conceptually, the CMPS algorithm consists of three main steps:
 
-1.  **cut the comparison signature into consecutive, non-overlapping and equal-length basis segments:** The command \code{get\_segs(x, len=50)} implements this step: it takes bullet signature \code{x} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length \code{len}, which are referred to as "basis segments". \wj{Note that the parameter} \code{len} \wj{determines the length of a basis segment and thus affects the total number of basis segments, which is the upper limit of the CMPS score of a comparison. The default value of} \code{len} \wj{is 50, which will result in about 25 basis segments for the example data of the package. }
+1.  **cut the comparison signature into consecutive, non-overlapping and equal-length basis segments:** The command \code{get\_segs(x, len=50)} implements this step: it takes bullet signature \code{x} in the format of a numeric vector and cuts it into consecutive, non-overlapping and equal-length segments of length \code{len}, which are referred to as "basis segments". Note that the parameter \code{len} determines the length of a basis segment and thus affects the total number of basis segments, which is the upper limit of the CMPS score of a comparison. The default value of \code{len} is 50, which will result in about 25 basis segments for the example data of the package.
 
 2.  **identify candidate positions:** For each basis segment a set of candidate registration positions on the comparison signature is identified based on the segment's similarity to the reference signature.
     In a first step, the cross-correlation function of the segment to the reference is calculated, then a number of positions with high correlation values are identified as candidate positions.
@@ -392,10 +392,10 @@ Conceptually, the CMPS algorithm consists of three main steps:
     The total number of CMPS is the CMPS score of the comparison.
     \code{get\_CMPS(input\_ccp, Tx = 25)} is the function that tallies the votes and determines the congruent registration position and congruent matching profile segments (CMPS).
 
-Note that there are several parameters in the CMPS algorithm that \wj{will affect the final results and} are left to the users to decide, such as the length of basis segments \code{seg\_length} in step 1, the number of peaks \code{npeaks\_set} identified on each level in step 2, and the length of the tolerance zone \code{Tx} in both step 2 and 3.
+Note that there are several parameters in the CMPS algorithm that will affect the final results and are left to the users to decide, such as the length of basis segments \code{seg\_length} in step 1, the number of peaks \code{npeaks\_set} identified on each level in step 2, and the length of the tolerance zone \code{Tx} in both step 2 and 3.
 In our implementation of the CMPS algorithm we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters.
 However, the authors state that no cross-validation has been done - there might also be issues with respect to resolution of the scans.
-Further research is needed, until then users are advised to think of default values as starting values and consider alternatives. \wj{However, the evaluation framework based on the Sum of Squares Ratio introduced in the later section could be used to evaluate the choices of these parameters. }
+Further research is needed, until then users are advised to think of default values as starting values and consider alternatives. However, the evaluation framework based on the Sum of Squares Ratio introduced in the later section could be used to evaluate the choices of these parameters. 
 The main function that combines all steps in the CMPS algorithm described above is called \code{extract\_feature\_cmps(...)}.
 Here we present it with its default parameters.
 
@@ -915,7 +915,7 @@ result_container <- result_container %>%
 As presented in the work of @cmps, researchers applied the CMPS method to scans of one of the Hamby sets.
 While it is not explicitly stated in the paper, we presume this to be Hamby 252, as only those scans were publicly available at the time. 
 In order to show that our implementation of the CMPS algorithm is able to reproduce the results in @cmps and be used for other data sets, we applied our implementation to both Hamby set 252 and Hamby set 44.
-For the purpose of reproducibility, we present how we obtained bullet signatures from the Hamby set data and include code in the appendix: for both Hamby 252 and Hamby 44, we started with scans in the form of x3p files in the database.
+Here we present how we obtained bullet signatures from the Hamby set data: for both Hamby 252 and Hamby 44, we started with scans in the form of x3p files in the database.
 Following the framework proposed by @aoas, we used the same set of parameters, removed damaged bullet scans, obtained bullet signatures for each bullet land engraving, and removed outliers in bullet signatures.
 Note that researchers of @cmps applied the CMPS algorithm to bullet signatures as well but used a framework different from ours.
 However, since their work is not open-source, we were not able to follow their framework and were only able to reproduce the results for Hamby set 252 qualitatively.
@@ -1249,7 +1249,7 @@ p.npeak_plot <- table_cmps_neapk.long %>%
 <!-- this is figure 2 -->
 
 
-```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3}
+```{r result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks\\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars ", fig.height=3}
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 # CMPS_hamby252_results$plot[[2]]
@@ -1257,7 +1257,8 @@ p.npeak_plot <- table_cmps_neapk.long %>%
 p1 <- metric_plot_helper(
   CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max",
   subtitle = "npeaks_set: 5-3-1, seg_length: 50") +
-  xlab(labels[1])
+  xlab(labels[1]) + 
+  theme(axis.text.x = element_text(size=7))
 p2 <- metric_plot_helper(
   CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
   subtitle = "npeaks_set: 5-3-1, seg_length: 50") +
@@ -1298,11 +1299,12 @@ As shown in \autoref{fig:result1_44}, again, we are able to see a clear separati
 For this specific set of parameters, the sum of squares ratios are 8.87 and 10.64 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively.
 This might suggest that we could enlarge the separation in terms of the sum of squares ratio by using other CMPS metrics and other sets of parameters.
 
-```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3, warning=FALSE}
+```{r result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks\\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars ", fig.height=3, warning=FALSE}
 p1 <- metric_plot_helper(
   CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
   subtitle = "npeaks_set: 5-3-1, seg_length: 61") +
-  xlab(labels[1])
+  xlab(labels[1]) + 
+  theme(axis.text.x = element_text(size=7))
 p2 <- metric_plot_helper(
   CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
   subtitle = "npeaks_set: 5-3-1, seg_length: 61") +

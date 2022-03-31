@@ -45,7 +45,7 @@ We have corrected the package names in `Hamby44_npeak_result_*.R` and modified t
 #### Note on the **cmpsR** package
 \ 
 
-Note that all the updates of the `cmpsR` package are only available on [github](https://github.com/willju-wangqian/cmpsR). We have not yet submitted the updates to CRAN yet since we are looking forward to your further suggestions and advice and do not want to bother the CRAN teammultiple times. Please make sure that you have the most updated version of the `cmpsR` package (version 0.1.2) from [github](https://github.com/willju-wangqian/cmpsR) before you execute any `R` code that depends on it.
+Note that all the updates of the `cmpsR` package are only available on [github](https://github.com/willju-wangqian/cmpsR). We have not yet submitted the updates to CRAN yet since we are looking forward to your further suggestions and advice and do not want to bother the CRAN team multiple times. Please make sure that you have the most updated version of the `cmpsR` package (version 0.1.2) from [github](https://github.com/willju-wangqian/cmpsR) before you execute any `R` code that depends on it.
 
 `install_github("willju-wangqian/cmpsR")`
 

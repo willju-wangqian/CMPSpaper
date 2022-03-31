@@ -1,7 +1,7 @@
 % !TeX root = RJwrapper.tex
 \title{An Open-Source Implementation of the CMPS Algorithm for Assessing
 Similarity of Bullets}
-\author{by Wangqian W. Ju and Heike Hofmann}
+\author{by Wangqian Ju and Heike Hofmann}
 
 \maketitle
 
@@ -282,11 +282,12 @@ Conceptually, the CMPS algorithm consists of three main steps:
   \code{get\_segs(x, len=50)} implements this step: it takes bullet
   signature \code{x} in the format of a numeric vector and cuts it into
   consecutive, non-overlapping and equal-length segments of length
-  \code{len}, which are referred to as ``basis segments''.
-  \wj{Note that the parameter} \code{len}
-  \wj{determines the length of a basis segment and thus affects the total number of basis segments, which is the upper limit of the CMPS score of a comparison. The default value of}
-  \code{len}
-  \wj{is 50, which will result in about 25 basis segments for the example data of the package. }
+  \code{len}, which are referred to as ``basis segments''. Note that the
+  parameter \code{len} determines the length of a basis segment and thus
+  affects the total number of basis segments, which is the upper limit
+  of the CMPS score of a comparison. The default value of \code{len} is
+  50, which will result in about 25 basis segments for the example data
+  of the package.
 \item
   \textbf{identify candidate positions:} For each basis segment a set of
   candidate registration positions on the comparison signature is
@@ -401,21 +402,22 @@ Conceptually, the CMPS algorithm consists of three main steps:
   matching profile segments (CMPS).
 \end{enumerate}
 
-Note that there are several parameters in the CMPS algorithm that
-\wj{will affect the final results and} are left to the users to decide,
-such as the length of basis segments \code{seg\_length} in step 1, the
-number of peaks \code{npeaks\_set} identified on each level in step 2,
-and the length of the tolerance zone \code{Tx} in both step 2 and 3. In
-our implementation of the CMPS algorithm we used the parameters given in
-the original CMPS paper \citep{cmps} as the default values for these
+Note that there are several parameters in the CMPS algorithm that will
+affect the final results and are left to the users to decide, such as
+the length of basis segments \code{seg\_length} in step 1, the number of
+peaks \code{npeaks\_set} identified on each level in step 2, and the
+length of the tolerance zone \code{Tx} in both step 2 and 3. In our
+implementation of the CMPS algorithm we used the parameters given in the
+original CMPS paper \citep{cmps} as the default values for these
 parameters. However, the authors state that no cross-validation has been
 done - there might also be issues with respect to resolution of the
 scans. Further research is needed, until then users are advised to think
-of default values as starting values and consider alternatives.
-\wj{However, the evaluation framework based on the Sum of Squares Ratio introduced in the later section could be used to evaluate the choices of these parameters. }
-The main function that combines all steps in the CMPS algorithm
-described above is called \code{extract\_feature\_cmps(...)}. Here we
-present it with its default parameters.
+of default values as starting values and consider alternatives. However,
+the evaluation framework based on the Sum of Squares Ratio introduced in
+the later section could be used to evaluate the choices of these
+parameters. The main function that combines all steps in the CMPS
+algorithm described above is called \code{extract\_feature\_cmps(...)}.
+Here we present it with its default parameters.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -1018,14 +1020,13 @@ stated in the paper, we presume this to be Hamby 252, as only those
 scans were publicly available at the time. In order to show that our
 implementation of the CMPS algorithm is able to reproduce the results in
 \citet{cmps} and be used for other data sets, we applied our
-implementation to both Hamby set 252 and Hamby set 44. For the purpose
-of reproducibility, we present how we obtained bullet signatures from
-the Hamby set data and include code in the appendix: for both Hamby 252
-and Hamby 44, we started with scans in the form of x3p files in the
-database. Following the framework proposed by \citet{aoas}, we used the
-same set of parameters, removed damaged bullet scans, obtained bullet
-signatures for each bullet land engraving, and removed outliers in
-bullet signatures. Note that researchers of \citet{cmps} applied the
+implementation to both Hamby set 252 and Hamby set 44. Here we present
+how we obtained bullet signatures from the Hamby set data: for both
+Hamby 252 and Hamby 44, we started with scans in the form of x3p files
+in the database. Following the framework proposed by \citet{aoas}, we
+used the same set of parameters, removed damaged bullet scans, obtained
+bullet signatures for each bullet land engraving, and removed outliers
+in bullet signatures. Note that researchers of \citet{cmps} applied the
 CMPS algorithm to bullet signatures as well but used a framework
 different from ours. However, since their work is not open-source, we
 were not able to follow their framework and were only able to reproduce
@@ -1080,7 +1081,7 @@ comparisons.
 
 }
 
-\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \texttt{seg\_length = 50}, \texttt{Tx = 25}, \texttt{npeaks\_set = c(5,3,1)} }\label{fig:result1_252}
+\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \texttt{seg\_length = 50}, \texttt{Tx = 25}, \texttt{npeaks\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars }\label{fig:result1_252}
 \end{figure}
 \end{Schunk}
 
@@ -1126,7 +1127,7 @@ ratio by using other CMPS metrics and other sets of parameters.
 
 }
 
-\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \texttt{seg\_length = 61}, \texttt{Tx = 30}, \texttt{npeaks\_set = c(5,3,1)} }\label{fig:result1_44}
+\caption{Distribution of $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \texttt{seg\_length = 61}, \texttt{Tx = 30}, \texttt{npeaks\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars }\label{fig:result1_44}
 \end{figure}
 \end{Schunk}
 
@@ -1404,7 +1405,7 @@ reproducible codes
 \bibliography{ju-hofmann.bib}
 
 \address{%
-Wangqian W. Ju\\
+Wangqian Ju\\
 Department of Statistics\\%
 Center for Statistics and Applications in Forensic Evidence\\ Iowa State
 University\\ 2438 Osborn Dr\\ Ames, IA 50011\\

@@ -809,7 +809,7 @@ p.npeak_plot <- table_cmps_neapk.long %>%
   scale_fill_manual(values = cols_1, labels = labels)
 
 
-## ----result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3----
+## ----result1_252, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 252; outliers are removed in bullet signatures; \\texttt{seg\\_length = 50}, \\texttt{Tx = 25}, \\texttt{npeaks\\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars ", fig.height=3----
 # [4] "span1=0.25, span2=0.03, rm_outliers = TRUE, 5025, 531"
 # knitr::include_graphics("img/hamby252_v1.png", dpi = 100)
 # CMPS_hamby252_results$plot[[2]]
@@ -817,7 +817,8 @@ p.npeak_plot <- table_cmps_neapk.long %>%
 p1 <- metric_plot_helper(
   CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.max",
   subtitle = "npeaks_set: 5-3-1, seg_length: 50") +
-  xlab(labels[1])
+  xlab(labels[1]) + 
+  theme(axis.text.x = element_text(size=7))
 p2 <- metric_plot_helper(
   CMPS_hamby252_results_seg$cmps.table[[2]], "cmps.maxbar",
   subtitle = "npeaks_set: 5-3-1, seg_length: 50") +
@@ -847,11 +848,12 @@ p.result1_252
 #> )
 
 
-## ----result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks\\_set = c(5,3,1)} ", fig.height=3, warning=FALSE----
+## ----result1_44, echo=FALSE, out.width="400px", fig.cap="Distribution of $\\mathrm{CMPS_{max}}$ and $\\mathrm{\\overline{CMPS}_{max}}$ for Hamby 44; outliers are removed in bullet signatures; \\texttt{seg\\_length = 61}, \\texttt{Tx = 30}, \\texttt{npeaks\\_set = c(5,3,1)}; instead of showing the counts on the y-axis, we present the observed proportions conditioned on KM group and KNM group to enhance the visibility of the bars ", fig.height=3, warning=FALSE----
 p1 <- metric_plot_helper(
   CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.max",
   subtitle = "npeaks_set: 5-3-1, seg_length: 61") +
-  xlab(labels[1])
+  xlab(labels[1]) + 
+  theme(axis.text.x = element_text(size=7))
 p2 <- metric_plot_helper(
   CMPS_hamby44_results_seg$cmps.table[[3]], "cmps.maxbar",
   subtitle = "npeaks_set: 5-3-1, seg_length: 61") +
