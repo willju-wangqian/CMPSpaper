@@ -186,7 +186,7 @@ add_labels_repel <- function(plot) {
   )
 }
 
-ADD_LABELS_HIST <- TRUE
+ADD_LABELS_HIST <- FALSE
 
 
 ## ----bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."----
