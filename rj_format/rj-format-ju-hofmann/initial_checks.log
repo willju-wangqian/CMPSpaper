@@ -1,0 +1,14 @@
+Initial check results: 
+ERROR: Submission is missing an RJwrapper file
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: No problematic file found
+NOTE: Motivation letter is not detected, if applicable
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: uch, toolmark, metrology, sig, segs, len, ccf, cmps, npeaks, ccr, seg, outlength, nseg, lapply, ccp, pos, idx, df, sigs, hbt, valign, ggpubr, ggarrange, ij, arg, th, rds, hamby, csv, bulletxtrctr, csafe, rf
+SUCCESS: CRAN activities have been detected for package cmpsR
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+NOTE: 2 package(s) used in the text without CRANpkg or BIOpkg commands: bulletxtrctr, bulletinspectR
+
+ SUCCESSES: 7 | ERRORS: 1 | NOTES: 3 
