@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2022.3.27)  15 APR 2022 19:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2022.3.27)  28 APR 2022 13:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -982,7 +982,7 @@ LaTeX Font Info:    Font shape `U/msb/m/n' will be
 (Font)              scaled to size 7.29405pt on input line 119.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
 (Font)              scaled to size 5.21004pt on input line 119.
-<ju-hofmann_files/figure-latex/barrel_bullet_ps.png, id=138, 629.35126pt x 388.
+<ju-hofmann_files/figure-latex/barrel_bullet_ps.png, id=142, 629.35126pt x 388.
 45125pt>
 File: ju-hofmann_files/figure-latex/barrel_bullet_ps.png Graphic file (type png
 )
@@ -990,7 +990,7 @@ File: ju-hofmann_files/figure-latex/barrel_bullet_ps.png Graphic file (type png
 Package pdftex.def Info: ju-hofmann_files/figure-latex/barrel_bullet_ps.png  us
 ed on input line 174.
 (pdftex.def)             Requested size: 318.67207pt x 196.69089pt.
-<ju-hofmann_files/figure-latex/figure1_v2.png, id=139, 963.6pt x 542.025pt>
+<ju-hofmann_files/figure-latex/figure1_v2.png, id=143, 963.6pt x 542.025pt>
 File: ju-hofmann_files/figure-latex/figure1_v2.png Graphic file (type png)
 <use ju-hofmann_files/figure-latex/figure1_v2.png>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/figure1_v2.png  used on 
@@ -998,7 +998,7 @@ input line 185.
 (pdftex.def)             Requested size: 358.50227pt x 201.65437pt.
 [2] [3 <./ju-hofmann_files/figure-latex/barrel_bullet_ps.png> <./ju-hofmann_fil
 es/figure-latex/figure1_v2.png>] [4] [5] [6]
-<ju-hofmann_files/figure-latex/sigs-1.pdf, id=214, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/sigs-1.pdf, id=218, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/sigs-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/sigs-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/sigs-1.pdf  used on inpu
@@ -1024,13 +1024,13 @@ LaTeX Font Info:    Font shape `U/msb/m/n' will be
 (Font)              scaled to size 7.91925pt on input line 642.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
 (Font)              scaled to size 6.25204pt on input line 642.
-<ju-hofmann_files/figure-latex/sigplot-1.pdf, id=231, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/sigplot-1.pdf, id=235, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/sigplot-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/sigplot-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/sigplot-1.pdf  used on i
 nput line 644.
 (pdftex.def)             Requested size: 235.0183pt x 162.70139pt.
-<ju-hofmann_files/figure-latex/sigplot2-1.pdf, id=232, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/sigplot2-1.pdf, id=236, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/sigplot2-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/sigplot2-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/sigplot2-1.pdf  used on 
@@ -1038,19 +1038,19 @@ input line 664.
 (pdftex.def)             Requested size: 235.0183pt x 162.70139pt.
 [8 <./ju-hofmann_files/figure-latex/sigplot-1.pdf> <./ju-hofmann_files/figure-l
 atex/sigplot2-1.pdf>]
-<ju-hofmann_files/figure-latex/segplot-1.pdf, id=257, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/segplot-1.pdf, id=261, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/segplot-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/segplot-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/segplot-1.pdf  used on i
 nput line 753.
 (pdftex.def)             Requested size: 235.0183pt x 162.70139pt.
-<ju-hofmann_files/figure-latex/segplot2-1.pdf, id=258, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/segplot2-1.pdf, id=262, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/segplot2-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/segplot2-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/segplot2-1.pdf  used on 
 input line 773.
 (pdftex.def)             Requested size: 235.0183pt x 162.70139pt.
-<ju-hofmann_files/figure-latex/segplot3-1.pdf, id=260, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/segplot3-1.pdf, id=264, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/segplot3-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/segplot3-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/segplot3-1.pdf  used on 
@@ -1066,14 +1066,14 @@ OMS/zplm/m/n/9 f[] \OT1/ppl/m/n/9 (-20) , [] , [] , [] , [] , []\OMS/zplm/m/n/9
 
 [9] [10 <./ju-hofmann_files/figure-latex/segplot-1.pdf> <./ju-hofmann_files/fig
 ure-latex/segplot2-1.pdf>]
-<ju-hofmann_files/figure-latex/tiles-1.pdf, id=291, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/tiles-1.pdf, id=295, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/tiles-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/tiles-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/tiles-1.pdf  used on inp
 ut line 901.
 (pdftex.def)             Requested size: 278.83578pt x 193.04134pt.
 [11 <./ju-hofmann_files/figure-latex/segplot3-1.pdf>]
-<ju-hofmann_files/figure-latex/tiles2-1.pdf, id=309, 469.755pt x 325.215pt>
+<ju-hofmann_files/figure-latex/tiles2-1.pdf, id=313, 469.755pt x 325.215pt>
 File: ju-hofmann_files/figure-latex/tiles2-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/tiles2-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/tiles2-1.pdf  used on in
@@ -1081,7 +1081,7 @@ put line 958.
 (pdftex.def)             Requested size: 278.83578pt x 193.04134pt.
 [12 <./ju-hofmann_files/figure-latex/tiles-1.pdf>] [13 <./ju-hofmann_files/figu
 re-latex/tiles2-1.pdf>]
-<ju-hofmann_files/figure-latex/result1-252-1.pdf, id=355, 469.755pt x 216.81pt>
+<ju-hofmann_files/figure-latex/result1-252-1.pdf, id=359, 469.755pt x 216.81pt>
 
 File: ju-hofmann_files/figure-latex/result1-252-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/result1-252-1.pdf>
@@ -1093,7 +1093,7 @@ Overfull \hbox (3.16289pt too wide) in paragraph at lines 1082--1083
  [][] 
  []
 
-<ju-hofmann_files/figure-latex/result1-44-1.pdf, id=358, 469.755pt x 216.81pt>
+<ju-hofmann_files/figure-latex/result1-44-1.pdf, id=362, 469.755pt x 216.81pt>
 File: ju-hofmann_files/figure-latex/result1-44-1.pdf Graphic file (type pdf)
 <use ju-hofmann_files/figure-latex/result1-44-1.pdf>
 Package pdftex.def Info: ju-hofmann_files/figure-latex/result1-44-1.pdf  used o
@@ -1104,7 +1104,7 @@ Overfull \hbox (3.16289pt too wide) in paragraph at lines 1128--1129
  [][] 
  []
 
-<ju-hofmann_files/figure-latex/param-seg-plot-1.pdf, id=359, 469.755pt x 216.81
+<ju-hofmann_files/figure-latex/param-seg-plot-1.pdf, id=363, 469.755pt x 216.81
 pt>
 File: ju-hofmann_files/figure-latex/param-seg-plot-1.pdf Graphic file (type pdf
 )
@@ -1118,7 +1118,7 @@ Overfull \hbox (3.16289pt too wide) in paragraph at lines 1141--1142
  []
 
 [14 <./ju-hofmann_files/figure-latex/result1-252-1.pdf>]
-<ju-hofmann_files/figure-latex/param-npeak-plot-1.pdf, id=370, 469.755pt x 216.
+<ju-hofmann_files/figure-latex/param-npeak-plot-1.pdf, id=374, 469.755pt x 216.
 81pt>
 File: ju-hofmann_files/figure-latex/param-npeak-plot-1.pdf Graphic file (type p
 df)
@@ -1134,14 +1134,14 @@ Overfull \hbox (3.16289pt too wide) in paragraph at lines 1152--1153
 [15 <./ju-hofmann_files/figure-latex/result1-44-1.pdf>] [16 <./ju-hofmann_files
 /figure-latex/param-seg-plot-1.pdf> <./ju-hofmann_files/figure-latex/param-npea
 k-plot-1.pdf>] [17]
-Overfull \hbox (8.33618pt too wide) in paragraph at lines 1379--1384
+Overfull \hbox (8.33618pt too wide) in paragraph at lines 1390--1395
 []\T1/zi4/m/n/9 rds_generator.R\T1/ppl/m/n/9 (-20) : this R script takes the ge
 n-er-ated \T1/zi4/m/n/9 .csv \T1/ppl/m/n/9 (-20) files and pro-duce \T1/zi4/m/n
 /9 CMPSpaper_results.rds\T1/ppl/m/n/9 (-20) .
  []
 
 
-Overfull \hbox (8.12906pt too wide) in paragraph at lines 1391--1394
+Overfull \hbox (8.12906pt too wide) in paragraph at lines 1402--1405
 []\T1/zi4/m/n/9 data-csv\T1/ppl/m/n/9 (-20) : this folder con-tains \T1/zi4/m/n
 /9 .csv \T1/ppl/m/n/9 (-20) files we gen-er-ated us-ing R scripts \T1/zi4/m/n/9
  hamby*_result_generator.R 
@@ -1172,24 +1172,24 @@ lt / files / microsites / ostp / PCAST /
 )
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 1419.
+(Font)              using `T1/zi4/m/n' instead on input line 1430.
 
 LaTeX Font Info:    Font shape `T1/zi4/m/it' will be
-(Font)              scaled to size 9.18004pt on input line 1419.
-) [19] [20] (./RJwrapper.aux)
+(Font)              scaled to size 9.18004pt on input line 1430.
+[19]) [20] (./RJwrapper.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
-(rerunfilecheck)             Checksum: 134F403887BB12036EA3CA5D2DAFC237;1444.
+(rerunfilecheck)             Checksum: 297806C3A7AEF8F6AD8F7E8A064A977F;1585.
 Package rerunfilecheck Info: File `RJwrapper.brf' has not changed.
 (rerunfilecheck)             Checksum: C4E0B6A632482E5F90E051398ADA0CAE;3254.
  ) 
 Here is how much of TeX's memory you used:
- 28248 strings out of 480236
- 520314 string characters out of 5894951
- 810292 words of memory out of 5000000
- 45214 multiletter control sequences out of 15000+600000
+ 28252 strings out of 480236
+ 520380 string characters out of 5894951
+ 813342 words of memory out of 5000000
+ 45216 multiletter control sequences out of 15000+600000
  527300 words of font info for 341 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  115i,16n,131p,1006b,884s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1205,10 +1205,10 @@ public/mathpazo/fplmr.pfb></Users/willju/Library/TinyTeX/texmf-dist/fonts/type1
 e1/urw/palatino/uplb8a.pfb></Users/willju/Library/TinyTeX/texmf-dist/fonts/type
 1/urw/palatino/uplr8a.pfb></Users/willju/Library/TinyTeX/texmf-dist/fonts/type1
 /urw/palatino/uplri8a.pfb>
-Output written on RJwrapper.pdf (20 pages, 1389435 bytes).
+Output written on RJwrapper.pdf (20 pages, 1389688 bytes).
 PDF statistics:
- 603 PDF objects out of 1000 (max. 8388607)
- 530 compressed objects within 6 object streams
- 81 named destinations out of 1000 (max. 500000)
- 75411 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 608 PDF objects out of 1000 (max. 8388607)
+ 535 compressed objects within 6 object streams
+ 83 named destinations out of 1000 (max. 500000)
+ 75419 words of extra memory for PDF output out of 89155 (max. 10000000)
 

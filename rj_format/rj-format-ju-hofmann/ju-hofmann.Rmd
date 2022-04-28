@@ -33,8 +33,6 @@ author:
     - Ames, IA 50011
 abstract: >
   In this paper, we introduce the R package \pkg{cmpsR}, an open-source implementation of the Congruent Matching Profile Segments (CMPS) method developed at the National Institute of Standards and Technology (NIST) for objective comparison of striated tool marks. The functionality of the package is showcased by examples of bullet signatures that come with the package. Graphing tools are implemented in the package as well for users to assess and understand the CMPS results. Initial tests were performed on bullet signatures generated from two sets of 3D scans in the Hamby study under the framework suggested by the R package \pkg{bulletxtrctr}. New metrics based on CMPS scores are introduced and compared with existing metrics. A measure called Sum of squares ratio is included, and how it can be used for evaluating different scans, metrics, or parameters is showcased with the Hamby study data sets. An open-source implementation of the CMPS algorithm makes the algorithm more accessible, generates reproducible results, and facilitates further studies of the algorithm such as methods comparison.
-thanks: |
-  This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement 70NANB20H019 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, Duke University, University of California Irvine, University of Virginia, West Virginia University, University of Pennsylvania, Swarthmore College and University of Nebraska, Lincoln.    
 preamble: |
   % Any extra LaTeX you need in the preamble
 bibliography: ju-hofmann.bib
@@ -1466,6 +1464,11 @@ The database built and maintained by the National Institute of Standards and Tec
 What we are aiming for is an open system that is able to collect open results, compare multiple algorithms using multiple datasets, and evaluate algorithmic variation and accuracy. 
 The evaluation metric we proposed in this paper can be used to compare different algorithms or even different datasets and is a snippet of this open system. 
 But the core of this open system is the open science culture and contributions of the community.
+
+
+## Acknowledgement
+
+This work was funded (or partially funded) by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreements 70NANB15H176 and 70NANB20H019 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, Duke University, University of California Irvine, University of Virginia, West Virginia University, University of Pennsylvania, Swarthmore College and University of Nebraska, Lincoln.
 
 
 ## Supplementary materials
