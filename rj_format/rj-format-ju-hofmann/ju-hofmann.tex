@@ -15,13 +15,13 @@ the package. Graphing tools are implemented in the package as well for
 users to assess and understand the CMPS results. Initial tests were
 performed on bullet signatures generated from two sets of 3D scans in
 the Hamby study under the framework suggested by the R package
-\pkg{bulletxtrctr}. New metrics based on CMPS scores are introduced and
-compared with existing metrics. A measure called Sum of squares ratio is
-included, and how it can be used for evaluating different scans,
-metrics, or parameters is showcased with the Hamby study data sets. An
-open-source implementation of the CMPS algorithm makes the algorithm
-more accessible, generates reproducible results, and facilitates further
-studies of the algorithm such as methods comparison.
+\texttt{bulletxtrctr}. New metrics based on CMPS scores are introduced
+and compared with existing metrics. A measure called sum of squares
+ratio is included, and how it can be used for evaluating different
+scans, metrics, or parameters is showcased with the Hamby study data
+sets. An open-source implementation of the CMPS algorithm makes the
+algorithm more accessible, generates reproducible results, and
+facilitates further studies of the algorithm such as method comparisons.
 }
 
 \hypertarget{introduction}{%
@@ -34,10 +34,10 @@ marks'' and demonstrated its use in some examples of comparing bullet
 signature correlations. Although \citet{cmps} conceptually describe the
 CMPS algorithm in their paper, the authors did not release an
 implementation of their method. Thus, our effort here is to introduce
-the CMPS method to the \texttt{R} \citep{R} community and provide an
-open-source, publicly available implementation of the algorithm to use,
-review, and improve. Our implementation is made available as part of the
-\texttt{R} package \CRANpkg{cmpsR} on CRAN.
+the CMPS method to the \texttt{R} community and provide an open-source,
+publicly available implementation of the algorithm to use, review, and
+improve. Our implementation is made available as part of the \texttt{R}
+package \CRANpkg{cmpsR} on CRAN.
 
 According to the Uniform Crime Reporting Program of the FBI (Federal
 Bureau of Investigation), ``more than 76 percent (76.7) of the homicides
@@ -53,7 +53,7 @@ Here, in particular, we are interested to determine whether two bullets
 were fired from the same gun barrel. Assessing the similarity between
 two bullets is based on a comparison of striation marks acquired during
 the firing process as bullets are propelled through the barrel. The
-current state of art sees firearms examiners make an assessment of
+current state of the art sees firearms examiners make an assessment of
 similarity based on a visual comparison, generally, using a comparison
 microscope \citep{afte}. This practice has been criticized for its lack
 of objectivity and the associated problem of determining valid error
@@ -129,40 +129,40 @@ the NIST Ballistics Database Project \citep{nistdb}.
 The automated framework for extracting signatures from x3p files used in
 this paper was proposed by \citet{aoas} and is implemented in the
 \texttt{R} packages \CRANpkg{x3ptools} \citep{x3ptools} and
-\pkg{bulletxtrctr} \citep{bulletxtrctr}. \pkg{x3ptools} is a package to
-read, write, and generally, process x3p files. The \pkg{bulletxtrctr}
-package implements a pipeline for extracting and comparing signatures
-from scans of land-engraved areas.
+\texttt{bulletxtrctr} \citep{bulletxtrctr}. \pkg{x3ptools} is a package
+to read, write, and generally, process x3p files. The
+\texttt{bulletxtrctr} package implements a pipeline for extracting and
+comparing signatures from scans of land-engraved areas.
 
 Figure \ref{fig:process} gives an overview of all of the steps in the
 process from scan to signatures. Figure \ref{fig:process}(a) shows a
 rendering of a 3D scan of a bullet land engraved area. The raised
 portion of the surface on the left and right of the scan are parts of
-the adjacent groove engraved areas (GEAs), the middle area shows a
-land-engraved area (LEA) with well expressed striation marks. The first
-step of obtaining the bullet signature is to extract a cross-section at
-a fixed height on the land engraving.
+the adjacent groove engraved areas (GEAs), the middle area shows a land
+engraved area with well expressed striation marks. The first step of
+obtaining the bullet signature is to extract a cross-section at a fixed
+height on the land engraving.
 
 The thin white horizontal line in Figure \ref{fig:process}(a) indicates
 which cross-section was identified by the algorithm to represent the
 LEA; Figure \ref{fig:process}(b) shows the corresponding cross-sectional
 view. Groove engraved areas are removed from the analysis as indicated
 by the vertical blue lines in Figure \ref{fig:process}(c) and Figure
-\ref{fig:process}(d)). A non-parametric LOESS smooth \citep{loess} is
-fitted to capture the bullet curvature ( Figure \ref{fig:process}(e))
+\ref{fig:process}(d). A non-parametric LOESS smooth \citep{loess} is
+fitted to capture the bullet curvature (Figure \ref{fig:process}(e))
 and, finally, the \textbf{bullet signature} (Figure
 \ref{fig:process}(f)) is obtained as residuals of the cross-section and
-the fitted smooth. Note, that in \citet{cmps} bullet signatures are
+the fitted smooth. Note that in \citet{cmps} bullet signatures are
 referred to as bullet profiles. However, to avoid confusion, we
 distinguish the notion of bullet signatures from bullet profiles. Bullet
 profiles are shown in panels (b), (c), and (d) of Figure
 \ref{fig:process}, while Figure \ref{fig:process}(f) shows the
 corresponding bullet signature. Identifying the groove engraved areas
 correctly is fundamental for a correct downstream analysis of the
-signatures. To allow for a human-in-the-middle inspection and
-intervention we have provided an interactive web application,
-implemented as \texttt{R} Shiny App \citep{shiny}, \pkg{bulletinspectR}
-to identify and correct those errors. An example of the extraction
+signatures. We have provided an interactive web application to allow for
+a human-in-the-middle inspection and intervention. It is implemented as
+an \texttt{R} Shiny App \citep{shiny} named \texttt{bulletinspectR} for
+identifying and correcting those errors. An example of the extraction
 process with corresponding code and parameter settings can be found in
 the ``Supplementary materials''. Note that the process of extracting
 signatures might be different from the one used in \citet{cmps} because
@@ -217,7 +217,7 @@ legal setting this variability is problematic because it allows for
 situations in which experts could choose parameters based on whether
 they are witnesses for the defense or the prosecution. Further research
 is needed to understand how to determine optimal threshold settings. The
-CMPS algorithm can assist firearm examiners with drawing a conclusion
+CMPS algorithm can assist firearms examiners with drawing a conclusion
 about the source of a comparison pair. Thus, in this paper we present an
 open-source implementation of the CMPS algorithm in the R package
 \pkg{cmpsR} available from both CRAN and Github. This publicly available
@@ -251,7 +251,7 @@ results as well as the algorithm itself.
 
 The section ``Implementation'' will go through the algorithm and show
 how to use the \pkg{cmpsR} package. A further example that illustrates
-the main points is also included. In the section on 'Evaluation
+the main points is also included. In the section on ``Evaluation
 metrics'', we introduce new CMPS metrics that summarize land-level CMPS
 scores and a sum of squares ratio that can be used to evaluate
 algorithmic results. The section ``Results'' presents the results of
@@ -412,7 +412,7 @@ parameters. However, the authors state that no cross-validation has been
 done - there might also be issues with respect to the resolution of the
 scans. Further research is needed, until then users are advised to think
 of default values as starting values and consider alternatives. However,
-the evaluation framework based on the Sum of Squares Ratio introduced in
+the evaluation framework based on the sum of squares ratio introduced in
 the later section could be used to evaluate the choices of these
 parameters. The main function that combines all steps in the CMPS
 algorithm described above is called
@@ -544,7 +544,7 @@ Research Database \citep{nistdb}.
 
 }
 
-\caption[Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row]{Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other.}\label{fig:sigs}
+\caption[Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row]{Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other. On the x-axis is the length of the scan in millimeter, and on the y-axis is the relative height in micron.}\label{fig:sigs}
 \end{figure}
 \end{Schunk}
 
@@ -588,7 +588,7 @@ score-based method is walking the line between false positives and false
 negatives. As the number of false positives is reduced the number of
 false negatives might rise. More discussion and comparisons between the
 two versions of the CMPS algorithm will be presented in later sections.
-Note, that the multi-segment lengths method is slower because the
+Note that the multi-segment lengths method is slower because the
 algorithm is run once for each segment length.
 
 \textbf{Visualize and understand CMPS results}
@@ -623,7 +623,7 @@ congruent registration position.
 
 \begin{figure}[hbt]
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
+\caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment. Each grey rectangle highlights one congruent matching profile segment.}
 \vspace{1em}
 \begin{adjustbox}{valign=t}
 \begin{minipage}{.39\textwidth}
@@ -718,7 +718,7 @@ example of segment number 6:
   \texttt{extract\_feature\_cmps()} when calculating the CMPS score.
   Therefore the top five peaks are identified in the cross-correlation
   curve at level one. Segment 6 is plotted at the positions where these
-  5 peaks are identified with dashed lines in the
+  five peaks are identified with dashed lines in the
   \texttt{segment\_plot}. The solid thick black line shows the segment
   at its original position (which in this example is very close to the
   actual registration position).
@@ -873,8 +873,8 @@ k^* &= \text{arg}\max\limits_{k} \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}
 We can continue with the example used in previous sections.
 \texttt{bullets} contains bullet signatures of two bullets,
 \texttt{bullet1} and \texttt{bullet2}. As mentioned before, each bullet
-has 6 land engravings, resulting in 6 bullet signatures. Thus, there are
-36 pairwise bullet signature comparisons, resulting in 36 \(c_{ij}\)
+has six land engravings, resulting in six bullet signatures. Thus, there
+are 36 pairwise bullet signature comparisons, resulting in 36 \(c_{ij}\)
 values in total. We use multi-segment lengths strategy with default
 parameters to compute these CMPS scores, and the result is shown in
 Figure \ref{fig:tiles}. We can see that in this example,
@@ -1070,7 +1070,7 @@ for Hamby set 252).
 
 The sum of squares ratios are 20.64 and 28.96 for
 \(\mathrm{CMPS_{max}}\) and \(\mathrm{\overline{CMPS}_{max}}\),
-respectively. This indicates, that even though scores from
+respectively. This indicates that even though scores from
 \(\mathrm{CMPS_{max}}\) for known-match comparisons are larger than
 scores from the averaged version of \(\mathrm{\overline{CMPS}_{max}}\),
 these scores achieve a better separation between the two groups of
@@ -1190,7 +1190,7 @@ metrics, \(\mathrm{\overline{CMPS}_{diff}}\) and
 \(\mathrm{\overline{CMPS^*}_{diff}}\), lead to equally good or even
 better results as \(\mathrm{\overline{CMPS}_{max}}\). Because
 \(\mathrm{\overline{CMPS^*}_{diff}}\) relies on a scaled version of CMPS
-scores it is more comparable to other similarity scores and summarizes
+scores, it is more comparable to other similarity scores and summarizes
 the out-of-phase background CMPS scores, making it superior to the other
 CMPS metrics.
 
@@ -1240,12 +1240,13 @@ squares ratios computed from the random forest scores \citep{aoas} for
 different metrics. The random forest model presented in \citet{aoas} was
 trained at the Center for Statistics and Applications in Forensic
 Evidence (CSAFE) and is publicly available in the R package
-\pkg{bulletxtrctr} \citep{bulletxtrctr}. Similar to the CMPS algorithm,
-this random forest model produces a score to quantify the similarity of
-a land-by-land comparison. The RF scores lie in an interval of {[}0,1{]}
-making them most comparable to the scaled CMPS scores. We applied the
-logic of \(\mathrm{{CMPS}_{max}}\), \(\mathrm{\overline{CMPS}_{max}}\),
-and \(\mathrm{\overline{CMPS}_{diff}}\) to the random forest scores and
+\texttt{bulletxtrctr} \citep{bulletxtrctr}. Similar to the CMPS
+algorithm, this random forest model produces a score to quantify the
+similarity of a land-by-land comparison. The RF scores lie in an
+interval of {[}0,1{]} making them most comparable to the scaled CMPS
+scores. We applied the logic of \(\mathrm{{CMPS}_{max}}\),
+\(\mathrm{\overline{CMPS}_{max}}\), and
+\(\mathrm{\overline{CMPS}_{diff}}\) to the random forest scores and
 obtained results of the random forest model for different metrics. As
 shown in Figure \ref{fig:param-npeak-plot}, the random forest model does
 not achieve the sum of squares ratio as high as those achieved by the
@@ -1384,7 +1385,7 @@ Please check out the folder structure of
   processed data of Hamby set 252 and Hamby set 44, generate preliminary
   results used in the paper, and save the results in the \texttt{.csv}
   format in the folder \texttt{data-csv}. Please make sure that the
-  package versions of \pkg{bulletxtrctr} and \texttt{cmpsR} meet the
+  package versions of \texttt{bulletxtrctr} and \texttt{cmpsR} meet the
   requirements.
 \item
   \texttt{rds\_generator.R}: this R script takes the generated

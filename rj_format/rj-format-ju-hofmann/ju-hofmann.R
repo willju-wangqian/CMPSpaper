@@ -238,7 +238,7 @@ library(cmpsR)
 data(bullets)
 
 
-## ----sigs, echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other."----
+## ----sigs, echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other. On the x-axis is the length of the scan in millimeter, and on the y-axis is the relative height in micron."----
 signatures <- bullets %>% unnest(sigs)
 signatures <- signatures %>% mutate(
   bulletland = factor(bulletland, levels = c(paste(rep(c(1, 2), each = 6), c(1:6, 2:6, 1), sep = "-")))
@@ -325,7 +325,7 @@ dframe$samesource <- with(dframe, bullet_to_land_predict(land1 = landA, land2 = 
 #> sig_plot$signature_shift_plot
 
 
-## ----sigplots-web, eval=knitr::is_html_output(), echo=FALSE, fig.cap="In (a) the black line shows the comparison signature; each red line segment shows one congruent matching profile segment. In (b) the black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.", out.width=".7\\textwidth", fig.align="center", fig.height=6----
+## ----sigplots-web, eval=knitr::is_html_output(), echo=FALSE, fig.cap="In (a) the black line shows the comparison signature; each red line segment shows one congruent matching profile segment. Each grey rectangle highlights one congruent matching profile segment. In (b) the black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.", out.width=".7\\textwidth", fig.align="center", fig.height=6----
 #> sig_plot <- cmps_signature_plot(
 #>       cmps_with_multi_scale
 #>     )

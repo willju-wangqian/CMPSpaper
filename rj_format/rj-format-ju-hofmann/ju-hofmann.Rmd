@@ -32,13 +32,14 @@ author:
     - 2438 Osborn Dr
     - Ames, IA 50011
 abstract: >
-  In this paper, we introduce the R package \pkg{cmpsR}, an open-source implementation of the Congruent Matching Profile Segments (CMPS) method developed at the National Institute of Standards and Technology (NIST) for objective comparison of striated tool marks. The functionality of the package is showcased by examples of bullet signatures that come with the package. Graphing tools are implemented in the package as well for users to assess and understand the CMPS results. Initial tests were performed on bullet signatures generated from two sets of 3D scans in the Hamby study under the framework suggested by the R package \pkg{bulletxtrctr}. New metrics based on CMPS scores are introduced and compared with existing metrics. A measure called Sum of squares ratio is included, and how it can be used for evaluating different scans, metrics, or parameters is showcased with the Hamby study data sets. An open-source implementation of the CMPS algorithm makes the algorithm more accessible, generates reproducible results, and facilitates further studies of the algorithm such as methods comparison.
+  In this paper, we introduce the R package \pkg{cmpsR}, an open-source implementation of the Congruent Matching Profile Segments (CMPS) method developed at the National Institute of Standards and Technology (NIST) for objective comparison of striated tool marks. The functionality of the package is showcased by examples of bullet signatures that come with the package. Graphing tools are implemented in the package as well for users to assess and understand the CMPS results. Initial tests were performed on bullet signatures generated from two sets of 3D scans in the Hamby study under the framework suggested by the R package `bulletxtrctr`. New metrics based on CMPS scores are introduced and compared with existing metrics. A measure called sum of squares ratio is included, and how it can be used for evaluating different scans, metrics, or parameters is showcased with the Hamby study data sets. An open-source implementation of the CMPS algorithm makes the algorithm more accessible, generates reproducible results, and facilitates further studies of the algorithm such as method comparisons.
 preamble: |
   % Any extra LaTeX you need in the preamble
 bibliography: ju-hofmann.bib
 type: package
 output: 
-  rjtools::rjournal_web_article
+  rjtools::rjournal_web_article:
+    mathjax: local
 editor_options: 
   chunk_output_type: console
   markdown: 
@@ -239,7 +240,7 @@ ADD_LABELS_HIST <- FALSE
 In this paper, we present an open-source implementation of the algorithm of the Congruent Matching Profile Segments (CMPS) method.
 @cmps developed the CMPS method for "objective comparison of striated tool marks" and demonstrated its use in some examples of comparing bullet signature correlations.
 Although @cmps conceptually describe the CMPS algorithm in their paper, the authors did not release an implementation of their method.
-Thus, our effort here is to introduce the CMPS method to the `R` [@R] community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
+Thus, our effort here is to introduce the CMPS method to the `R` community and provide an open-source, publicly available implementation of the algorithm to use, review, and improve.
 Our implementation is made available as part of the `R` package \CRANpkg{cmpsR} on CRAN.
 
 
@@ -248,7 +249,7 @@ According to the Uniform Crime Reporting Program of the FBI (Federal Bureau of I
 An important task of firearm examination is to answer the question of whether two pieces of evidence come from the same source or whether a piece of evidence matches a sample obtained from a specific firearm.
 Here, in particular, we are interested to determine whether two bullets were fired from the same gun barrel.
 Assessing the similarity between two bullets is based on a comparison of striation marks acquired during the firing process as bullets are propelled through the barrel.
-The current state of art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope [@afte].
+The current state of the art sees firearms examiners make an assessment of similarity based on a visual comparison, generally, using a comparison microscope [@afte].
 This practice has been criticized for its lack of objectivity and the associated problem of determining valid error rates [@pcast].
 
 A report published by the @nrc states that "[m]uch forensic evidence-including, for example, bite marks and firearm and toolmark identification---is introduced in criminal trials without any meaningful scientific validation, determination of error rates, or reliability testing to explain the limits of the discipline." To overcome those criticisms and concerns, researchers have been making an effort to build databases and develop frameworks and algorithms that bring an objective and quantitative assessment into the field.
@@ -283,23 +284,23 @@ Both Hamby set 252 and Hamby set 44 are publicly available from the NIST Ballist
 **Extracting signatures from LEA scans**
 <!-- ### Extracting signatures from LEA scans -->
 
-The automated framework for extracting signatures from x3p files used in this paper was proposed by @aoas and is implemented in the `R` packages \CRANpkg{x3ptools} [@x3ptools] and \pkg{bulletxtrctr} [@bulletxtrctr].
+The automated framework for extracting signatures from x3p files used in this paper was proposed by @aoas and is implemented in the `R` packages \CRANpkg{x3ptools} [@x3ptools] and `bulletxtrctr` [@bulletxtrctr].
 \pkg{x3ptools} is a package to read, write, and generally, process x3p files.
-The \pkg{bulletxtrctr} package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.
+The `bulletxtrctr` package implements a pipeline for extracting and comparing signatures from scans of land-engraved areas.
 
 Figure \@ref(fig:process) gives an overview of all of the steps in the process from scan to signatures.
 Figure \@ref(fig:process)(a) shows a rendering of a 3D scan of a bullet land engraved area.
-The raised portion of the surface on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs), the middle area shows a land-engraved area (LEA) with well expressed striation marks.
+The raised portion of the surface on the left and right of the scan are parts of the adjacent groove engraved areas (GEAs), the middle area shows a land engraved area with well expressed striation marks.
 The first step of obtaining the bullet signature is to extract a cross-section at a fixed height on the land engraving.
 
 The thin white horizontal line in Figure \@ref(fig:process)(a) indicates which cross-section was identified by the algorithm to represent the LEA; Figure \@ref(fig:process)(b) shows the corresponding cross-sectional view.
-Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in Figure \@ref(fig:process)(c) and Figure \@ref(fig:process)(d)).
-A non-parametric LOESS smooth [@loess] is fitted to capture the bullet curvature ( Figure \@ref(fig:process)(e)) and, finally, the **bullet signature** (Figure \@ref(fig:process)(f)) is obtained as residuals of the cross-section and the fitted smooth.
-Note, that in @cmps bullet signatures are referred to as bullet profiles.
+Groove engraved areas are removed from the analysis as indicated by the vertical blue lines in Figure \@ref(fig:process)(c) and Figure \@ref(fig:process)(d).
+A non-parametric LOESS smooth [@loess] is fitted to capture the bullet curvature (Figure \@ref(fig:process)(e)) and, finally, the **bullet signature** (Figure \@ref(fig:process)(f)) is obtained as residuals of the cross-section and the fitted smooth.
+Note that in @cmps bullet signatures are referred to as bullet profiles.
 However, to avoid confusion, we distinguish the notion of bullet signatures from bullet profiles.
 Bullet profiles are shown in panels (b), (c), and (d) of Figure \@ref(fig:process), while Figure \@ref(fig:process)(f) shows the corresponding bullet signature.
 Identifying the groove engraved areas correctly is fundamental for a correct downstream analysis of the signatures.
-To allow for a human-in-the-middle inspection and intervention we have provided an interactive web application, implemented as `R` Shiny App [@shiny], \pkg{bulletinspectR} to identify and correct those errors.
+We have provided an interactive web application to allow for a human-in-the-middle inspection and intervention. It is implemented as an `R` Shiny App [@shiny] named `bulletinspectR` for identifying and correcting those errors.
 An example of the extraction process with corresponding code and parameter settings can be found in the "Supplementary materials". Note that the process of extracting signatures might be different from the one used in @cmps because no code or parameter settings are made available publicly.
 
 ```{r bullet, echo=FALSE, out.width=".8\\textwidth", fig.cap="Photo of a traditionally rifled gun barrel (left) and a fired bullet (right)."}
@@ -323,7 +324,7 @@ High CMPS scores are achieved between more similar signatures and are therefore 
 Low scores between pairs of signatures are attributed to different source pairs.
 However, a specific threshold of the CMPS score to distinguish between same-source and different-source comparisons is not provided in @cmps, instead the threshold depends on the underlying structure of the data and the choice of parameters.   In a legal setting this variability is problematic because it allows for situations in which experts could choose parameters based on whether they are witnesses for the defense or the prosecution. 
 Further research is needed to understand how to determine optimal threshold settings.
-The CMPS algorithm can assist firearm examiners with drawing a conclusion about the source of a comparison pair.
+The CMPS algorithm can assist firearms examiners with drawing a conclusion about the source of a comparison pair.
 Thus, in this paper we present an open-source implementation of the CMPS algorithm in the R package \pkg{cmpsR} available from both CRAN and Github. This publicly available implementation calculates the CMPS score of a comparison using the following code:
 
 
@@ -347,7 +348,7 @@ We also implemented graphing tools for users to better understand these results 
 
 The section "Implementation" will go through the algorithm and show how to use the \pkg{cmpsR} package. 
 A further example that illustrates the main points is also included.
-In the section on 'Evaluation metrics", we introduce new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.
+In the section on "Evaluation metrics", we introduce new CMPS metrics that summarize land-level CMPS scores and a sum of squares ratio that can be used to evaluate algorithmic results.
 The section "Results" presents the results of evaluating the \pkg{cmpsR} package using Hamby set 252 and Hamby set 44. The results from Hamby set 252 are used to verify that our implementation is, at least qualitatively, comparable to the algorithm described in @cmps. Results from Hamby 44 show the need for a further investigation of the parameter choices even in the case of bullets fired from the same barrels. 
 The last section covers some final discussion and conclusions.
 
@@ -388,7 +389,7 @@ Conceptually, the CMPS algorithm consists of three main steps:
 Note that there are several parameters in the CMPS algorithm that will affect the final results and are left to the users to decide, such as the length of basis segments `seg_length` in step 1, the number of peaks `npeaks_set` identified on each level in step 2, and the length of the tolerance zone `Tx` in both step 2 and 3.
 In our implementation of the CMPS algorithm, we used the parameters given in the original CMPS paper [@cmps] as the default values for these parameters.
 However, the authors state that no cross-validation has been done - there might also be issues with respect to the resolution of the scans.
-Further research is needed, until then users are advised to think of default values as starting values and consider alternatives. However, the evaluation framework based on the Sum of Squares Ratio introduced in the later section could be used to evaluate the choices of these parameters. 
+Further research is needed, until then users are advised to think of default values as starting values and consider alternatives. However, the evaluation framework based on the sum of squares ratio introduced in the later section could be used to evaluate the choices of these parameters. 
 The main function that combines all steps in the CMPS algorithm described above is called `extract_feature_cmps(...)`.
 Here we present it with its default parameters.
 
@@ -457,7 +458,7 @@ data(bullets)
 `bullets$sigs` is a list of twelve numeric vectors corresponding to the twelve bullet signatures shown in Figure \@ref(fig:sigs).
 `bullets$source` contains the URLs to the corresponding x3p file containing the topographic scan from the NIST Ballistics Toolmark Research Database [@nistdb].
 
-```{r sigs, echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other."}
+```{r sigs, echo=FALSE, fig.cap="Signatures of all lands of bullet 1 in the top row, and of bullet 2 in the bottom row. Signatures in the second row are ordered to be in phase with the signatures above, i.e. matching signatures are displayed on top of each other. On the x-axis is the length of the scan in millimeter, and on the y-axis is the relative height in micron."}
 signatures <- bullets %>% unnest(sigs)
 signatures <- signatures %>% mutate(
   bulletland = factor(bulletland, levels = c(paste(rep(c(1, 2), each = 6), c(1:6, 2:6, 1), sep = "-")))
@@ -500,7 +501,7 @@ In this example, the CMPS is 9 when using multiple segments, and 12 when using a
 As discussed in @cmps, using multi-segment lengths strategy can reduce the number of false positives when identifying candidate positions; however, any score-based method is walking the line between false positives and false negatives.
 As the number of false positives is reduced the number of false negatives might rise.
 More discussion and comparisons between the two versions of the CMPS algorithm will be presented in later sections.
-Note, that the multi-segment lengths method is slower because the algorithm is run once for each segment length.
+Note that the multi-segment lengths method is slower because the algorithm is run once for each segment length.
 
 ```{r alternative, echo = FALSE}
 lands <- unique(bullets$bulletland)
@@ -569,7 +570,7 @@ It creates an overall impression of how the comparison signature aligns with the
     sig_plot$signature_shift_plot
     ```
 
-```{r sigplots-web, eval=knitr::is_html_output(), echo=FALSE, fig.cap="In (a) the black line shows the comparison signature; each red line segment shows one congruent matching profile segment. In (b) the black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.", out.width=".7\\textwidth", fig.align="center", fig.height=6}
+```{r sigplots-web, eval=knitr::is_html_output(), echo=FALSE, fig.cap="In (a) the black line shows the comparison signature; each red line segment shows one congruent matching profile segment. Each grey rectangle highlights one congruent matching profile segment. In (b) the black line shows the reference signature; the red line shows the comparison signature. Solid part shows the congruent matching profile segments, and the dashed part shows segments that do not agree with the congruent registration position.", out.width=".7\\textwidth", fig.align="center", fig.height=6}
 sig_plot <- cmps_signature_plot(
       cmps_with_multi_scale
     )
@@ -584,7 +585,7 @@ ggarrange(sig_plot$segment_shift_plot, sig_plot$signature_shift_plot,
 ```{=tex}
 \begin{figure}[hbt]
 \begin{subfigure}[t]{\textwidth}
-\caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment.}
+\caption{\label{fig:sigplot}The black line shows the comparison signature; each red line segment shows one congruent matching profile segment. Each grey rectangle highlights one congruent matching profile segment.}
 ```{r sigplot, opts.label="codefig", echo=TRUE, out.width='\\textwidth', warning = FALSE}
 sig_plot <- cmps_signature_plot(
   cmps_with_multi_scale
@@ -614,7 +615,7 @@ We can therefore set `seg_idx = 6` in `cmps_segment_plot()` and investigate the 
 
 For each segment scale, we have two plots: `segment_plot` and `scale_ccf_plot`, as shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:segplots-web)', '\\@ref(fig:segplots)'))` for the example of segment number 6:
 
--   Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:segplots-web)(a)', '\\@ref(fig:segplot)'))` is the `segment_plot` for basis segment 6 at level one (in its original length). We used `npeaks_set = c(5, 3, 1)` in `extract_feature_cmps()` when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these 5 peaks are identified with dashed lines in the `segment_plot`. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position).
+-   Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:segplots-web)(a)', '\\@ref(fig:segplot)'))` is the `segment_plot` for basis segment 6 at level one (in its original length). We used `npeaks_set = c(5, 3, 1)` in `extract_feature_cmps()` when calculating the CMPS score. Therefore the top five peaks are identified in the cross-correlation curve at level one. Segment 6 is plotted at the positions where these five peaks are identified with dashed lines in the `segment_plot`. The solid thick black line shows the segment at its original position (which in this example is very close to the actual registration position).
 
     ```{r segplots-code-web1, eval=FALSE, echo=knitr::is_html_output()}
     seg_plot <- cmps_segment_plot(
@@ -722,11 +723,9 @@ In general, we assume each bullet has $n$ land engravings (in our case $n=6$).
 Let $c_{ij}$ denote the CMPS score of a comparison between bullet 1 land $i$ and bullet 2 land $j$, for $i,j = 1, \dots, n$.
 Let $\mathcal{P}_k$ denote bullet land pairs in phase $k$ for $k = 0, \dots, n-1$, and 
 
-```{=tex}
 \begin{align}
 \mathcal{P}_k = \{ \left(i,j\right): i = 1, \dots, n ; \; j = \left(i + k\right) \;\mathrm{mod}\; n \}
 \end{align}
-```
 
 , where `mod` denotes the modulo operation.
 For example, $\mathcal{P}_1 = \{ \left(1,2\right), \left(2,3\right), \left(3,4\right), \left(4,5\right), \left(5,6\right), \left(6,1\right) \}$ when $n = 6$.
@@ -734,18 +733,15 @@ Let $k^*$ denote the index of the highest phase.
 
 With that, the two measures to evaluate accuracy used in @cmps are defined as
 
-```{=tex}
 \begin{align}
 \mathrm{CMPS_{max}} &= \max_{i,j} c_{ij} \text{ , and} \\
 \mathrm{\overline{CMPS}_{max}} &= \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_{k^*}} c_{ij} \text{ , where} \\
 k^* &= \text{arg}\max\limits_{k} \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_k} c_{ij}\right]
 \end{align}
-```
-
 
 We can continue with the example used in previous sections.
 `bullets` contains bullet signatures of two bullets, `bullet1` and `bullet2`.
-As mentioned before, each bullet has 6 land engravings, resulting in 6 bullet signatures.
+As mentioned before, each bullet has six land engravings, resulting in six bullet signatures.
 Thus, there are 36 pairwise bullet signature comparisons, resulting in 36 $c_{ij}$ values in total.
 We use multi-segment lengths strategy with default parameters to compute these CMPS scores, and the result is shown in Figure \@ref(fig:tiles).
 We can see that in this example,
@@ -791,11 +787,10 @@ However, both $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$ conside
 So we introduce a new metric based on CMPS scores called $\mathrm{\overline{CMPS}_{diff}}$, which is the difference between $\mathrm{\overline{CMPS}_{max}}$ and the mean of all other CMPS scores.
 With our notation above, we have:
 
-```{=tex}
 \begin{align}
 \mathrm{\overline{CMPS}_{diff}} = \left[  \frac{1}{n} \sum_{(i,j) \in \mathcal{P}_{k^*}} c_{ij}\right] - \left[  \frac{1}{n\left(n-1\right)} \sum_{(i,j) \notin \mathcal{P}_{k^*}} c_{ij}\right]
 \end{align}
-```
+
 $\mathrm{\overline{CMPS}_{diff}}$ highlights the difference between CMPS scores of matching and non-matching comparisons.
 If two bullets are non-matching, all 36 CMPS scores are expected to be small with relatively the same values, resulting in a $\mathrm{\overline{CMPS}_{diff}}$ value close to 0.
 For the example above, $\mathrm{\overline{CMPS}_{diff}} = 12.5 - 1.53 = 10.97$ <br>
@@ -807,11 +802,10 @@ A CMPS score of 5 might indicate a non-match if the highest possible CMPS score 
 Thus, we introduce the scaled CMPS score, denoted as $c^*_{ij}$.
 Let $s_{ij}$ denote the highest possible CMPS score or the total number of basis segments, then the scaled CMPS score $c^*_{ij}$ is defined as the ratio of raw score and maximum score:
 
-```{=tex}
 \begin{align}
 c^*_{ij} = \frac{c_{ij}}{s_{ij}}
 \end{align}
-```
+
 The scaled CMPS scores of the above example are shown in Figure \@ref(fig:tiles2)(b).
 Compared to the original CMPS scores, scaled scores have values within the interval $[0, 1]$ regardless of the length of the basis segments and therefore make a comparison of values possible across different parameter choices.
 Similar to the original CMPS scores, we will denote the scaled CMPS scores adjusted for out-of-phase background values by $\mathrm{\overline{CMPS^*}_{diff}}$.
@@ -853,19 +847,17 @@ Let $n_T$ denote the total number of observations, $n_k$ denote the number of ob
 Let $\bar{y}_{k.} = \frac{1}{n_k} \sum_{l=1}^{n_k} y_{kl}$ denote the mean value in group $k$ and $\bar{y}_{..} = \frac{1}{n_T} \left( \sum_{k} \sum_{l = 1}^{n_k} y_{kl} \right)$ denote the mean value of all observations.
 Consider the following model:
 
-```{=tex}
 \begin{align}
 y_{kl} = \mu_k + e_{kl}
 \end{align}
-```
+
 where $\mu_k$ is the true mean of group $k$ and $e_{kl}$ is a random effect of different observations.
 Then we can define the sum of squares ratio $V$ as:
 
-```{=tex}
 \begin{align}
 V = \frac{\sum_k n_k \left(\bar{y}_{k.} - \bar{y}_{..} \right)^2}{\sum_k \sum_l^{n_k} \left(y_{kl} - \bar{y}_{k.} \right)^2 }.
 \end{align}
-```
+
 The numerator of the sum of squares ratio $V$ quantifies the variation between the two groups, while the denominator quantifies the variation within each group.
 The sum of squares ratio $V$ can be used as an index for evaluating scans, metrics, and different sets of parameters if the same data set is being used.
 Some examples will be presented in the following section.
@@ -1002,7 +994,7 @@ As noted above, the CMPS scores we found here are not exactly the same as those 
 Additionally, to mimic the parameters used in @cmps, we set `seg_length = 50` and `Tx = 25` to make sure that each basis segment has a length of 78.125 \textmu m and the tolerance zone is $\pm 39.0625$ \textmu m (one unit represents 1.5625 \textmu m for Hamby set 252).
 
 The sum of squares ratios are 20.64 and 28.96 for $\mathrm{CMPS_{max}}$ and $\mathrm{\overline{CMPS}_{max}}$, respectively.
-This indicates, that even though scores from $\mathrm{CMPS_{max}}$ for known-match comparisons are larger than scores from the averaged version of $\mathrm{\overline{CMPS}_{max}}$, these scores achieve a better separation between the two groups of comparisons.
+This indicates that even though scores from $\mathrm{CMPS_{max}}$ for known-match comparisons are larger than scores from the averaged version of $\mathrm{\overline{CMPS}_{max}}$, these scores achieve a better separation between the two groups of comparisons.
 
 ```{r, echo=FALSE, eval=FALSE}
 with(CMPS_hamby252_results_npeak$cmps.table[[3]], {
@@ -1407,7 +1399,7 @@ As can be seen in Figure \@ref(fig:param-npeak-plot), the default value of `npea
 
 As seen before, the results suggest that the $\mathrm{CMPS_{max}}$ metric produces the least amount of separation compared with the other three CMPS metrics.
 They also suggest that the two newly proposed metrics, $\mathrm{\overline{CMPS}_{diff}}$ and $\mathrm{\overline{CMPS^*}_{diff}}$,  lead to equally good or even better results as $\mathrm{\overline{CMPS}_{max}}$. 
-Because $\mathrm{\overline{CMPS^*}_{diff}}$ relies on a scaled version of CMPS scores it is more comparable to other similarity scores and summarizes the out-of-phase background CMPS scores, making it superior to the other CMPS metrics. 
+Because $\mathrm{\overline{CMPS^*}_{diff}}$ relies on a scaled version of CMPS scores, it is more comparable to other similarity scores and summarizes the out-of-phase background CMPS scores, making it superior to the other CMPS metrics. 
 
 What we can also observe in Figure \@ref(fig:param-seg-plot) and Figure \@ref(fig:param-npeak-plot) is that the values of the sum of squares ratio for Hamby 44 is lower than those for Hamby 252. 
 This might be because determining the source is a harder task for Hamby 44 than for Hamby 252, but also suggests that the choice of parameters also depends on the resolution or the scanning process of the data set. 
@@ -1428,7 +1420,7 @@ It's curious to see that for the Hamby 252 results published in @cmps the $\math
 Since the researchers of @cmps did not use $\mathrm{\overline{CMPS}_{diff}}$ or $\mathrm{\overline{CMPS^*}_{diff}}$, and they did not apply the CMPS algorithm to the Hamby set 44, we were not able to compare those results.
 
 In Figure \@ref(fig:param-npeak-plot), we also included the sum of squares ratios computed from the random forest scores [@aoas] for different metrics. 
-The random forest model presented in @aoas was trained at the Center for Statistics and Applications in Forensic Evidence (CSAFE) and is publicly available in the R package \pkg{bulletxtrctr} [@bulletxtrctr].
+The random forest model presented in @aoas was trained at the Center for Statistics and Applications in Forensic Evidence (CSAFE) and is publicly available in the R package `bulletxtrctr` [@bulletxtrctr].
 Similar to the CMPS algorithm, this random forest model produces a  score to quantify the similarity of a land-by-land comparison.
 The RF scores lie in an interval of [0,1] making them most comparable to the scaled CMPS scores.
 We applied the logic of $\mathrm{{CMPS}_{max}}$, $\mathrm{\overline{CMPS}_{max}}$, and $\mathrm{\overline{CMPS}_{diff}}$ to the random forest scores and obtained results of the random forest model for different metrics. 
@@ -1492,7 +1484,7 @@ Please check out the folder structure of [the `reproducible` folder](https://git
 
 **File description**
 
--   `hamby*_result_generator.R`: these R scripts take the processed data of Hamby set 252 and Hamby set 44, generate preliminary results used in the paper, and save the results in the `.csv` format in the folder `data-csv`. Please make sure that the package versions of \pkg{bulletxtrctr} and `cmpsR` meet the requirements.
+-   `hamby*_result_generator.R`: these R scripts take the processed data of Hamby set 252 and Hamby set 44, generate preliminary results used in the paper, and save the results in the `.csv` format in the folder `data-csv`. Please make sure that the package versions of `bulletxtrctr` and `cmpsR` meet the requirements.
 -   `rds_generator.R`: this R script takes the generated `.csv` files and produce `CMPSpaper_results.rds`. `CMPSpaper_results.rds` is identical to `data/CMPSpaper_results.rds` and is used generate figures and other results presented in the paper.
 
 **Data included in "supplementary-files.zip"**
